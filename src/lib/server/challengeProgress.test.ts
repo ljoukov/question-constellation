@@ -78,10 +78,12 @@ describe('challenge progress persistence', () => {
 
 		await expect(getUserChallengeProgress('learner-1')).resolves.toEqual(progress());
 		const [query, params] = mocks.queryPersonalRows.mock.calls[0] as [string, unknown[]];
-		expect(query).toContain('AND challenge_id IN (');
+		expect(query).toContain('FROM json_each(?)');
 		expect(params[0]).toBe('learner-1');
-		expect(params).toContain(challengeId);
+		expect(JSON.parse(params[1] as string)).toContain(challengeId);
 		expect(params.at(-1)).toEqual(expect.any(Number));
+		expect(params).toHaveLength(3);
+		expect(params.length).toBeLessThanOrEqual(100);
 	});
 
 	it('filters unknown challenge IDs before any write', async () => {

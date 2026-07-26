@@ -1,8 +1,8 @@
 import { challengeSubjects, challengesForSubject } from '$lib/challenges/catalog';
-import { publicChallengePreviewDefinition } from '$lib/challenges/authoredData';
 import { emptyChallengeProgress } from '$lib/challenges/progress';
 import { emptyChallengeLeaderboard } from '$lib/challenges/leaderboard';
 import type { ChallengeSubject } from '$lib/challenges/types';
+import { publicChallengeCardDefinition } from '$lib/server/challengeCatalogPresentation';
 import {
 	ENGLAND_KS4_SCIENCE_CONTEXT_URL,
 	publicChallengeCurriculumLinks
@@ -19,6 +19,7 @@ export const load: PageServerLoad = async ({ locals, params, parent }) => {
 
 	const subject = subjectDefinition.subject as ChallengeSubject;
 	const challenges = challengesForSubject(subject);
+	const challengeCards = challenges.map(publicChallengeCardDefinition);
 	const heroChallenge =
 		challenges.find(({ slug }) => slug === subjectDefinition.heroSlug) ?? challenges[0];
 	if (!heroChallenge) throw error(500, 'Subject challenge is unavailable.');
@@ -37,7 +38,7 @@ export const load: PageServerLoad = async ({ locals, params, parent }) => {
 			description: subjectDefinition.description
 		},
 		defaultHeroId: heroChallenge.id,
-		challenges: challenges.map(publicChallengePreviewDefinition),
+		challenges: challengeCards,
 		curriculumLinks: publicChallengeCurriculumLinks(challenges),
 		ks4ScienceUrl: ENGLAND_KS4_SCIENCE_CONTEXT_URL,
 		challengeProgress,

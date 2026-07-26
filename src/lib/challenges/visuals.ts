@@ -3,6 +3,7 @@ import type { ChainIllustration } from '$lib/chains/chainIllustration';
 import { biologyExpansion } from './expansions/biology';
 import { chemistryExpansion } from './expansions/chemistry';
 import { physicsExpansion } from './expansions/physics';
+import { generatedScienceChallengeVisuals } from './generatedRuntime';
 import { subjectArtForChallenge } from './subjectVisuals';
 import type { ChallengeDefinition } from './types';
 
@@ -25,9 +26,21 @@ export type ChallengeVisualDefinition = {
 	teaserPosition?: string;
 };
 
+export type ChallengeArtOwnershipInput = {
+	id: string;
+	visual: ChallengeVisualDefinition | undefined;
+};
+
+export type ChallengeArtPairOwnership = {
+	challengeId: string;
+	roles: Array<'primary' | 'transfer' | 'earned'>;
+	lightSource: string;
+	darkSource: string;
+};
+
 const atlasRoot = `${base}/product/challenges/atlas`;
 const cardRoot = `${base}/product/challenges/cards`;
-const cardArtRevision = '20260719-1';
+const cardArtRevision = '20260725-2';
 
 function cardArt(id: string, alt: string, version = 'v1'): ChallengeCardArt {
 	return {
@@ -235,8 +248,8 @@ const challengeVisuals: Record<string, ChallengeVisualDefinition> = {
 		decisiveLabel: 'A carrier does not show the recessive phenotype.',
 		cardArt: cardArt(
 			'biology-recessive-inheritance',
-			'A Punnett square for Aa × Aa showing the outcomes AA, Aa, Aa and aa.',
-			'v2'
+			'An empty Punnett square for Rr × Rr with R and r gamete labels and four blank offspring cells.',
+			'v3'
 		)
 	},
 	'chemistry-alloy-hardness': {
@@ -250,8 +263,8 @@ const challengeVisuals: Record<string, ChallengeVisualDefinition> = {
 		decisiveLabel: 'Different-sized atoms disrupt the regular layers.',
 		cardArt: cardArt(
 			'chemistry-alloy-hardness',
-			'Plain metal test pieces arranged beside an unused indentation tester.',
-			'v2'
+			'Two unlabelled silver-grey aluminium test pieces arranged beside an unused indentation tester.',
+			'v3'
 		)
 	},
 	'chemistry-collision-rate': {
@@ -275,7 +288,7 @@ const challengeVisuals: Record<string, ChallengeVisualDefinition> = {
 		decisiveLabel: 'The balanced equation sets a three-to-two hydrogen-to-ammonia ratio.',
 		cardArt: cardArt(
 			'chemistry-stoichiometric-mass',
-			'An ammonia reactor supplied by separate unlabelled nitrogen and hydrogen vessels.',
+			'A sealed ammonia sample vessel connected to empty gas-collection vessels before decomposition begins.',
 			'v2'
 		)
 	},
@@ -285,7 +298,7 @@ const challengeVisuals: Record<string, ChallengeVisualDefinition> = {
 		decisiveLabel: 'An unchanged mass shows that all the water has been removed.',
 		cardArt: cardArt(
 			'chemistry-constant-mass',
-			'A damp precipitate in an evaporating dish beside separate laboratory heating and weighing equipment.',
+			'A partly evaporated salt sample in an evaporating dish beside separate heating and weighing equipment.',
 			'v2'
 		)
 	},
@@ -295,7 +308,8 @@ const challengeVisuals: Record<string, ChallengeVisualDefinition> = {
 		decisiveLabel: 'Electrostatic attraction holds the ions together.',
 		cardArt: cardArt(
 			'chemistry-ionic-bonding',
-			'Atom models showing one outer electron transferring before the resulting positive and negative ions attract.'
+			'Separate neutral sodium and chlorine atom models before any electron transfer or ion formation.',
+			'v3'
 		)
 	},
 	'chemistry-molten-electrolysis': {
@@ -309,7 +323,8 @@ const challengeVisuals: Record<string, ChallengeVisualDefinition> = {
 		decisiveLabel: 'Each ion moves to the electrode with the opposite charge.',
 		cardArt: cardArt(
 			'chemistry-molten-electrolysis',
-			'Molten electrolysis apparatus with a metal deposit at the negative electrode and gas bubbles at the positive electrode.'
+			'Heated molten lead bromide apparatus at the onset of electrolysis, with both clean electrodes connected in a complete circuit and no products shown.',
+			'v3'
 		)
 	},
 	'chemistry-exothermic-energy': {
@@ -322,7 +337,8 @@ const challengeVisuals: Record<string, ChallengeVisualDefinition> = {
 		decisiveLabel: 'Warmer surroundings received energy from the reaction.',
 		cardArt: cardArt(
 			'chemistry-exothermic-energy',
-			'An insulated-cup reaction before and after mixing, with the thermometer rising as energy is transferred to the surroundings.'
+			'Two separate reactants beside an insulated cup and thermometer before mixing, with no temperature change or energy arrows.',
+			'v3'
 		)
 	},
 	'chemistry-flame-tests': {
@@ -331,8 +347,8 @@ const challengeVisuals: Record<string, ChallengeVisualDefinition> = {
 		decisiveLabel: 'Cleaning prevents another ion masking the result.',
 		cardArt: cardArt(
 			'chemistry-flame-tests',
-			'Clean wire loops held in the flames of three complete Bunsen setups, producing crimson, yellow and lilac flame colours.',
-			'v2'
+			'A clean wire loop, an unlabelled solid sample and an unlit Bunsen burner arranged before a flame test, with no result colour shown.',
+			'v3'
 		)
 	},
 	'chemistry-equilibrium-pressure': {
@@ -345,9 +361,9 @@ const challengeVisuals: Record<string, ChallengeVisualDefinition> = {
 		decisiveIndex: 2,
 		decisiveLabel: 'Higher pressure favours fewer gas molecules.',
 		cardArt: cardArt(
-			'chemistry-stoichiometric-mass',
-			'An ammonia reactor and gas supply vessels used to introduce equilibrium pressure.',
-			'v2'
+			'chemistry-equilibrium-pressure',
+			'A sealed ammonia-synthesis pressure vessel with compressor and unlabelled gas inlets, before any yield comparison or product result.',
+			'v3'
 		)
 	},
 	'chemistry-life-cycle': {
@@ -382,10 +398,6 @@ const challengeVisuals: Record<string, ChallengeVisualDefinition> = {
 			'uncertainty-feature',
 			'Three dynamics trolleys beside marked rulers with several unlabelled position markers.',
 			'v2'
-		),
-		transferArt: cardArt(
-			'gas-pressure',
-			'A gas syringe prepared for a pressure-measurement investigation.'
 		)
 	},
 	'physics-weight-equation': {
@@ -423,7 +435,8 @@ const challengeVisuals: Record<string, ChallengeVisualDefinition> = {
 		decisiveLabel: 'Fast transfer helps one part and hurts the other.',
 		cardArt: cardArt(
 			'physics-conductivity-bowl',
-			'An ice-cream bowl combining metal and plastic parts without heat-flow labels.'
+			'A cutaway ice-cream bowl with a metal inner liner, sealed coolant layer and plastic outer shell, without heat-flow labels.',
+			'v3'
 		),
 		earnedIllustration: earnedIllustrations['physics-conductivity-rate'],
 		teaserPosition: '52% 53%'
@@ -434,8 +447,8 @@ const challengeVisuals: Record<string, ChallengeVisualDefinition> = {
 		decisiveLabel: 'The force comes from interacting magnetic fields.',
 		cardArt: cardArt(
 			'physics-motor-wire',
-			'A vertical copper wire crossing the horizontal magnetic field between facing poles, connected in a simple battery-and-switch circuit.',
-			'v2'
+			'A straight current-carrying wire passing perpendicularly through the gap between opposite magnet poles in a complete series circuit, with no force or field arrows.',
+			'v3'
 		)
 	},
 	'physics-parallel-currents': {
@@ -520,6 +533,10 @@ const challengeVisuals: Record<string, ChallengeVisualDefinition> = {
 	...expansionChallengeVisuals
 };
 
+for (const [id, generatedVisual] of Object.entries(generatedScienceChallengeVisuals)) {
+	challengeVisuals[id] = { ...challengeVisuals[id], ...generatedVisual };
+}
+
 export function challengeVisual(challenge: Pick<ChallengeDefinition, 'id'>) {
 	return challengeVisuals[challenge.id];
 }
@@ -534,4 +551,97 @@ export function challengeHasCardArt(challenge: Pick<ChallengeDefinition, 'id'>) 
 
 export function allChallengeVisualIds() {
 	return Object.keys(challengeVisuals);
+}
+
+/**
+ * Final challenge art has one primary light/dark pair per challenge. Transfer and earned
+ * illustrations may add another pair, or deliberately reuse the same challenge's primary pair,
+ * but a file pair can never be owned by two different challenges.
+ */
+export function assertFinalChallengeArtOwnership(
+	inputs: readonly ChallengeArtOwnershipInput[]
+): ChallengeArtPairOwnership[] {
+	const challengeIds = new Set<string>();
+	const ownershipByPair = new Map<
+		string,
+		ChallengeArtPairOwnership & { roleSet: Set<ChallengeArtPairOwnership['roles'][number]> }
+	>();
+
+	for (const { id, visual } of inputs) {
+		if (!id.trim()) {
+			throw new Error('Challenge art ownership requires a non-empty challenge id.');
+		}
+		if (challengeIds.has(id)) {
+			throw new Error(`Challenge art ownership lists ${id} more than once.`);
+		}
+		challengeIds.add(id);
+
+		if (!visual?.cardArt) {
+			throw new Error(`${id} must own exactly one primary light/dark art pair.`);
+		}
+
+		const references: Array<{
+			role: ChallengeArtPairOwnership['roles'][number];
+			lightSource: string;
+			darkSource: string | undefined;
+		}> = [
+			{
+				role: 'primary',
+				lightSource: visual.cardArt.src,
+				darkSource: visual.cardArt.darkSrc
+			}
+		];
+		if (visual.transferArt) {
+			references.push({
+				role: 'transfer',
+				lightSource: visual.transferArt.src,
+				darkSource: visual.transferArt.darkSrc
+			});
+		}
+		if (visual.earnedIllustration) {
+			references.push({
+				role: 'earned',
+				lightSource: visual.earnedIllustration.lightSrc,
+				darkSource: visual.earnedIllustration.src
+			});
+		}
+
+		for (const { role, lightSource, darkSource } of references) {
+			const normalizedLight = normalizeArtSource(lightSource);
+			const normalizedDark = normalizeArtSource(darkSource);
+			if (!normalizedLight || !normalizedDark || normalizedLight === normalizedDark) {
+				throw new Error(`${id} ${role} art must contain one distinct light/dark pair.`);
+			}
+
+			const pairKey = [normalizedLight, normalizedDark].sort().join('\n');
+			const existing = ownershipByPair.get(pairKey);
+			if (existing && existing.challengeId !== id) {
+				throw new Error(`Challenge art pair is shared across ${existing.challengeId} and ${id}.`);
+			}
+			if (existing) {
+				existing.roleSet.add(role);
+				existing.roles = [...existing.roleSet];
+				continue;
+			}
+
+			ownershipByPair.set(pairKey, {
+				challengeId: id,
+				roles: [role],
+				roleSet: new Set([role]),
+				lightSource: normalizedLight,
+				darkSource: normalizedDark
+			});
+		}
+	}
+
+	return [...ownershipByPair.values()].map(({ challengeId, roles, lightSource, darkSource }) => ({
+		challengeId,
+		roles,
+		lightSource,
+		darkSource
+	}));
+}
+
+function normalizeArtSource(source: string | undefined) {
+	return source?.trim().split(/[?#]/u, 1)[0] ?? '';
 }

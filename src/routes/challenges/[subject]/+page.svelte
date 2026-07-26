@@ -17,7 +17,7 @@
 	import {
 		CHALLENGE_PROGRESS_UPDATED_EVENT,
 		type ChallengeProgressUpdatedDetail
-	} from '$lib/challenges/progressSync';
+	} from '$lib/challenges/progressEvents';
 	import {
 		CHALLENGE_PATH_PLANNER_VERSION,
 		mostRecentlyCompletedChallenge,
@@ -252,6 +252,7 @@
 			</header>
 			<ChallengePreview
 				challenge={heroChallenge}
+				cardArt={heroChallenge.cardArt}
 				headingLevel="h1"
 				headline={heroChallenge.hook}
 				stacked
@@ -274,7 +275,7 @@
 						markLabel={`${challenge.marks} ${challenge.marks === 1 ? 'mark' : 'marks'}`}
 						title={challenge.title}
 						meta={challenge.topic}
-						visualChallenge={challenge}
+						art={challenge.cardArt ?? undefined}
 						complete={Boolean(progress.challenges[challenge.id]?.completedAt)}
 						balanced
 						analyticsLabel={`Open ${challenge.title} challenge`}

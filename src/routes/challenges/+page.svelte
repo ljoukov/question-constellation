@@ -17,14 +17,13 @@
 	import {
 		CHALLENGE_PROGRESS_UPDATED_EVENT,
 		type ChallengeProgressUpdatedDetail
-	} from '$lib/challenges/progressSync';
+	} from '$lib/challenges/progressEvents';
 	import {
 		CHALLENGE_PATH_PLANNER_VERSION,
 		mostRecentlyCompletedChallenge,
 		recommendedUnfinishedChallenge
 	} from '$lib/challenges/recommendations';
 	import { challengePathWithScope } from '$lib/challenges/routing';
-	import { subjectArtForChallenge } from '$lib/challenges/subjectVisuals';
 	import {
 		challengeSocialImage,
 		challengeSocialImageAlt,
@@ -62,20 +61,10 @@
 	);
 	const subjectGroups = $derived(
 		data.subjects.map((subject) => {
-			const subjectChallenges = catalogue.filter((challenge) =>
-				subject.challengeIds.includes(challenge.id)
-			);
 			const entries = subject.challengeIds.map((id) => progress.challenges[id]);
-			const nextChallenge =
-				recommendedUnfinishedChallenge(subjectChallenges, progress, {
-					preferredSubject: subject.subject
-				}) ?? mostRecentlyCompletedChallenge(subjectChallenges, progress);
 			return {
 				...subject,
-				completed: entries.filter((entry) => Boolean(entry?.completedAt)).length,
-				totalBestScore: entries.reduce((total, entry) => total + (entry?.bestScore ?? 0), 0),
-				nextChallenge,
-				art: nextChallenge ? subjectArtForChallenge(nextChallenge) : undefined
+				completed: entries.filter((entry) => Boolean(entry?.completedAt)).length
 			};
 		})
 	);
@@ -224,6 +213,7 @@
 			</header>
 			<ChallengePreview
 				challenge={featuredChallenge}
+				cardArt={featuredChallenge.cardArt}
 				stacked
 				headingLevel="h1"
 				headline={featuredChallenge.hook}
@@ -241,18 +231,13 @@
 			<div>
 				{#each subjectGroups as subject (subject.subject)}
 					<ChallengeCardLink
-						href={subject.nextChallenge
-							? challengePathWithScope(subject.nextChallenge, subject.subject)
-							: subjectHref(subject.subject)}
-						eyebrow={`${subject.label} only · ${subject.completed} complete`}
-						title={`GCSE ${subject.label} path`}
-						meta={subject.nextChallenge
-							? `Next: ${subject.nextChallenge.title}`
-							: 'All challenges complete'}
-						art={subject.art}
-						complete={!subject.nextChallenge}
-						analyticsLabel={`Start ${subject.subject} challenge path`}
-						onclick={() => recordScopeSelection(subject.subject, 'challenge_hub_subject_path')}
+						href={subjectHref(subject.subject)}
+						eyebrow={`${subject.label} · ${subject.completed} of ${subject.challengeIds.length} complete`}
+						title={`GCSE ${subject.label} challenges`}
+						meta={`${subject.challengeIds.length} exam-question challenges`}
+						art={subject.cardArt ?? undefined}
+						actionLabel="Open"
+						analyticsLabel={`Open GCSE ${subject.label} challenges`}
 					/>
 				{/each}
 			</div>

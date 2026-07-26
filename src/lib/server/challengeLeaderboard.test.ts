@@ -66,10 +66,26 @@ describe('challenge leaderboard', () => {
 		expect(result.participantCount).toBe(12);
 
 		const [query, params] = mocks.queryPersonalRows.mock.calls[0] as [string, unknown[]];
-		expect(query).toContain('challenge_id IN (?, ?)');
+		expect(query).toContain('FROM json_each(?)');
 		expect(query).toContain('ROW_NUMBER() OVER');
 		expect(query).not.toContain('best_time');
-		expect(params).toEqual(['biology-a', 'biology-b', 5, 'learner-1', 6]);
+		expect(params).toEqual([JSON.stringify(['biology-a', 'biology-b']), 5, 'learner-1', 6]);
+	});
+
+	it('keeps a 500-challenge scope below the D1 bound-parameter limit', async () => {
+		const challengeIds = Array.from({ length: 500 }, (_, index) => `challenge-${index}`);
+
+		await getChallengeLeaderboard({
+			challengeIds,
+			currentUserId: 'learner-1',
+			limit: 5
+		});
+
+		const [query, params] = mocks.queryPersonalRows.mock.calls[0] as [string, unknown[]];
+		expect(query).toContain('FROM json_each(?)');
+		expect(params.length).toBeLessThanOrEqual(100);
+		expect(params).toHaveLength(4);
+		expect(JSON.parse(params[0] as string)).toEqual(challengeIds);
 	});
 
 	it('drops malformed database rows instead of exposing them', async () => {

@@ -20,6 +20,14 @@ The documents are:
 - [Challenge session pacing and memory beats](./session-pacing-and-memory-beats.md) — the
   mixed-intensity orbit, six implemented memory mechanics, child-centred guardrails, and measurement
   plan.
+- [Generated science verification](./generated-science-verification.md) — the immutable
+  authoring, independent review, repair, and provenance gates for large generated cohorts.
+- [Science question art in R2](./science-question-art-r2.md) — the paired light/dark generation,
+  question-authoritative major/minor visual review, fresh-regeneration policy, retained-static gate,
+  perceptual audit, and content-addressed publication workflow.
+- [Science art major-error audit, 25 July 2026](./art-major-audit-2026-07-25.md) — the local
+  32-pair retained-art and available generated-art audit, nine fresh-regeneration targets, and
+  retained minor annotations.
 
 Supporting audit data:
 

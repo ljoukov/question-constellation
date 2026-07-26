@@ -10,6 +10,17 @@ data/curricula/*
 !data/curricula/curriculum-catalog.json
 !data/curricula/question-mappings/
 !data/curricula/question-mappings/**
+!data/challenges/
+data/challenges/*
+!data/challenges/releases/
+!data/challenges/releases/**
+data/challenges/releases/**/*.jsonl
+data/challenges/releases/**/*.ndjson
+data/challenges/releases/**/*.png
+data/challenges/releases/**/*.jpg
+data/challenges/releases/**/*.jpeg
+data/challenges/releases/**/*.webp
+data/challenges/releases/**/*.avif
 !data/recall/
 !data/recall/generated/
 !data/recall/generated/**

@@ -4,8 +4,8 @@ import {
 	challengeSubjects,
 	challengesForSubject
 } from '$lib/challenges/catalog';
-import { publicChallengePreviewDefinition } from '$lib/challenges/authoredData';
 import { emptyChallengeProgress } from '$lib/challenges/progress';
+import { publicChallengeCardDefinition } from '$lib/server/challengeCatalogPresentation';
 import {
 	ENGLAND_KS4_SCIENCE_CONTEXT_URL,
 	publicChallengeCurriculumLinks
@@ -19,12 +19,19 @@ export const load: PageServerLoad = async ({ locals, parent }) => {
 	const featuredChallenge = challengeByRoute('biology', 'measles-vaccine-immunity');
 	if (!featuredChallenge) throw error(500, 'Featured challenge is unavailable.');
 
+	const challengeCards = challengeCatalog.map(publicChallengeCardDefinition);
+	const challengeCardById = new Map(challengeCards.map((challenge) => [challenge.id, challenge]));
+	const featuredChallengeCard = challengeCardById.get(featuredChallenge.id);
+	if (!featuredChallengeCard) throw error(500, 'Featured challenge card is unavailable.');
 	const subjectGroups = challengeSubjects.map((subject) => {
 		const challenges = challengesForSubject(subject.subject);
+		const subjectHero =
+			challenges.find((challenge) => challenge.slug === subject.heroSlug) ?? challenges[0];
 		return {
 			subject: subject.subject,
 			label: subject.label,
-			challengeIds: challenges.map(({ id }) => id)
+			challengeIds: challenges.map(({ id }) => id),
+			cardArt: subjectHero ? (challengeCardById.get(subjectHero.id)?.cardArt ?? null) : null
 		};
 	});
 	const curriculumExamples = [
@@ -41,8 +48,8 @@ export const load: PageServerLoad = async ({ locals, parent }) => {
 	}).catch(() => emptyChallengeLeaderboard());
 
 	return {
-		featuredChallenge: publicChallengePreviewDefinition(featuredChallenge),
-		challenges: challengeCatalog.map(publicChallengePreviewDefinition),
+		featuredChallenge: featuredChallengeCard,
+		challenges: challengeCards,
 		subjects: subjectGroups,
 		curriculumLinks: publicChallengeCurriculumLinks(curriculumExamples),
 		ks4ScienceUrl: ENGLAND_KS4_SCIENCE_CONTEXT_URL,

@@ -1,4 +1,3 @@
-import { publicChallengePreviewDefinition } from '$lib/challenges/authoredData';
 import { challengeCatalog } from '$lib/challenges/catalog';
 import {
 	challengeProgressTotals,
@@ -6,10 +5,8 @@ import {
 	parseChallengeProgress,
 	type ChallengeProgress
 } from '$lib/challenges/progress';
-import { recommendedUnfinishedChallenge } from '$lib/challenges/recommendations';
 import {
 	USER_HOME_SNAPSHOT_VERSION,
-	type UserHomeChallengeRecommendation,
 	type UserHomeDashboard,
 	type UserHomeSnapshot,
 	type UserHomeSnapshotReadResult,
@@ -37,8 +34,9 @@ import {
 const REFRESH_CLAIM_STALE_AFTER_MINUTES = 2;
 const CHALLENGE_PROJECTION_CAS_ATTEMPTS = 3;
 const HOME_SNAPSHOT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
-const challengeProjectionIds = challengeCatalog.map((challenge) => challenge.id);
-const challengeProjectionPlaceholders = challengeProjectionIds.map(() => '?').join(', ');
+const challengeProjectionIdsJson = JSON.stringify(
+	challengeCatalog.map((challenge) => challenge.id)
+);
 
 type HomeSnapshotRow = {
 	schema_version: number;
@@ -118,34 +116,15 @@ export function compactSignedInLearningHome(home: SignedInLearningHome): UserHom
 	};
 }
 
-function challengeRecommendation(
-	progress: ChallengeProgress
-): UserHomeChallengeRecommendation | null {
-	const challenge = recommendedUnfinishedChallenge(challengeCatalog, progress);
-	if (!challenge) return null;
-	const preview = publicChallengePreviewDefinition(challenge);
-	return {
-		id: preview.id,
-		slug: preview.slug,
-		subject: preview.subject,
-		title: preview.title,
-		hook: preview.hook
-	};
-}
-
 function withChallengeProjection(
 	progress: ChallengeProgress
 ): Pick<
 	UserHomeSnapshot,
-	| 'challengeProgress'
-	| 'challengeRecommendation'
-	| 'challengeCompletedCount'
-	| 'challengeTotalBestScore'
+	'challengeProgress' | 'challengeCompletedCount' | 'challengeTotalBestScore'
 > {
 	const totals = challengeProgressTotals(progress);
 	return {
 		challengeProgress: progress,
-		challengeRecommendation: challengeRecommendation(progress),
 		challengeCompletedCount: totals.completedCount,
 		challengeTotalBestScore: totals.totalBestScore
 	};
@@ -492,24 +471,6 @@ function parseSubjectView(value: unknown): SignedInSubjectView | null {
 	};
 }
 
-function parseChallengeRecommendation(
-	value: unknown
-): UserHomeChallengeRecommendation | null | undefined {
-	if (value === null) return null;
-	if (!isRecord(value)) return undefined;
-	const id = safeText(value.id, 120);
-	const slug = safeText(value.slug, 120);
-	const title = safeText(value.title);
-	const hook = safeText(value.hook, 1_000);
-	const subject =
-		value.subject === 'biology' || value.subject === 'chemistry' || value.subject === 'physics'
-			? value.subject
-			: null;
-	return id !== null && slug !== null && title !== null && hook !== null && subject
-		? { id, slug, subject, title, hook }
-		: undefined;
-}
-
 export function parseUserHomeSnapshot(value: unknown): UserHomeSnapshot | null {
 	if (
 		!isRecord(value) ||
@@ -535,7 +496,6 @@ export function parseUserHomeSnapshot(value: unknown): UserHomeSnapshot | null {
 		? Object.keys(value.challengeProgress.challenges)
 		: null;
 	const progress = parseChallengeProgress(JSON.stringify(value.challengeProgress));
-	const recommendation = parseChallengeRecommendation(value.challengeRecommendation);
 	const totals = challengeProgressTotals(progress);
 	if (
 		!dashboard ||
@@ -546,15 +506,12 @@ export function parseUserHomeSnapshot(value: unknown): UserHomeSnapshot | null {
 		!rawChallengeKeys ||
 		rawChallengeKeys.length !== Object.keys(progress.challenges).length ||
 		JSON.stringify(value.challengeProgress) !== JSON.stringify(progress) ||
-		recommendation === undefined ||
 		value.challengeCompletedCount !== totals.completedCount ||
 		value.challengeTotalBestScore !== totals.totalBestScore
 	) {
 		return null;
 	}
 
-	const expectedRecommendation = challengeRecommendation(progress);
-	if (JSON.stringify(recommendation) !== JSON.stringify(expectedRecommendation)) return null;
 	const parsedSubjectViews = subjectViews as SignedInSubjectView[];
 	if (
 		JSON.stringify(dashboard.subjects) !==
@@ -835,7 +792,6 @@ export async function updateUserHomeSnapshotChallengeProjection(
 			    SET payload_json = json_set(
 			          payload_json,
 			          '$.challengeProgress', json(?),
-			          '$.challengeRecommendation', json(?),
 			          '$.challengeCompletedCount', ?,
 			          '$.challengeTotalBestScore', ?
 			        ),
@@ -848,7 +804,10 @@ export async function updateUserHomeSnapshotChallengeProjection(
 			      SELECT 1
 			        FROM user_challenge_progress AS canonical
 			       WHERE canonical.user_id = ?
-			         AND canonical.challenge_id IN (${challengeProjectionPlaceholders})
+			         AND canonical.challenge_id IN (
+			           SELECT CAST(value AS TEXT)
+			             FROM json_each(?)
+			         )
 			         AND NOT EXISTS (
 			           SELECT 1
 			             FROM json_each(json_extract(?, '$.challenges')) AS projected
@@ -884,14 +843,13 @@ export async function updateUserHomeSnapshotChallengeProjection(
 			  RETURNING source_revision`,
 				[
 					serializedProgress,
-					JSON.stringify(projection.challengeRecommendation),
 					projection.challengeCompletedCount,
 					projection.challengeTotalBestScore,
 					userId,
 					USER_HOME_SNAPSHOT_VERSION,
 					row.source_revision,
 					userId,
-					...challengeProjectionIds,
+					challengeProjectionIdsJson,
 					serializedProgress,
 					serializedProgress,
 					userId

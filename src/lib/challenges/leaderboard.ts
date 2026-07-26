@@ -80,10 +80,15 @@ export function projectChallengeLeaderboard({
 						(entry.score === safeScore && entry.completed > safeCompleted)
 				).length
 			: null;
-	const nextRival =
+	const nearestHigherRival =
 		rivals
 			.filter((entry) => entry.score > safeScore)
 			.sort((a, b) => a.score - b.score || b.rank - a.rank)[0] ?? null;
+	const targetRank = projectedRank ?? previousRank;
+	const nextRival =
+		nearestHigherRival && targetRank !== null && nearestHigherRival.rank === targetRank - 1
+			? nearestHigherRival
+			: null;
 
 	return {
 		previousRank,

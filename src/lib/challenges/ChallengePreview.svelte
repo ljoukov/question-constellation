@@ -1,15 +1,15 @@
 <script lang="ts">
-	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import { ArrowRight } from '@lucide/svelte';
 	import type { PublicChallengePreviewDefinition } from './authoredData';
 	import { challengePath, challengeSubjectLabel } from './routing';
 	import ChallengeButton from './ui/ChallengeButton.svelte';
 	import ChallengePanel from './ui/ChallengePanel.svelte';
 	import ThemeAwareChallengeArt from './ui/ThemeAwareChallengeArt.svelte';
-	import { challengeVisual } from './visuals';
+	import type { ChallengeCardArt } from './visuals';
 
 	let {
 		challenge,
+		cardArt = null,
 		stacked = false,
 		headingLevel = 'h3',
 		headline,
@@ -19,6 +19,7 @@
 		onstart
 	}: {
 		challenge: PublicChallengePreviewDefinition;
+		cardArt?: ChallengeCardArt | null;
 		stacked?: boolean;
 		headingLevel?: 'h1' | 'h2' | 'h3';
 		headline?: string;
@@ -29,10 +30,21 @@
 	} = $props();
 
 	const subjectLabel = $derived(challengeSubjectLabel(challenge.subject));
-	const art = $derived(challengeVisual(challenge)?.cardArt);
+	const previewText = $derived(
+		challenge.previewQuestion
+			.replace(/[\uF0FC\uF050]/g, '✓')
+			.replace(/[\uF0FB\uF051]/g, '✗')
+			.replace(/\s*<=>\s*/g, ' ⇌ ')
+			.replace(/\s*(?:->|⟶|⇒|)\s*/g, ' → ')
+			.replace(/\\mathrm\{([^}]*)\}/g, '$1')
+			.replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g, '$1/$2')
+			.replace(/\\times/g, '×')
+			.replace(/\\div/g, '÷')
+			.replace(/\$/g, '')
+	);
 </script>
 
-<div class:has-art={Boolean(art)} class="challenge-preview" data-subject={challenge.subject}>
+<div class:has-art={Boolean(cardArt)} class="challenge-preview" data-subject={challenge.subject}>
 	<ChallengePanel {stacked} raised>
 		<header>
 			<div>
@@ -50,14 +62,14 @@
 			>
 		</header>
 
-		{#if art}
+		{#if cardArt}
 			<div class="feature-art">
 				<ThemeAwareChallengeArt
-					src={art.src}
-					darkSrc={art.darkSrc}
-					alt={art.alt}
-					width={art.width}
-					height={art.height}
+					src={cardArt.src}
+					darkSrc={cardArt.darkSrc}
+					alt={cardArt.alt}
+					width={cardArt.width}
+					height={cardArt.height}
 					loading={headingLevel === 'h1' ? 'eager' : 'lazy'}
 					fetchpriority={headingLevel === 'h1' ? 'high' : 'auto'}
 				/>
@@ -65,7 +77,7 @@
 		{/if}
 
 		<div class="question-preview">
-			<p><MathText text={challenge.previewQuestion} /></p>
+			<p>{previewText}</p>
 		</div>
 
 		<div class="preview-actions">

@@ -4,9 +4,17 @@
  */
 import { biologyExpansionIdentities } from './expansions/biologyIdentity';
 import { chemistryExpansionIdentities } from './expansions/chemistryIdentity';
+import { generatedScienceChallengeDefinitions } from './generatedRuntime';
 import { physicsExpansionIdentities } from './expansions/physicsIdentity';
+import type { ChallengeDefinition } from './types';
 
-export const challengeRouteIdentities = [
+type ChallengeRouteIdentity = Pick<ChallengeDefinition, 'id' | 'slug' | 'subject'>;
+
+/**
+ * The hand-authored route index stays explicit for authoring/import tools that
+ * must compare new releases against the durable short catalog only.
+ */
+export const authoredChallengeRouteIdentities = [
 	{
 		id: 'biology-data-conclusions',
 		slug: 'smoking-risk-data-conclusions',
@@ -150,7 +158,25 @@ export const challengeRouteIdentities = [
 		subject: 'physics'
 	},
 	...physicsExpansionIdentities
-] as const;
+] as const satisfies readonly ChallengeRouteIdentity[];
+
+export const authoredChallengeIds = authoredChallengeRouteIdentities.map(
+	(challenge) => challenge.id
+);
+export type AuthoredChallengeId = (typeof authoredChallengeRouteIdentities)[number]['id'];
+
+export const generatedChallengeRouteIdentities = generatedScienceChallengeDefinitions.map(
+	({ id, slug, subject }) => ({ id, slug, subject })
+) satisfies ChallengeRouteIdentity[];
+
+/**
+ * Public client code must recognize the exact accepted runtime catalog so
+ * durable progress for generated challenges is not discarded during sync.
+ */
+export const challengeRouteIdentities = [
+	...authoredChallengeRouteIdentities,
+	...generatedChallengeRouteIdentities
+] as const satisfies readonly ChallengeRouteIdentity[];
 
 export const challengeIds = challengeRouteIdentities.map((challenge) => challenge.id);
 export type ChallengeId = (typeof challengeRouteIdentities)[number]['id'];

@@ -183,7 +183,7 @@ describe('user home snapshot reads', () => {
 		expect(result.status).toBe('fallback');
 		expect(result.shouldRefresh).toBe(true);
 		expect(result.snapshot.dashboard.studentName).toBe('Ada');
-		expect(result.snapshot.challengeRecommendation).not.toBeNull();
+		expect(result.snapshot).not.toHaveProperty('challengeRecommendation');
 		expect(mocks.queryPersonalFirst).toHaveBeenCalledTimes(1);
 		expect(mocks.queryPersonalFirst.mock.calls[0][0]).toContain('WHERE user_id = ?');
 		expect(mocks.queryPersonalFirst.mock.calls[0][1]).toEqual([user.uid]);
@@ -395,7 +395,7 @@ describe('user home snapshot refresh', () => {
 });
 
 describe('immediate challenge projection', () => {
-	it('patches canonical progress, recommendation and totals under a revision CAS', async () => {
+	it('patches canonical progress and totals under a revision CAS', async () => {
 		const progress: ChallengeProgress = {
 			version: 2,
 			challenges: {
@@ -411,11 +411,33 @@ describe('immediate challenge projection', () => {
 		expect(mocks.queryPersonalFirst).toHaveBeenCalledTimes(2);
 		const update = mocks.queryPersonalFirst.mock.calls[1];
 		expect(update[0]).toContain("'$.challengeProgress'");
+		expect(update[0]).not.toContain('challengeRecommendation');
 		expect(update[0]).toContain('snapshot_revision = source_revision');
 		expect(update[0]).toContain('FROM user_challenge_progress AS canonical');
 		expect(update[0]).not.toContain('dirty = 0');
 		expect(update[0]).not.toContain('source_revision = source_revision + 1');
 		expect(update[1]).toEqual(expect.arrayContaining([425, 1, user.uid, 1, 20]));
+	});
+
+	it('keeps a 500-entry projection below the D1 bound-parameter limit', async () => {
+		const progress: ChallengeProgress = {
+			version: 2,
+			challenges: Object.fromEntries(
+				Array.from({ length: 500 }, (_, index) => [`challenge-${index}`, completedEntry])
+			)
+		};
+		mocks.queryPersonalFirst
+			.mockResolvedValueOnce({ source_revision: 20 })
+			.mockResolvedValueOnce({ source_revision: 21 });
+
+		await updateUserHomeSnapshotChallengeProjection(user.uid, progress);
+
+		const [query, params] = mocks.queryPersonalFirst.mock.calls[1] as [string, unknown[]];
+		expect(query).toContain('FROM json_each(?)');
+		expect(params.length).toBeLessThanOrEqual(100);
+		expect(params).toHaveLength(11);
+		const projected = JSON.parse(params[0] as string) as ChallengeProgress;
+		expect(Object.keys(projected.challenges)).toHaveLength(500);
 	});
 
 	it('marks the snapshot stale when projection publication throws', async () => {

@@ -6,6 +6,7 @@ import type {
 import { biologyExpansion } from './expansions/biology';
 import { chemistryExpansion } from './expansions/chemistry';
 import { physicsExpansion } from './expansions/physics';
+import { generatedScienceChallengeDefinitions } from './generatedRuntime';
 
 const reviewStamp = {
 	lastReviewed: '2026-07-17',
@@ -3536,7 +3537,7 @@ const physicsChallenges = [
 	}
 ] satisfies ChallengeDefinition[];
 
-export const challengeCatalog: readonly ChallengeDefinition[] = [
+const authoredChallengeCatalog: readonly ChallengeDefinition[] = [
 	...biologyChallenges,
 	...biologyExpansion,
 	...chemistryChallenges,
@@ -3544,6 +3545,32 @@ export const challengeCatalog: readonly ChallengeDefinition[] = [
 	...physicsChallenges,
 	...physicsExpansion
 ];
+
+assertNoGeneratedChallengeCollisions(
+	authoredChallengeCatalog,
+	generatedScienceChallengeDefinitions
+);
+
+export const challengeCatalog: readonly ChallengeDefinition[] = [
+	...authoredChallengeCatalog,
+	...generatedScienceChallengeDefinitions
+];
+
+function assertNoGeneratedChallengeCollisions(
+	authored: readonly ChallengeDefinition[],
+	generated: readonly ChallengeDefinition[]
+) {
+	const ids = new Set(authored.map((challenge) => challenge.id));
+	const routes = new Set(authored.map((challenge) => `${challenge.subject}/${challenge.slug}`));
+	for (const challenge of generated) {
+		const route = `${challenge.subject}/${challenge.slug}`;
+		if (ids.has(challenge.id) || routes.has(route)) {
+			throw new Error(`Generated challenge collides with authored catalog: ${challenge.id}`);
+		}
+		ids.add(challenge.id);
+		routes.add(route);
+	}
+}
 
 export function challengeByRoute(subject: string, slug: string): ChallengeDefinition | undefined {
 	const normalizedSubject = subject.trim().toLowerCase();

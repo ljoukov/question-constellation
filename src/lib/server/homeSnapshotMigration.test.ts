@@ -59,7 +59,7 @@ type FallbackPayload = {
 };
 
 describe('user home snapshot migration', () => {
-	it('upgrades legacy rows and future profile seeds to a parseable v3 fallback', () => {
+	it('upgrades legacy rows and future profile seeds to a parseable v4 fallback', () => {
 		const db = new DatabaseSync(':memory:');
 		applyThrough(db, '0011_relax_challenge_completion_time.sql');
 		db.prepare(
@@ -124,18 +124,38 @@ describe('user home snapshot migration', () => {
 			snapshot_revision: 0
 		});
 		const upgradedPayload = parseUserHomeSnapshot(JSON.parse(upgradedV3.payload_json));
-		expect(upgradedPayload).not.toBeNull();
-		expect(upgradedPayload?.subjectViews).toEqual([]);
-		expect(upgradedPayload?.challengeProgress).toEqual(inProgress);
+		expect(upgradedPayload).toBeNull();
+
+		for (const migration of [
+			'0018_remove_recommendation_reasons.sql',
+			'0019_remove_snapshot_challenge_recommendation.sql'
+		]) {
+			db.exec(readFileSync(new URL(migration, personalMigrationDirectory), 'utf8'));
+		}
+		const upgradedV4 = snapshotRow(db, 'legacy-user');
+		expect(upgradedV4).toMatchObject({
+			schema_version: 4,
+			dirty: 1,
+			source_revision: 4,
+			snapshot_revision: 0
+		});
+		const upgradedV4Json = JSON.parse(upgradedV4.payload_json);
+		expect(upgradedV4Json).not.toHaveProperty('challengeRecommendation');
+		const upgradedV4Payload = parseUserHomeSnapshot(upgradedV4Json);
+		expect(upgradedV4Payload).not.toBeNull();
+		expect(upgradedV4Payload?.subjectViews).toEqual([]);
+		expect(upgradedV4Payload?.challengeProgress).toEqual(inProgress);
 
 		db.prepare(
 			`INSERT INTO user_profiles (uid, email, name, theme_preference)
 			 VALUES (?, ?, ?, ?)`
 		).run('new-user', 'new@example.test', 'Grace Hopper', 'light');
 		const seeded = snapshotRow(db, 'new-user');
-		expect(seeded.schema_version).toBe(3);
-		expect(parseUserHomeSnapshot(JSON.parse(seeded.payload_json))).toMatchObject({
-			version: 3,
+		expect(seeded.schema_version).toBe(4);
+		const seededPayload = JSON.parse(seeded.payload_json);
+		expect(seededPayload).not.toHaveProperty('challengeRecommendation');
+		expect(parseUserHomeSnapshot(seededPayload)).toMatchObject({
+			version: 4,
 			dashboard: { studentName: 'Grace', subjects: [] },
 			subjectViews: [],
 			appearance: { themePreference: 'light' }

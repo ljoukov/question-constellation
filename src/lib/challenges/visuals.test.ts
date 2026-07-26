@@ -2,7 +2,17 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { challengeCatalog } from './catalog';
-import { allChallengeVisualIds, challengeVisual } from './visuals';
+import { biologyExpansion } from './expansions/biology';
+import { chemistryExpansion } from './expansions/chemistry';
+import { physicsExpansion } from './expansions/physics';
+import { generatedScienceChallengeVisuals } from './generatedRuntime';
+import {
+	allChallengeVisualIds,
+	assertFinalChallengeArtOwnership,
+	challengeVisual,
+	type ChallengeCardArt,
+	type ChallengeVisualDefinition
+} from './visuals';
 
 const targetAspectRatio = 16 / 9;
 const aspectRatioTolerance = 0.015;
@@ -77,6 +87,25 @@ function staticAssetPath(source: string) {
 	return join(process.cwd(), 'static', sourcePath.slice(productPathIndex + 1));
 }
 
+function fixtureCardArt(id: string, revision = ''): ChallengeCardArt {
+	return {
+		src: `/product/challenges/cards/${id}-light-v1.webp${revision}`,
+		darkSrc: `/product/challenges/cards/${id}-dark-v1.webp${revision}`,
+		alt: `${id} fixture art`,
+		width: 1600,
+		height: 900
+	};
+}
+
+function fixtureVisual(cardArt: ChallengeCardArt): ChallengeVisualDefinition {
+	return {
+		segments: ['Observe', 'Connect', 'Apply'],
+		decisiveIndex: 1,
+		decisiveLabel: 'Connect the evidence.',
+		cardArt
+	};
+}
+
 describe('challenge visual definitions', () => {
 	it('gives every challenge one decisive visual gap', () => {
 		expect(allChallengeVisualIds().sort()).toEqual(challengeCatalog.map((item) => item.id).sort());
@@ -108,6 +137,87 @@ describe('challenge visual definitions', () => {
 				);
 			}
 		}
+	});
+
+	it('gives every final primary pair one challenge owner', () => {
+		const expansionIds = new Set(
+			[...biologyExpansion, ...chemistryExpansion, ...physicsExpansion].map(
+				(challenge) => challenge.id
+			)
+		);
+		expect(expansionIds.size).toBe(60);
+
+		const hasEveryExpansionOverride = [...expansionIds].every((id) =>
+			Object.hasOwn(generatedScienceChallengeVisuals, id)
+		);
+		const finalPrimaryArtCatalog = hasEveryExpansionOverride
+			? challengeCatalog
+			: challengeCatalog.filter((challenge) => !expansionIds.has(challenge.id));
+		const ownership = assertFinalChallengeArtOwnership(
+			finalPrimaryArtCatalog.map((challenge) => ({
+				id: challenge.id,
+				visual: challengeVisual(challenge)
+			}))
+		);
+
+		expect(ownership.filter((pair) => pair.roles.includes('primary'))).toHaveLength(
+			finalPrimaryArtCatalog.length
+		);
+		if (hasEveryExpansionOverride) {
+			expect(finalPrimaryArtCatalog).toHaveLength(challengeCatalog.length);
+		}
+	});
+
+	it('keeps targeted authored catalogue corrections on their reviewed art', () => {
+		if (!Object.hasOwn(generatedScienceChallengeVisuals, 'chemistry-equilibrium-pressure')) {
+			expect(challengeVisual({ id: 'chemistry-equilibrium-pressure' })?.cardArt?.src).toContain(
+				'/product/challenges/cards/chemistry-equilibrium-pressure-light-v3.webp'
+			);
+		}
+		if (!Object.hasOwn(generatedScienceChallengeVisuals, 'physics-half-range')) {
+			expect(challengeVisual({ id: 'physics-half-range' })?.transferArt).toBeUndefined();
+		}
+	});
+
+	it('rejects cross-challenge pair reuse without rejecting same-challenge reuse or extra art', () => {
+		const sharedPrimary = fixtureCardArt('shared-primary', '?rev=one');
+		const sameFilesWithAnotherRevision = fixtureCardArt('shared-primary', '?rev=two');
+		const ownedExtra = fixtureCardArt('owned-extra');
+		const firstVisual = {
+			...fixtureVisual(sharedPrimary),
+			transferArt: sameFilesWithAnotherRevision,
+			earnedIllustration: {
+				id: 'owned-extra',
+				src: ownedExtra.darkSrc!,
+				lightSrc: ownedExtra.src,
+				alt: ownedExtra.alt,
+				caption: 'An explicitly owned extra functional diagram.',
+				width: ownedExtra.width,
+				height: ownedExtra.height
+			}
+		};
+
+		expect(() =>
+			assertFinalChallengeArtOwnership([{ id: 'challenge-one', visual: firstVisual }])
+		).not.toThrow();
+		expect(() =>
+			assertFinalChallengeArtOwnership([
+				{ id: 'challenge-one', visual: firstVisual },
+				{ id: 'challenge-two', visual: fixtureVisual(sameFilesWithAnotherRevision) }
+			])
+		).toThrow(/shared across challenge-one and challenge-two/);
+		expect(() =>
+			assertFinalChallengeArtOwnership([
+				{
+					id: 'missing-primary',
+					visual: {
+						segments: ['Observe', 'Connect', 'Apply'],
+						decisiveIndex: 1,
+						decisiveLabel: 'Connect the evidence.'
+					}
+				}
+			])
+		).toThrow(/exactly one primary light\/dark art pair/);
 	});
 
 	it('ships every challenge with an opaque 16:9 light/dark card-art pair', () => {

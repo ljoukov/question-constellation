@@ -4,7 +4,7 @@ import {
 	readChallengeProgress,
 	type ChallengeProgress
 } from '$lib/challenges/progress';
-import type { ChallengeProgressUpdatedDetail } from '$lib/challenges/progressSync';
+import type { ChallengeProgressUpdatedDetail } from '$lib/challenges/progressEvents';
 import {
 	mostRecentlyCompletedChallenge,
 	recommendedUnfinishedChallenge

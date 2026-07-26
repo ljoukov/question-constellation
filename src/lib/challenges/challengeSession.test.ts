@@ -150,6 +150,46 @@ describe('challenge session orbit state', () => {
 		]);
 	});
 
+	it('starts the replay run at the result instead of resetting after its memory beat', () => {
+		let session = recordRound(emptyChallengeSession(), 'challenge-1', 400, firstCompletedAt);
+		session = recordInterlude(
+			session,
+			'challenge-1',
+			'faded-examiner',
+			50,
+			'2026-07-22T10:01:00.000Z'
+		);
+		session = recordRound(session, 'challenge-2', 425, '2026-07-22T10:02:00.000Z');
+		session = recordInterlude(session, 'challenge-2', 'chain-echo', 50, '2026-07-22T10:03:00.000Z');
+
+		const replayResult = recordRound(session, 'challenge-1', 450, '2026-07-22T10:04:00.000Z');
+		expect(challengeSessionTotals(replayResult)).toEqual({
+			challengeCount: 1,
+			interludeCount: 0,
+			totalScore: 450,
+			currentOrbitNumber: 1,
+			currentOrbitPosition: 1,
+			orbitComplete: false
+		});
+
+		const replayBeat = recordChallengeInterludeCompletion({
+			session: replayResult,
+			challengeId: 'challenge-1',
+			challengeScore: 450,
+			mechanic: 'faded-examiner',
+			score: 50,
+			interludeCompletedAt: '2026-07-22T10:05:00.000Z'
+		});
+		expect(challengeSessionTotals(replayBeat)).toEqual({
+			challengeCount: 1,
+			interludeCount: 1,
+			totalScore: 500,
+			currentOrbitNumber: 1,
+			currentOrbitPosition: 1,
+			orbitComplete: false
+		});
+	});
+
 	it('starts a fresh orbit if the learner moves on before completing a memory beat', () => {
 		let session = recordRound(emptyChallengeSession(), 'challenge-1', 400, firstCompletedAt);
 		session = recordRound(session, 'challenge-2', 500, '2026-07-22T10:01:00.000Z');

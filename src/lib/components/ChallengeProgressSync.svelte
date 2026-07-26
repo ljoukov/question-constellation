@@ -1,13 +1,13 @@
 <script lang="ts">
 	import {
 		CHALLENGE_PROGRESS_UPDATED_EVENT,
-		importGuestChallengeProgress,
-		syncChallengeProgress,
 		type ChallengeProgressUpdatedDetail
-	} from '$lib/challenges/progressSync';
+	} from '$lib/challenges/progressEvents';
 	import type { ChallengeProgress } from '$lib/challenges/progress';
 	import type { AdminUser } from '$lib/server/auth/session';
 	import { untrack } from 'svelte';
+
+	type ProgressSyncModule = typeof import('$lib/challenges/progressSync');
 
 	let {
 		user,
@@ -22,6 +22,12 @@
 	let handledSnapshotUserId: string | null = null;
 	let handledSnapshotFingerprint: string | null = null;
 	let settledInitialUserId: string | null = null;
+	let progressSyncModulePromise: Promise<ProgressSyncModule> | null = null;
+
+	function loadProgressSyncModule(): Promise<ProgressSyncModule> {
+		progressSyncModulePromise ??= import('$lib/challenges/progressSync');
+		return progressSyncModulePromise;
+	}
 
 	function settleInitialAttempt(userId: string) {
 		if (settledInitialUserId === userId) return;
@@ -47,6 +53,9 @@
 			if (syncInFlight) return;
 			syncInFlight = true;
 			try {
+				const { importGuestChallengeProgress, syncChallengeProgress } =
+					await loadProgressSyncModule();
+				if (stopped) return;
 				if (!initialImportFinished) {
 					lastConfirmedProgress = await importGuestChallengeProgress(
 						userId,
@@ -110,11 +119,13 @@
 
 		handledSnapshotUserId = userId;
 		handledSnapshotFingerprint = incomingFingerprint;
-		void importGuestChallengeProgress(userId, window.localStorage, initialProgress).catch(
-			(error) => {
+		void loadProgressSyncModule()
+			.then(({ importGuestChallengeProgress }) =>
+				importGuestChallengeProgress(userId, window.localStorage, initialProgress)
+			)
+			.catch((error) => {
 				// The shared background-sync surface owns retry messaging.
 				console.warn('[challenge-progress-sync] snapshot reconciliation deferred', error);
-			}
-		);
+			});
 	});
 </script>

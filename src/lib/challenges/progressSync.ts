@@ -7,6 +7,7 @@ import {
 } from '$lib/requestFailure';
 import {
 	clearGuestChallengeProgress,
+	emptyChallengeProgress,
 	mergeChallengeProgress,
 	parseChallengeProgress,
 	readChallengeProgress,
@@ -14,15 +15,16 @@ import {
 	type ChallengeProgress,
 	type ChallengeProgressEntry
 } from './progress';
+import {
+	CHALLENGE_PROGRESS_UPDATED_EVENT,
+	type ChallengeProgressUpdatedDetail
+} from './progressEvents';
 
-export const CHALLENGE_PROGRESS_UPDATED_EVENT = 'qc:challenge-progress-updated';
 export const CHALLENGE_PROGRESS_SYNC_ENDPOINT = '/api/challenge-progress';
+export const CHALLENGE_PROGRESS_SYNC_MAX_REQUEST_BYTES = 60 * 1024;
 
-export type ChallengeProgressUpdatedDetail = {
-	userId: string | null;
-	progress: ChallengeProgress;
-	confirmed?: boolean;
-};
+export { CHALLENGE_PROGRESS_UPDATED_EVENT } from './progressEvents';
+export type { ChallengeProgressUpdatedDetail } from './progressEvents';
 
 export type ChallengeProgressStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
@@ -64,6 +66,49 @@ function recognizedProgress(progress: ChallengeProgress): ChallengeProgress {
 			Object.entries(progress.challenges).filter(([id]) => recognizedChallengeIds.has(id))
 		)
 	};
+}
+
+function progressRequestBody(progress: ChallengeProgress): string {
+	return JSON.stringify({ progress });
+}
+
+function utf8ByteLength(value: string): number {
+	return new TextEncoder().encode(value).byteLength;
+}
+
+/**
+ * Keep every upload below the API's 64 KiB request ceiling. The server merges
+ * each chunk monotonically, so a large account cache can be recovered without
+ * turning one oversized document into a permanent sync failure.
+ */
+export function challengeProgressRequestChunks(
+	progress: ChallengeProgress,
+	maxRequestBytes = CHALLENGE_PROGRESS_SYNC_MAX_REQUEST_BYTES
+): ChallengeProgress[] {
+	const chunks: ChallengeProgress[] = [];
+	let current = emptyChallengeProgress();
+
+	for (const [challengeId, entry] of Object.entries(progress.challenges)) {
+		const candidate: ChallengeProgress = {
+			version: 2,
+			challenges: { ...current.challenges, [challengeId]: entry }
+		};
+		if (utf8ByteLength(progressRequestBody(candidate)) <= maxRequestBytes) {
+			current = candidate;
+			continue;
+		}
+		if (Object.keys(current.challenges).length === 0) {
+			throw new Error(`Challenge progress entry ${challengeId} exceeds the sync request limit.`);
+		}
+		chunks.push(current);
+		current = { version: 2, challenges: { [challengeId]: entry } };
+		if (utf8ByteLength(progressRequestBody(current)) > maxRequestBytes) {
+			throw new Error(`Challenge progress entry ${challengeId} exceeds the sync request limit.`);
+		}
+	}
+
+	if (Object.keys(current.challenges).length > 0) chunks.push(current);
+	return chunks;
 }
 
 function serialiseForUser<T>(userId: string, task: () => Promise<T>): Promise<T> {
@@ -175,6 +220,24 @@ function progressConfirms(
 	return true;
 }
 
+function unconfirmedProgress(
+	confirmedProgress: ChallengeProgress,
+	candidateProgress: ChallengeProgress
+): ChallengeProgress {
+	return {
+		version: 2,
+		challenges: Object.fromEntries(
+			Object.entries(candidateProgress.challenges).filter(([challengeId, entry]) => {
+				const candidate = {
+					version: 2,
+					challenges: { [challengeId]: entry }
+				} satisfies ChallengeProgress;
+				return !progressConfirms(confirmedProgress, candidate);
+			})
+		)
+	};
+}
+
 async function responseProgress(response: Response): Promise<ChallengeProgress> {
 	if (!response.ok) {
 		throw await requestErrorFromResponse(response, 'Challenge progress sync failed.');
@@ -193,22 +256,33 @@ async function responseProgress(response: Response): Promise<ChallengeProgress> 
 async function postAndCacheProgress(
 	userId: string,
 	candidate: ChallengeProgress,
-	storage: ChallengeProgressStorage
+	storage: ChallengeProgressStorage,
+	initialConfirmed?: ChallengeProgress | null
 ): Promise<ChallengeProgress> {
 	const latestBeforeRequest = recognizedProgress(readChallengeProgress(storage, userId));
 	let outgoing = recognizedProgress(
 		mergeChallengeProgress(latestBeforeRequest, recognizedProgress(candidate))
 	);
+	let remote = recognizedProgress(
+		initialConfirmed ?? confirmedProgressByUser.get(userId) ?? emptyChallengeProgress()
+	);
 	// Preserve signed-in play locally even if this request fails.
 	writeChallengeProgress(outgoing, storage, userId);
 
 	while (true) {
-		const response = await fetchWithResponseTimeout(CHALLENGE_PROGRESS_SYNC_ENDPOINT, {
-			method: 'POST',
-			headers: { 'content-type': 'application/json' },
-			body: JSON.stringify({ progress: outgoing })
-		});
-		const remote = await responseProgress(response);
+		const pending = unconfirmedProgress(remote, outgoing);
+		for (const chunk of challengeProgressRequestChunks(pending)) {
+			const response = await fetchWithResponseTimeout(CHALLENGE_PROGRESS_SYNC_ENDPOINT, {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: progressRequestBody(chunk)
+			});
+			const responseState = await responseProgress(response);
+			if (!progressConfirms(responseState, chunk)) {
+				throw new Error('Challenge progress sync did not confirm every submitted result.');
+			}
+			remote = recognizedProgress(mergeChallengeProgress(remote, responseState));
+		}
 		if (!progressConfirms(remote, outgoing)) {
 			throw new Error('Challenge progress sync did not confirm every submitted result.');
 		}
@@ -243,8 +317,10 @@ function reportSyncFailure(userId: string, error: unknown, retry: () => Promise<
 }
 
 /**
- * Sends the complete account cache. Calls for the same user are serialized so
- * an older response cannot overwrite a newer local stage or personal best.
+ * Sends only state not covered by a known server confirmation, split into
+ * bounded requests when a complete cache import is required. Calls for the same
+ * user are serialized so an older response cannot overwrite a newer local
+ * stage or personal best.
  */
 export function syncChallengeProgress(
 	userId: string,
@@ -274,7 +350,7 @@ export function syncChallengeProgress(
 			return confirmed;
 		}
 		try {
-			return await postAndCacheProgress(uid, candidate, storage);
+			return await postAndCacheProgress(uid, candidate, storage, confirmed);
 		} catch (error) {
 			reportSyncFailure(uid, error, () =>
 				syncChallengeProgress(uid, undefined, storage, confirmedProgress)
@@ -336,7 +412,7 @@ export function importGuestChallengeProgress(
 
 		try {
 			while (true) {
-				const merged = await postAndCacheProgress(uid, candidate, storage);
+				const merged = await postAndCacheProgress(uid, candidate, storage, seed);
 				const latestGuest = recognizedProgress(readChallengeProgress(storage));
 				if (progressConfirms(merged, latestGuest)) {
 					clearGuestChallengeProgress(storage);

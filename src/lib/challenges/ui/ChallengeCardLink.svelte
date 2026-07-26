@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { ArrowRight, Check } from '@lucide/svelte';
-	import type { PublicChallengePreviewDefinition } from '../authoredData';
-	import { challengeVisual, type ChallengeCardArt } from '../visuals';
+	import type { ChallengeCardArt } from '../visuals';
 	import ThemeAwareChallengeArt from './ThemeAwareChallengeArt.svelte';
 
 	let {
@@ -11,8 +10,8 @@
 		title,
 		meta,
 		markLabel,
-		visualChallenge,
 		art,
+		actionLabel,
 		complete = false,
 		balanced = false,
 		analyticsLabel,
@@ -23,19 +22,15 @@
 		title: string;
 		meta?: string;
 		markLabel?: string;
-		visualChallenge?: PublicChallengePreviewDefinition;
 		art?: ChallengeCardArt;
+		actionLabel?: string;
 		complete?: boolean;
 		balanced?: boolean;
 		analyticsLabel?: string;
 		onclick?: (event: MouseEvent) => void;
 	} = $props();
 
-	const visualArt = $derived(
-		visualChallenge ? challengeVisual(visualChallenge)?.cardArt : undefined
-	);
-	const shownArt = $derived(art ?? visualArt);
-	const showCardArt = $derived(Boolean(shownArt));
+	const showCardArt = $derived(Boolean(art));
 </script>
 
 <a
@@ -48,13 +43,13 @@
 >
 	{#if showCardArt}
 		<div class="card-visual">
-			{#if shownArt}
+			{#if art}
 				<ThemeAwareChallengeArt
-					src={shownArt.src}
-					darkSrc={shownArt.darkSrc}
-					alt={shownArt.alt}
-					width={shownArt.width}
-					height={shownArt.height}
+					src={art.src}
+					darkSrc={art.darkSrc}
+					alt={art.alt}
+					width={art.width}
+					height={art.height}
 					decorative
 				/>
 			{/if}
@@ -71,7 +66,7 @@
 		{#if meta}<small>{meta}</small>{/if}
 		<span class="card-action">
 			{#if complete}<span class="sr-only">Completed. </span>{/if}
-			<span>{complete ? 'Play again' : 'Play'}</span>
+			<span>{actionLabel ?? (complete ? 'Play again' : 'Play')}</span>
 			{#if complete}
 				<Check size={18} strokeWidth={2.4} aria-hidden="true" />
 			{:else}

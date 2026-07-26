@@ -14,6 +14,7 @@ export const CHALLENGE_PROGRESS_MAX_ENTRIES = challengeCatalog.length;
 export const CHALLENGE_PROGRESS_SCORE_VALUES = [400, 425, 450, 475, 500] as const;
 export const CHALLENGE_PROGRESS_FUTURE_TOLERANCE_MS = 5 * 60 * 1000;
 const challengeIds = new Set(challengeCatalog.map((challenge) => challenge.id));
+const challengeIdsJson = JSON.stringify([...challengeIds]);
 const challengeScores = new Set<number>(CHALLENGE_PROGRESS_SCORE_VALUES);
 const challengeStages = new Set<ChallengeProgressEntry['lastStage']>([
 	'showdown',
@@ -185,17 +186,18 @@ function progressFromRows(rows: ChallengeProgressRow[]): ChallengeProgress {
 }
 
 export async function getUserChallengeProgress(userId: string): Promise<ChallengeProgress> {
-	const knownChallengeIds = [...challengeIds];
-	const knownChallengePlaceholders = knownChallengeIds.map(() => '?').join(', ');
 	const rows = await queryPersonalRows<ChallengeProgressRow>(
 		`SELECT challenge_id, started_at, updated_at, completed_at, plays, last_stage,
 		        best_score, best_time_ms, last_score, last_time_ms
 		   FROM user_challenge_progress
 		  WHERE user_id = ?
-		    AND challenge_id IN (${knownChallengePlaceholders})
+		    AND challenge_id IN (
+		      SELECT CAST(value AS TEXT)
+		        FROM json_each(?)
+		    )
 		  ORDER BY updated_at DESC
 		  LIMIT ?`,
-		[userId, ...knownChallengeIds, CHALLENGE_PROGRESS_MAX_ENTRIES]
+		[userId, challengeIdsJson, CHALLENGE_PROGRESS_MAX_ENTRIES]
 	);
 	return progressFromRows(rows);
 }

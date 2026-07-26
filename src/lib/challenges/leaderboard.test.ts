@@ -80,14 +80,15 @@ describe('challenge leaderboard presentation', () => {
 			},
 			participantCount: 12
 		};
-		expect(
-			projectChallengeLeaderboard({
-				snapshot: outsideSnapshot,
-				score: 950,
-				completed: 2,
-				includeCurrentUser: true
-			}).projectedRank
-		).toBeNull();
+		const outsideProjection = projectChallengeLeaderboard({
+			snapshot: outsideSnapshot,
+			score: 950,
+			completed: 2,
+			includeCurrentUser: true
+		});
+		expect(outsideProjection.projectedRank).toBeNull();
+		expect(outsideProjection.nextRival).toBeNull();
+		expect(outsideProjection.pointsToNextRank).toBeNull();
 
 		const tiedSnapshot: ChallengeLeaderboardSnapshot = {
 			entries: [

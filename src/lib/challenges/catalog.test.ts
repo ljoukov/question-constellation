@@ -7,7 +7,12 @@ import {
 	challengeSubjects,
 	challengesForSubject
 } from './catalog';
-import { challengeIds, challengeRouteIdentities } from './catalogIdentity';
+import {
+	authoredChallengeRouteIdentities,
+	challengeIds,
+	challengeRouteIdentities,
+	generatedChallengeRouteIdentities
+} from './catalogIdentity';
 import type { ChallengeChoice } from './types';
 
 const expectedWeakAnswerKinds = {
@@ -150,21 +155,73 @@ function expectThreeChoicesWithOneCorrect(choices: ChallengeChoice[]): void {
 }
 
 describe('challenge launch catalog', () => {
-	it('contains exactly 30 Biology, 30 Chemistry and 32 Physics definitions', () => {
-		expect(challengeCatalog).toHaveLength(92);
+	it('preserves the authored 30/30/32 catalog and appends only a complete accepted release', () => {
+		expect(authoredChallengeRouteIdentities).toHaveLength(92);
+		expect(
+			authoredChallengeRouteIdentities.filter((challenge) => challenge.subject === 'biology')
+		).toHaveLength(30);
+		expect(
+			authoredChallengeRouteIdentities.filter((challenge) => challenge.subject === 'chemistry')
+		).toHaveLength(30);
+		expect(
+			authoredChallengeRouteIdentities.filter((challenge) => challenge.subject === 'physics')
+		).toHaveLength(32);
+		expect(
+			generatedChallengeRouteIdentities.length === 0 ||
+				generatedChallengeRouteIdentities.length === 408
+		).toBe(true);
+		if (generatedChallengeRouteIdentities.length > 0) {
+			expect(
+				generatedChallengeRouteIdentities.filter((challenge) => challenge.subject === 'biology')
+			).toHaveLength(136);
+			expect(
+				generatedChallengeRouteIdentities.filter((challenge) => challenge.subject === 'chemistry')
+			).toHaveLength(138);
+			expect(
+				generatedChallengeRouteIdentities.filter((challenge) => challenge.subject === 'physics')
+			).toHaveLength(134);
+		}
+		expect(challengeCatalog).toHaveLength(92 + generatedChallengeRouteIdentities.length);
 		expect(challengeCatalog.map((challenge) => challenge.id)).toEqual(challengeIds);
 		expect(challengeCatalog.map(({ id, slug, subject }) => ({ id, slug, subject }))).toEqual(
 			challengeRouteIdentities
 		);
-		expect(challengesForSubject('biology')).toHaveLength(30);
-		expect(challengesForSubject('chemistry')).toHaveLength(30);
-		expect(challengesForSubject('physics')).toHaveLength(32);
+		expect(challengesForSubject('biology')).toHaveLength(
+			30 +
+				generatedChallengeRouteIdentities.filter((challenge) => challenge.subject === 'biology')
+					.length
+		);
+		expect(challengesForSubject('chemistry')).toHaveLength(
+			30 +
+				generatedChallengeRouteIdentities.filter((challenge) => challenge.subject === 'chemistry')
+					.length
+		);
+		expect(challengesForSubject('physics')).toHaveLength(
+			32 +
+				generatedChallengeRouteIdentities.filter((challenge) => challenge.subject === 'physics')
+					.length
+		);
 	});
 
-	it('provides two question contexts per challenge for 60, 60 and 64 subject contexts', () => {
-		expect(challengesForSubject('biology').length * 2).toBe(60);
-		expect(challengesForSubject('chemistry').length * 2).toBe(60);
-		expect(challengesForSubject('physics').length * 2).toBe(64);
+	it('provides exactly two question contexts per authored or generated challenge', () => {
+		expect(challengesForSubject('biology').length * 2).toBe(
+			60 +
+				2 *
+					generatedChallengeRouteIdentities.filter((challenge) => challenge.subject === 'biology')
+						.length
+		);
+		expect(challengesForSubject('chemistry').length * 2).toBe(
+			60 +
+				2 *
+					generatedChallengeRouteIdentities.filter((challenge) => challenge.subject === 'chemistry')
+						.length
+		);
+		expect(challengesForSubject('physics').length * 2).toBe(
+			64 +
+				2 *
+					generatedChallengeRouteIdentities.filter((challenge) => challenge.subject === 'physics')
+						.length
+		);
 	});
 
 	it('uses unique ids, slugs and public paths', () => {

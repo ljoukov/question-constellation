@@ -3,8 +3,10 @@ import { error } from '@sveltejs/kit';
 import { getQuestionR2 } from './bindings';
 import { QUESTION_R2_BUCKET_NAME } from './cloudflareConfig';
 
-const R2_ROUTE_PREFIXES = ['papers/', 'chains/'];
+const R2_ROUTE_PREFIXES = ['papers/', 'chains/', 'challenges/'];
 const R2_KEY_PREFIX = 'images/';
+const CHALLENGE_ART_ROUTE =
+	/^challenges\/[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9]+(?:-[a-z0-9]+)*-(?:dark|light)-[a-f0-9]{16}\.webp$/;
 
 function contentTypeForKey(key: string): string {
 	const lowerKey = key.toLowerCase();
@@ -40,7 +42,9 @@ export function getR2ObjectKey(routeKey: string | undefined): string {
 	if (
 		!routeKey ||
 		!R2_ROUTE_PREFIXES.some((prefix) => routeKey.startsWith(prefix)) ||
-		routeKey.includes('..')
+		routeKey.includes('..') ||
+		routeKey.includes('\\') ||
+		(routeKey.startsWith('challenges/') && !CHALLENGE_ART_ROUTE.test(routeKey))
 	) {
 		throw error(404, 'Image not found.');
 	}

@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import { spawn } from 'node:child_process';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { constants as fsConstants } from 'node:fs';
+import { access, lstat, mkdir, mkdtemp, rm, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -20,7 +21,7 @@ import { pathToFileURL } from 'node:url';
  * @property {Theme[]} themes
  * @property {ScreenshotMode} screenshot
  * @property {boolean} screenshots
- * @property {string} chromeBin
+ * @property {string | null} chromeBin
  * @property {number} settleMs
  * @property {number} timeoutMs
  * @property {string} englishRoute
@@ -121,12 +122,12 @@ node scripts/validate-release-browser.mjs [options]
 
 Options:
   --base-url=http://127.0.0.1:5173
-  --output=docs/release-evidence/browser-validation
+  --output=docs/release-evidence/browser-validation  New absent repo-relative directory.
   --route=name:/pathname       Repeat to replace the default release-route matrix.
   --viewport=mobile,ipad,laptop
   --theme=light,dark
   --screenshot=viewport|full   Default: viewport.
-  --chrome-bin=/usr/bin/google-chrome
+  --chrome-bin=/path/to/chrome  Override automatic Chrome/Chromium discovery.
   --settle-ms=750
   --timeout-ms=20000
   --english-route=english-practice
@@ -148,13 +149,13 @@ async function main() {
 	}
 
 	const rootDir = process.cwd();
-	const outputDir = path.resolve(rootDir, options.output);
-	const screenshotDir = path.join(outputDir, 'screenshots');
 	const startedAt = new Date().toISOString();
+	resolveEvidenceOutput(rootDir, options.output);
 
 	await assertReachable(options.baseUrl);
-	await mkdir(outputDir, { recursive: true });
-	if (options.screenshots) await mkdir(screenshotDir, { recursive: true });
+	const { outputDir, outputLabel } = await createExclusiveEvidenceOutput(rootDir, options.output);
+	const screenshotDir = path.join(outputDir, 'screenshots');
+	if (options.screenshots) await mkdir(screenshotDir);
 
 	/** @type {ChromeController | null} */
 	let chrome = null;
@@ -186,14 +187,14 @@ async function main() {
 			}
 		}
 	} catch (error) {
-		fatalError = error instanceof Error ? error.stack || error.message : String(error);
+		fatalError = sanitizeFatalError(error);
 		console.error(fatalError);
 	} finally {
 		if (chrome) await chrome.close();
 	}
 
 	const failedCases = cases.filter((item) => item.status === 'failed');
-	const report = {
+	const report = sanitizeEvidenceValue({
 		schemaVersion: 1,
 		status: fatalError || failedCases.length > 0 ? 'failed' : 'passed',
 		startedAt,
@@ -201,8 +202,8 @@ async function main() {
 		baseUrl: safeUrl(options.baseUrl),
 		chrome: chrome
 			? {
-					binary: chrome.binary,
-					version: chrome.version,
+					binary: describeChromeBinary(chrome.binary),
+					version: sanitizeText(chrome.version),
 					headless: true
 				}
 			: null,
@@ -237,14 +238,22 @@ async function main() {
 				0
 			)
 		},
-		fatalError: fatalError ? sanitizeText(fatalError) : null,
+		fatalError,
 		cases
-	};
+	});
 
-	await writeFile(path.join(outputDir, 'report.json'), `${JSON.stringify(report, null, 2)}\n`);
-	await writeFile(path.join(outputDir, 'summary.md'), markdownSummary(report));
+	await writeExclusiveEvidenceFile(
+		path.join(outputDir, 'report.json'),
+		`${JSON.stringify(report, null, 2)}\n`,
+		'browser evidence report'
+	);
+	await writeExclusiveEvidenceFile(
+		path.join(outputDir, 'summary.md'),
+		markdownSummary(report),
+		'browser evidence summary'
+	);
 
-	console.log(`Evidence: ${path.relative(rootDir, path.join(outputDir, 'report.json'))}`);
+	console.log(`Evidence: ${sanitizeText(outputLabel)}/report.json`);
 	if (fatalError) process.exitCode = 1;
 	if (options.failOnIssues && failedCases.length > 0) process.exitCode = 1;
 }
@@ -963,7 +972,11 @@ async function captureScreenshot(cdp, outputPath, mode) {
 		};
 	}
 	const result = await cdp.send('Page.captureScreenshot', params);
-	await writeFile(outputPath, Buffer.from(result.data, 'base64'));
+	await writeExclusiveEvidenceFile(
+		outputPath,
+		Buffer.from(result.data, 'base64'),
+		'browser evidence screenshot'
+	);
 }
 
 /** @param {CdpClient} cdp @param {number} timeoutMs */
@@ -1089,8 +1102,201 @@ async function waitUntil(predicate, timeoutMs, intervalMs) {
 	throw lastError ?? new Error(`Condition did not become true within ${timeoutMs}ms.`);
 }
 
+/**
+ * @typedef {object} ChromeDiscoveryOptions
+ * @property {NodeJS.Platform} [platform]
+ * @property {NodeJS.ProcessEnv} [env]
+ * @property {string} [cwd]
+ * @property {string} [homeDir]
+ * @property {(candidate: string) => Promise<boolean>} [isExecutable]
+ */
+
+/**
+ * Resolve an explicit browser binary or discover Chrome/Chromium without invoking a shell.
+ *
+ * @param {string | null | undefined} explicitChromeBin
+ * @param {ChromeDiscoveryOptions} [discoveryOptions]
+ * @returns {Promise<string>}
+ */
+async function resolveChromeBinary(explicitChromeBin, discoveryOptions = {}) {
+	const platform = discoveryOptions.platform ?? process.platform;
+	const env = discoveryOptions.env ?? process.env;
+	const cwd = discoveryOptions.cwd ?? process.cwd();
+	const homeDir = discoveryOptions.homeDir ?? os.homedir();
+	const isExecutable =
+		discoveryOptions.isExecutable ?? ((candidate) => isExecutableFile(candidate, platform));
+
+	if (explicitChromeBin !== null && explicitChromeBin !== undefined) {
+		const value = explicitChromeBin.trim();
+		if (!value) {
+			throw new Error(
+				'--chrome-bin requires a Chrome or Chromium executable path or command name.'
+			);
+		}
+		const explicitCandidates = explicitChromeCandidates(value, {
+			platform,
+			env,
+			cwd,
+			homeDir
+		});
+		for (const candidate of explicitCandidates) {
+			if (await isExecutable(candidate)) return candidate;
+		}
+		throw new Error(
+			`Chrome/Chromium executable supplied via --chrome-bin was not found or is not executable: ${value}\n` +
+				`Pass a valid executable, for example --chrome-bin="${chromeBinaryExample(platform)}".`
+		);
+	}
+
+	const candidates = automaticChromeCandidates({ platform, env, homeDir });
+	for (const candidate of candidates) {
+		if (await isExecutable(candidate)) return candidate;
+	}
+
+	const pathStatus = environmentPath(env) ? 'the configured PATH' : 'an empty or missing PATH';
+	throw new Error(
+		`Unable to find a Chrome or Chromium executable. Checked ${pathStatus} and common ${platformName(platform)} install locations.\n` +
+			`Install Google Chrome/Chromium or pass its executable explicitly, for example --chrome-bin="${chromeBinaryExample(platform)}".`
+	);
+}
+
+/**
+ * @param {string} value
+ * @param {{platform: NodeJS.Platform, env: NodeJS.ProcessEnv, cwd: string, homeDir: string}} options
+ */
+function explicitChromeCandidates(value, options) {
+	const pathApi = options.platform === 'win32' ? path.win32 : path.posix;
+	const expanded =
+		value === '~' || value.startsWith('~/') || value.startsWith('~\\')
+			? pathApi.join(options.homeDir, value.slice(2))
+			: value;
+	const hasPath =
+		pathApi.isAbsolute(expanded) ||
+		expanded.includes('/') ||
+		(options.platform === 'win32' && expanded.includes('\\'));
+	if (hasPath) return [pathApi.resolve(options.cwd, expanded)];
+
+	return pathCommandCandidates([expanded], options.platform, options.env);
+}
+
+/**
+ * @param {{platform: NodeJS.Platform, env: NodeJS.ProcessEnv, homeDir: string}} options
+ */
+function automaticChromeCandidates({ platform, env, homeDir }) {
+	const commands =
+		platform === 'win32'
+			? ['chrome.exe', 'chromium.exe']
+			: ['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser'];
+	return deduplicate([
+		...pathCommandCandidates(commands, platform, env),
+		...commonChromeCandidates(platform, env, homeDir)
+	]);
+}
+
+/**
+ * @param {string[]} commands
+ * @param {NodeJS.Platform} platform
+ * @param {NodeJS.ProcessEnv} env
+ */
+function pathCommandCandidates(commands, platform, env) {
+	const pathApi = platform === 'win32' ? path.win32 : path.posix;
+	const delimiter = platform === 'win32' ? ';' : ':';
+	const directories = (environmentPath(env) ?? '')
+		.split(delimiter)
+		.map((directory) => directory.trim().replace(/^"(.*)"$/, '$1'))
+		.filter(Boolean);
+	return commands.flatMap((command) =>
+		directories.map((directory) => pathApi.join(directory, command))
+	);
+}
+
+/**
+ * @param {NodeJS.Platform} platform
+ * @param {NodeJS.ProcessEnv} env
+ * @param {string} homeDir
+ */
+function commonChromeCandidates(platform, env, homeDir) {
+	if (platform === 'darwin') {
+		const applications = [
+			['Google Chrome.app', 'Google Chrome'],
+			['Chromium.app', 'Chromium'],
+			['Google Chrome Beta.app', 'Google Chrome Beta'],
+			['Google Chrome Dev.app', 'Google Chrome Dev'],
+			['Google Chrome Canary.app', 'Google Chrome Canary']
+		];
+		return ['/Applications', path.posix.join(homeDir, 'Applications')].flatMap((root) =>
+			applications.map(([app, binary]) => path.posix.join(root, app, 'Contents', 'MacOS', binary))
+		);
+	}
+	if (platform === 'win32') {
+		const roots = [
+			environmentValue(env, 'PROGRAMFILES'),
+			environmentValue(env, 'PROGRAMFILES(X86)'),
+			environmentValue(env, 'LOCALAPPDATA')
+		].filter((root) => root !== undefined);
+		return roots.flatMap((root) => [
+			path.win32.join(root, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+			path.win32.join(root, 'Chromium', 'Application', 'chrome.exe')
+		]);
+	}
+	return [
+		'/usr/bin/google-chrome',
+		'/usr/bin/google-chrome-stable',
+		'/usr/bin/chromium',
+		'/usr/bin/chromium-browser',
+		'/usr/local/bin/google-chrome',
+		'/usr/local/bin/chromium',
+		'/snap/bin/chromium',
+		'/opt/google/chrome/chrome',
+		'/opt/chromium/chrome'
+	];
+}
+
+/** @param {NodeJS.ProcessEnv} env */
+function environmentPath(env) {
+	return environmentValue(env, 'PATH');
+}
+
+/** @param {NodeJS.ProcessEnv} env @param {string} name */
+function environmentValue(env, name) {
+	const key = Object.keys(env).find((candidate) => candidate.toUpperCase() === name);
+	return key ? env[key] : undefined;
+}
+
+/** @param {string} candidate @param {NodeJS.Platform} platform */
+async function isExecutableFile(candidate, platform) {
+	try {
+		const metadata = await stat(candidate);
+		if (!metadata.isFile()) return false;
+		await access(candidate, platform === 'win32' ? fsConstants.F_OK : fsConstants.X_OK);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+/** @param {NodeJS.Platform} platform */
+function platformName(platform) {
+	if (platform === 'darwin') return 'macOS';
+	if (platform === 'win32') return 'Windows';
+	if (platform === 'linux') return 'Linux';
+	return platform;
+}
+
+/** @param {NodeJS.Platform} platform */
+function chromeBinaryExample(platform) {
+	if (platform === 'darwin') {
+		return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+	}
+	if (platform === 'win32') {
+		return 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+	}
+	return '/usr/bin/google-chrome';
+}
+
 /** @param {RunOptions} runOptions @returns {Promise<ChromeController>} */
 async function launchChrome(runOptions) {
+	const chromeBin = await resolveChromeBinary(runOptions.chromeBin);
 	const profileDir = await mkdtemp(path.join(os.tmpdir(), 'qc-release-browser-'));
 	const args = [
 		'--headless=new',
@@ -1109,7 +1315,7 @@ async function launchChrome(runOptions) {
 		'--use-mock-keychain',
 		'about:blank'
 	];
-	const child = spawn(runOptions.chromeBin, args, { stdio: ['ignore', 'ignore', 'pipe'] });
+	const child = spawn(chromeBin, args, { stdio: ['ignore', 'ignore', 'pipe'] });
 	let stderr = '';
 	/** @type {ChromeDebugEndpoint | null} */
 	let endpoint = null;
@@ -1154,7 +1360,7 @@ async function launchChrome(runOptions) {
 		throw error;
 	}
 	return {
-		binary: runOptions.chromeBin,
+		binary: chromeBin,
 		version: version.Browser ?? 'unknown',
 		async newTarget() {
 			const response = await fetch(`http://127.0.0.1:${debug.port}/json/new?about%3Ablank`, {
@@ -1304,7 +1510,7 @@ function parseArgs(argv) {
 		themes: ['light', 'dark'],
 		screenshot: 'viewport',
 		screenshots: true,
-		chromeBin: '/usr/bin/google-chrome',
+		chromeBin: null,
 		settleMs: 750,
 		timeoutMs: 20_000,
 		englishRoute: 'english-practice',
@@ -1433,6 +1639,146 @@ function sameOrigin(url, baseUrl) {
 	}
 }
 
+/**
+ * Create a new repo-contained evidence directory without following symlinked output parents.
+ *
+ * @param {string} rootDir
+ * @param {string} output
+ */
+async function createExclusiveEvidenceOutput(rootDir, output) {
+	const { repositoryRoot, outputDir, outputLabel, relative } = resolveEvidenceOutput(
+		rootDir,
+		output
+	);
+	const rootStats = await safeLstat(repositoryRoot, 'repository root');
+	if (!rootStats || rootStats.isSymbolicLink() || !rootStats.isDirectory()) {
+		throw new Error('Repository root must be an existing non-symlink directory.');
+	}
+
+	const components = relative.split(path.sep);
+	let current = repositoryRoot;
+	for (const component of components.slice(0, -1)) {
+		current = path.join(current, component);
+		let stats = await safeLstat(current, 'evidence output parent');
+		if (!stats) {
+			try {
+				await mkdir(current);
+			} catch (error) {
+				if (filesystemErrorCode(error) !== 'EEXIST') {
+					throw safeFilesystemOperationError(
+						error,
+						'Could not create an evidence output parent directory'
+					);
+				}
+			}
+			stats = await safeLstat(current, 'evidence output parent');
+		}
+		if (!stats?.isDirectory() || stats.isSymbolicLink()) {
+			throw new Error('Evidence output parents must be real non-symlink directories.');
+		}
+	}
+
+	// Re-check the complete parent chain immediately before the exclusive final mkdir.
+	current = repositoryRoot;
+	for (const component of components.slice(0, -1)) {
+		current = path.join(current, component);
+		const stats = await safeLstat(current, 'evidence output parent');
+		if (!stats?.isDirectory() || stats.isSymbolicLink()) {
+			throw new Error('Evidence output parents must remain real non-symlink directories.');
+		}
+	}
+	try {
+		await mkdir(outputDir);
+	} catch (error) {
+		const code = filesystemErrorCode(error);
+		if (code === 'EEXIST' || code === 'ELOOP') {
+			throw new Error(`Evidence output already exists; choose a new output: ${outputLabel}`, {
+				cause: error
+			});
+		}
+		throw safeFilesystemOperationError(error, `Could not create evidence output ${outputLabel}`);
+	}
+	const outputStats = await safeLstat(outputDir, 'evidence output');
+	if (!outputStats?.isDirectory() || outputStats.isSymbolicLink()) {
+		throw new Error('Evidence output creation did not produce a real directory.');
+	}
+	return { outputDir, outputLabel };
+}
+
+/** @param {string} rootDir @param {string} output */
+function resolveEvidenceOutput(rootDir, output) {
+	if (typeof rootDir !== 'string' || rootDir.length === 0) {
+		throw new Error('Repository root must be a non-empty path.');
+	}
+	if (
+		typeof output !== 'string' ||
+		output.length === 0 ||
+		output.includes('\0') ||
+		path.isAbsolute(output) ||
+		path.win32.isAbsolute(output)
+	) {
+		throw invalidEvidenceOutputError();
+	}
+
+	const repositoryRoot = path.resolve(rootDir);
+	const outputDir = path.resolve(repositoryRoot, output);
+	const relative = path.relative(repositoryRoot, outputDir);
+	if (
+		!relative ||
+		relative === '..' ||
+		relative.startsWith(`..${path.sep}`) ||
+		path.isAbsolute(relative)
+	) {
+		throw invalidEvidenceOutputError();
+	}
+	const outputLabel = relative.split(path.sep).join('/');
+	return { repositoryRoot, outputDir, outputLabel, relative };
+}
+
+function invalidEvidenceOutputError() {
+	return new Error(
+		'--output must be a new repo-relative directory contained by the repository root.'
+	);
+}
+
+/** @param {string} filePath @param {string} label */
+async function safeLstat(filePath, label) {
+	try {
+		return await lstat(filePath);
+	} catch (error) {
+		if (filesystemErrorCode(error) === 'ENOENT') return null;
+		throw safeFilesystemOperationError(error, `Could not inspect the ${label}`);
+	}
+}
+
+/** @param {string} filePath @param {string | NodeJS.ArrayBufferView} contents @param {string} label */
+async function writeExclusiveEvidenceFile(filePath, contents, label) {
+	try {
+		await writeFile(filePath, contents, { flag: 'wx' });
+	} catch (error) {
+		const code = filesystemErrorCode(error);
+		if (code === 'EEXIST' || code === 'ELOOP') {
+			throw new Error(`${label} already exists or is a symbolic link; refusing to overwrite.`, {
+				cause: error
+			});
+		}
+		throw safeFilesystemOperationError(error, `Could not create the ${label}`);
+	}
+}
+
+/** @param {unknown} error @param {string} message */
+function safeFilesystemOperationError(error, message) {
+	const code = filesystemErrorCode(error);
+	return new Error(`${message}${code ? ` (${code})` : ''}.`);
+}
+
+/** @param {unknown} error */
+function filesystemErrorCode(error) {
+	return error && typeof error === 'object' && 'code' in error && typeof error.code === 'string'
+		? error.code
+		: null;
+}
+
 /** @param {string} value */
 function safeUrl(value) {
 	if (!value) return '';
@@ -1441,12 +1787,33 @@ function safeUrl(value) {
 		url.username = '';
 		url.password = '';
 		for (const key of [...url.searchParams.keys()]) {
-			if (/token|secret|key|auth|code|password/i.test(key)) url.searchParams.set(key, '<redacted>');
+			if (isSensitiveUrlParameter(key)) url.searchParams.set(key, '<redacted>');
 		}
-		return url.toString();
+		return sanitizeText(url.toString());
 	} catch {
 		return sanitizeText(value);
 	}
+}
+
+/** @param {unknown} error */
+function sanitizeFatalError(error) {
+	return sanitizeText(error instanceof Error ? error.stack || error.message : String(error));
+}
+
+/**
+ * Keep the browser identity useful without persisting a host-specific executable path.
+ *
+ * @param {unknown} value
+ */
+function describeChromeBinary(value) {
+	const leaf = String(value ?? '')
+		.split(/[\\/]+/)
+		.filter(Boolean)
+		.at(-1);
+	const descriptor = sanitizeText(leaf || 'Chrome/Chromium').replace(/[\r\n]/g, ' ');
+	return /^[A-Za-z]:$/.test(descriptor) || descriptor === '.' || descriptor === '..'
+		? 'Chrome/Chromium'
+		: descriptor;
 }
 
 /** @param {CdpResponseRecord | null} response */
@@ -1456,14 +1823,179 @@ function responseStatus(response) {
 
 /** @param {unknown} value */
 function sanitizeText(value) {
-	return String(value ?? '')
-		.replace(/Bearer\s+[A-Za-z0-9._~+/-]+=*/gi, 'Bearer <redacted>')
-		.replace(/([?&](?:token|secret|key|auth|code|password)=)[^&#\s]+/gi, '$1<redacted>')
+	let text = String(value ?? '');
+
+	text = text.replace(
+		/(["']?)((?:proxy-)?authorization|cookie|set-cookie)\1(\s*[:=]\s*)("(?:\\.|[^"\\\r\n])*"|'(?:\\.|[^'\\\r\n])*'|[^\r\n]*)/gi,
+		(_match, keyQuote, key, separator, assignedValue) =>
+			`${keyQuote}${key}${keyQuote}${separator}${redactedAssignedValue(assignedValue)}`
+	);
+
+	text = text.replace(
+		/(["']?)([A-Za-z_][A-Za-z0-9_]*)\1(\s*(?:=|:)\s*)("(?:\\.|[^"\\\r\n])*"|'(?:\\.|[^'\\\r\n])*'|[^\s,;}\]\r\n]+)/g,
+		(match, keyQuote, key, separator, assignedValue) =>
+			isSensitiveAssignmentName(key)
+				? `${keyQuote}${key}${keyQuote}${separator}${redactedAssignedValue(assignedValue)}`
+				: match
+	);
+
+	text = text
 		.replace(
-			/\b(CLOUDFLARE_API_TOKEN|CLOUDFLARE_ACCOUNT_ACCESS_TOKEN|GEMINI_API_KEY)=[^\s]+/gi,
-			'$1=<redacted>'
+			/-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----[\s\S]*?-----END (?:[A-Z ]+ )?PRIVATE KEY-----/gi,
+			'<redacted-private-key>'
 		)
-		.slice(0, 4000);
+		.replace(/\b(Bearer)\s+[A-Za-z0-9._~+/-]{4,}=*/gi, '$1 <redacted>')
+		.replace(/\b(Basic)\s+[A-Za-z0-9+/]{4,}={0,2}/gi, '$1 <redacted>')
+		.replace(
+			/(^|[^A-Za-z0-9_-])(?:sk-[A-Za-z0-9_-]{12,}|ghp_[A-Za-z0-9_]{12,}|github_pat_[A-Za-z0-9_]{12,}|xox[baprs]-[A-Za-z0-9-]{12,}|AKIA[A-Z0-9]{16}|AIza[A-Za-z0-9_-]{20,}|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,})/gm,
+			'$1<redacted-token>'
+		)
+		.replace(/\b[a-z][a-z0-9+.-]*:\/\/[^\s"'<>`]+/gi, redactCredentialedUrl)
+		.replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '<redacted-email>')
+		.replace(/[^\s@"'<>()[\]{}:,;]+@[^\s@"'<>()[\]{}:,;]+/gu, '<redacted-email>')
+		.replace(/([?&#])([^?&#=\s]+)=([^&#\s]*)/gi, (match, boundary, key) =>
+			isSensitiveUrlParameter(key) ? `${boundary}${key}=<redacted>` : match
+		);
+
+	return redactOperatorPaths(text).slice(0, 4000);
+}
+
+/**
+ * Apply the same last-mile policy to every page-derived string before evidence is serialized.
+ *
+ * @param {unknown} value
+ * @param {WeakSet<object>} [seen]
+ * @returns {any}
+ */
+function sanitizeEvidenceValue(value, seen = new WeakSet()) {
+	if (typeof value === 'string') return sanitizeText(value);
+	if (typeof value === 'bigint') return value.toString();
+	if (value === null || typeof value !== 'object') return value;
+	if (seen.has(value)) return '[circular evidence]';
+	seen.add(value);
+	try {
+		if (Array.isArray(value)) return value.map((item) => sanitizeEvidenceValue(item, seen));
+		if (value instanceof Date) return value.toISOString();
+		if (value instanceof Error) {
+			return {
+				name: sanitizeText(value.name),
+				message: sanitizeText(value.message),
+				stack: sanitizeFatalError(value),
+				...(value.cause === undefined ? {} : { cause: sanitizeEvidenceValue(value.cause, seen) })
+			};
+		}
+		const sanitized = {};
+		for (const key of Object.keys(value)) {
+			const sanitizedKeyBase = sanitizeText(key);
+			let sanitizedKey = sanitizedKeyBase;
+			let collisionIndex = 2;
+			while (Object.hasOwn(sanitized, sanitizedKey)) {
+				sanitizedKey = `${sanitizedKeyBase}#${collisionIndex}`;
+				collisionIndex += 1;
+			}
+			let propertyValue;
+			try {
+				propertyValue = Reflect.get(value, key);
+			} catch {
+				propertyValue = '[unavailable evidence]';
+			}
+			Object.defineProperty(sanitized, sanitizedKey, {
+				value: isSensitiveAssignmentName(key)
+					? '<redacted>'
+					: sanitizeEvidenceValue(propertyValue, seen),
+				enumerable: true,
+				configurable: true,
+				writable: true
+			});
+		}
+		return sanitized;
+	} finally {
+		seen.delete(value);
+	}
+}
+
+/** @param {string} value */
+function redactedAssignedValue(value) {
+	const quote =
+		value.length >= 2 && (value[0] === '"' || value[0] === "'") && value.at(-1) === value[0]
+			? value[0]
+			: '';
+	return quote ? `${quote}<redacted>${quote}` : '<redacted>';
+}
+
+/** @param {string} name */
+function isSensitiveAssignmentName(name) {
+	const normalized = normalizeSensitiveName(name);
+	return /(?:^|_)(?:api_?key|access_?key|private_?key|key|token|secret|password|passwd|passphrase|credentials?|auth(?:orization)?|cookie|session(?:_?id)?|signature|csrf|xsrf|otp|oauth_?state)(?:_|$)/i.test(
+		normalized
+	);
+}
+
+/** @param {string} name */
+function isSensitiveUrlParameter(name) {
+	const normalized = normalizeSensitiveName(name);
+	return /^(?:api_?key|access_?key|private_?key|key|access_?token|refresh_?token|id_?token|auth_?token|token|secret|client_?secret|password|passwd|passphrase|credentials?|auth(?:orization)?|cookie|session(?:_?id)?|signature|csrf|xsrf|otp|oauth_?state|code)$/i.test(
+		normalized
+	);
+}
+
+/** @param {string} name */
+function normalizeSensitiveName(name) {
+	return String(name)
+		.replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+		.replace(/[^A-Za-z0-9]+/g, '_')
+		.replace(/^_+|_+$/g, '')
+		.toLowerCase();
+}
+
+/** @param {string} value */
+function redactCredentialedUrl(value) {
+	const authorityStart = value.indexOf('://') + 3;
+	const suffixOffset = value.slice(authorityStart).search(/[/?#]/);
+	const authorityEnd = suffixOffset === -1 ? value.length : authorityStart + suffixOffset;
+	const authority = value.slice(authorityStart, authorityEnd);
+	const credentialSeparator = authority.lastIndexOf('@');
+	if (credentialSeparator === -1) return value;
+	return `${value.slice(0, authorityStart)}<redacted>@${authority.slice(credentialSeparator + 1)}${value.slice(authorityEnd)}`;
+}
+
+/** @param {string} value */
+function redactOperatorPaths(value) {
+	return value
+		.replace(
+			/\b[A-Za-z]:[\\/]+Users[\\/]+[^\\/\r\n"'<>:|]+[\\/]+AppData[\\/]+Local[\\/]+Temp(?=[\\/]|[\s"'<>:),\]}]|$)/gi,
+			'<temp-path>'
+		)
+		.replace(
+			/\b[A-Za-z]:[\\/]+(?:Windows[\\/]+Temp|Temp)(?=[\\/]|[\s"'<>:),\]}]|$)/gi,
+			'<temp-path>'
+		)
+		.replace(
+			/(?<![A-Za-z0-9._~-])\/(?:private\/)?var\/folders\/[^/\s"'<>()[\]{}:,;]+\/[^/\s"'<>()[\]{}:,;]+\/[A-Za-z](?=\/|[\s"'<>:),\]}]|$)/g,
+			'<temp-path>'
+		)
+		.replace(
+			/(?<![A-Za-z0-9._~-])\/(?:private\/tmp|var\/tmp|tmp)(?=\/|[\s"'<>:),\]}]|$)/g,
+			'<temp-path>'
+		)
+		.replace(/(?<![A-Za-z0-9._~-])\/(?:Users|home)\/[^/\\\s"'<>()[\]{}:,;]+/g, '<user-home>')
+		.replace(/\b[A-Za-z]:[\\/]+Users[\\/]+[^\\/\s"'<>()[\]{}:|]+/gi, '<user-home>')
+		.replace(/%USERPROFILE%(?=[\\/]|[\s"'<>:),\]}]|$)/gi, '<user-home>')
+		.replace(/(?<![A-Za-z0-9._~-])\/root(?=\/|[\s"'<>:),\]}]|$)/g, '<root-home>')
+		.replace(/(?<![A-Za-z0-9._~-])\/private(?=\/|[\s"'<>:),\]}]|$)/g, '<private-path>')
+		.replace(/(?<![A-Za-z0-9._~-])\/run\/user\/\d+(?=\/|[\s"'<>:),\]}]|$)/g, '<temp-path>')
+		.replace(
+			/(?:\\\/)+(?:Users|home|root|private|tmp|var|workspace|workspaces|Volumes|Applications|Library|opt|usr|etc|srv|mnt|media|data|app|build|runner|github|run)(?:(?:\\\/)+[^\s"'<>()[\]{}:,;\\]+)+/gi,
+			'<filesystem-path>'
+		)
+		.replace(
+			/(?<![A-Za-z0-9._~-])\/(?:workspace|workspaces|Volumes|Applications|Library|opt|usr|etc|srv|mnt|media|data|app|build|runner|github|var|run)(?:\/[^/\s"'<>()[\]{}:,;]+)+/g,
+			'<filesystem-path>'
+		)
+		.replace(
+			/(?<![A-Za-z0-9._~-])(?:[A-Za-z]:[\\/]+|\\\\[^\\/\r\n]+[\\/]+)[^\s"'`<>{}(),;]*/g,
+			'<filesystem-path>'
+		);
 }
 
 /** @param {string} value */
@@ -1539,10 +2071,16 @@ export {
 	captureScreenshot,
 	collectDomSummary,
 	collectLayoutEvidence,
+	createExclusiveEvidenceOutput,
 	delay,
+	describeChromeBinary,
 	evaluate,
 	forceTheme,
 	launchChrome,
+	parseArgs,
+	resolveChromeBinary,
+	sanitizeEvidenceValue,
+	sanitizeFatalError,
 	safeUrl,
 	sanitizeText,
 	settlePageAssets,
@@ -1552,4 +2090,11 @@ export {
 	waitUntil
 };
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+	try {
+		await main();
+	} catch (error) {
+		console.error(sanitizeFatalError(error));
+		process.exitCode = 1;
+	}
+}

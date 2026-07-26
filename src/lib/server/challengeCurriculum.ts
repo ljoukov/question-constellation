@@ -2,6 +2,7 @@ import type { ChallengeSubject } from '$lib/challenges/types';
 import { biologyCurriculumAliases } from '$lib/challenges/expansions/biology';
 import { chemistryCurriculumAliases } from '$lib/challenges/expansions/chemistry';
 import { physicsCurriculumAliases } from '$lib/challenges/expansions/physics';
+import { generatedScienceChallengeCurriculum } from '$lib/challenges/generatedRuntime';
 
 export const ENGLAND_KS4_SCIENCE_CONTEXT_URL =
 	'https://www.gov.uk/government/publications/national-curriculum-in-england-science-programmes-of-study/national-curriculum-in-england-science-programmes-of-study#key-stage-4';
@@ -32,6 +33,24 @@ const AQA_CHEMISTRY_CHEMICAL_ANALYSIS_URL =
 	'https://www.aqa.org.uk/subjects/chemistry/gcse/chemistry-8462/specification/subject-content/chemical-analysis';
 
 const VERIFIED_AT = '2026-07-21' as const;
+
+const GENERATED_SPECIFICATION_URLS: Record<ChallengeSubject, string> = {
+	biology:
+		'https://www.aqa.org.uk/subjects/biology/gcse/biology-8461/specification/subject-content',
+	chemistry:
+		'https://www.aqa.org.uk/subjects/chemistry/gcse/chemistry-8462/specification/subject-content',
+	physics: 'https://www.aqa.org.uk/subjects/physics/gcse/physics-8463/specification/subject-content'
+};
+
+const GENERATED_SPECIFICATION_LABELS: Record<ChallengeSubject, string> = {
+	biology: 'AQA GCSE Biology subject content',
+	chemistry: 'AQA GCSE Chemistry subject content',
+	physics: 'AQA GCSE Physics subject content'
+};
+
+const generatedCurriculumByChallengeId = new Map(
+	generatedScienceChallengeCurriculum.map((row) => [row.id, row])
+);
 
 export type ChallengeCurriculumReference = {
 	subject: ChallengeSubject;
@@ -577,7 +596,14 @@ export function publicChallengeCurriculumLink(
 	subject?: ChallengeSubject
 ): PublicChallengeCurriculumLink | undefined {
 	const reference = resolveChallengeCurriculumReference(challengeId, subject);
-	if (!reference) return undefined;
+	if (!reference) {
+		const generated = generatedCurriculumByChallengeId.get(challengeId);
+		if (!generated || (subject && generated.subject !== subject)) return undefined;
+		return {
+			topicLabel: `${generated.specRef} ${generated.topicLabel}`,
+			officialUrl: GENERATED_SPECIFICATION_URLS[generated.subject]
+		};
+	}
 
 	return {
 		topicLabel: reference.topicLabel,
@@ -589,7 +615,16 @@ export function publicChallengeCurriculumLinks(
 	challenges: ReadonlyArray<{ id: string; subject: ChallengeSubject }>
 ): PublicChallengeCurriculumLink[] {
 	const links = challenges
-		.map(({ id, subject }) => publicChallengeCurriculumLink(id, subject))
+		.map(({ id, subject }) => {
+			const generated = generatedCurriculumByChallengeId.get(id);
+			if (generated && generated.subject === subject) {
+				return {
+					topicLabel: GENERATED_SPECIFICATION_LABELS[subject],
+					officialUrl: GENERATED_SPECIFICATION_URLS[subject]
+				};
+			}
+			return publicChallengeCurriculumLink(id, subject);
+		})
 		.filter((link): link is PublicChallengeCurriculumLink => Boolean(link));
 
 	return [

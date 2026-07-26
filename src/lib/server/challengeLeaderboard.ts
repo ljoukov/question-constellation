@@ -85,7 +85,6 @@ export async function getChallengeLeaderboard({
 		return { entries: [], currentUserEntry: null, participantCount: 0 };
 	}
 
-	const placeholders = ids.map(() => '?').join(', ');
 	const normalizedCurrentUserId = currentUserId?.trim() ?? '';
 	const rows = await queryPersonalRows<LeaderboardRow>(
 		`WITH learner_scores AS (
@@ -94,7 +93,10 @@ export async function getChallengeLeaderboard({
 		          COUNT(*) AS completed_count
 		     FROM user_challenge_progress
 		    WHERE best_score IS NOT NULL
-		      AND challenge_id IN (${placeholders})
+		      AND challenge_id IN (
+		        SELECT CAST(value AS TEXT)
+		          FROM json_each(?)
+		      )
 		    GROUP BY user_id
 		 ),
 		 ranked AS (
@@ -112,7 +114,7 @@ export async function getChallengeLeaderboard({
 		  WHERE rank <= ? OR user_id = ?
 		  ORDER BY rank ASC
 		  LIMIT ?`,
-		[...ids, safeLimit, normalizedCurrentUserId, safeLimit + 1]
+		[JSON.stringify(ids), safeLimit, normalizedCurrentUserId, safeLimit + 1]
 	);
 
 	const mapped = await Promise.all(

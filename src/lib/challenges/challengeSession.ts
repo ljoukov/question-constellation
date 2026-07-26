@@ -151,6 +151,16 @@ export function recordChallengeRound({
 		(round) => round.challengeId === normalizedChallengeId
 	);
 	if (existingRoundIndex >= 0) {
+		const existingRound = activeSession.rounds[existingRoundIndex];
+		if (
+			existingRound?.interludeCompletedAt ||
+			existingRoundIndex !== activeSession.rounds.length - 1
+		) {
+			// A completed challenge-plus-beat pair cannot become the active tail
+			// again without breaking chronological session order. Start the new
+			// run at the replay result so its checkpoint does not reset later.
+			return newChallengeSessionRound(normalizedChallengeId, score, timestamp);
+		}
 		const rounds = activeSession.rounds.map((round, index) =>
 			index === existingRoundIndex && score > round.score ? { ...round, score } : round
 		);

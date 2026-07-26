@@ -6,7 +6,7 @@
 	import {
 		CHALLENGE_PROGRESS_UPDATED_EVENT,
 		type ChallengeProgressUpdatedDetail
-	} from '$lib/challenges/progressSync';
+	} from '$lib/challenges/progressEvents';
 	import {
 		mostRecentlyCompletedChallenge,
 		recommendedUnfinishedChallenge

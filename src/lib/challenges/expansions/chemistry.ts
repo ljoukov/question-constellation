@@ -744,7 +744,7 @@ export const chemistryExpansion = [
 		title: 'How can two water samples be compared fairly?',
 		topic: 'Chemical analysis: dissolved solids in water',
 		subjectArtTheme: 'practical-analysis',
-		hook: 'Equal starting volumes and dry residues turn two final masses into a fair comparison.',
+		hook: 'Two residue masses look decisive — until the sample volumes stop matching.',
 		arc: 'complete-the-method',
 		mechanic: 'missing-link',
 		difficulty: 'standard',

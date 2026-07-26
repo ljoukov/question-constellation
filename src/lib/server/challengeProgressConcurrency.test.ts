@@ -217,8 +217,8 @@ describe('challenge progress concurrent merges', () => {
 				user_id, schema_version, payload_json, source_revision, snapshot_revision
 			) VALUES (
 				'learner-projection-race',
-					3,
-					'{"version":3,"subjectViews":[],"challengeProgress":{"version":2,"challenges":{}},"challengeRecommendation":null,"challengeCompletedCount":0,"challengeTotalBestScore":0}',
+					4,
+					'{"version":4,"subjectViews":[],"challengeProgress":{"version":2,"challenges":{}},"challengeCompletedCount":0,"challengeTotalBestScore":0}',
 				0,
 				0
 			);

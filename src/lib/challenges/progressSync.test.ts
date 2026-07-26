@@ -5,7 +5,12 @@ import {
 	type ChallengeProgress,
 	type ChallengeProgressEntry
 } from './progress';
-import { importGuestChallengeProgress, syncChallengeProgress } from './progressSync';
+import {
+	CHALLENGE_PROGRESS_SYNC_MAX_REQUEST_BYTES,
+	challengeProgressRequestChunks,
+	importGuestChallengeProgress,
+	syncChallengeProgress
+} from './progressSync';
 
 function entry(overrides: Partial<ChallengeProgressEntry> = {}): ChallengeProgressEntry {
 	return {
@@ -184,12 +189,32 @@ describe('challenge progress sync', () => {
 		const outgoing = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)) as {
 			progress: ChallengeProgress;
 		};
-		expect(Object.keys(outgoing.progress.challenges).sort()).toEqual([
-			'biology-cell-differences',
-			'biology-data-conclusions'
-		]);
+		expect(Object.keys(outgoing.progress.challenges)).toEqual(['biology-cell-differences']);
 		expect(merged.challenges['biology-cell-differences']?.bestScore).toBe(500);
 		expect(storage.values.has(CHALLENGE_PROGRESS_GUEST_STORAGE_KEY)).toBe(false);
+	});
+
+	it('splits a 500-entry account cache into requests below the API byte ceiling', () => {
+		const largeProgress: ChallengeProgress = {
+			version: 2,
+			challenges: Object.fromEntries(
+				Array.from({ length: 500 }, (_, index) => [
+					`science-challenge-${String(index).padStart(4, '0')}`,
+					entry()
+				])
+			)
+		};
+
+		const chunks = challengeProgressRequestChunks(largeProgress);
+		const uploadedIds = chunks.flatMap((chunk) => Object.keys(chunk.challenges));
+
+		expect(chunks.length).toBeGreaterThan(1);
+		expect(uploadedIds).toEqual(Object.keys(largeProgress.challenges));
+		for (const chunk of chunks) {
+			expect(
+				new TextEncoder().encode(JSON.stringify({ progress: chunk })).byteLength
+			).toBeLessThanOrEqual(CHALLENGE_PROGRESS_SYNC_MAX_REQUEST_BYTES);
+		}
 	});
 
 	it('acknowledges and removes retired guest ids without a poison-loop request', async () => {
