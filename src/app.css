@@ -13096,7 +13096,7 @@ html[data-theme='dark'] .app-shell {
 }
 
 .qc-chain-result li.missing > svg {
-	color: #a15b12;
+	color: var(--qc-ui-danger);
 }
 
 .qc-chain-result-index {
@@ -13109,10 +13109,23 @@ html[data-theme='dark'] .app-shell {
 }
 
 .qc-inline-gap-link {
-	color: #0d5a3f;
+	color: var(--qc-ui-accent-text);
 	font-size: 0.82rem;
 	font-weight: 560;
+	text-decoration: none;
+	text-decoration-thickness: 0.08em;
+	text-underline-offset: 0.16em;
 	white-space: nowrap;
+}
+
+.qc-inline-gap-link:hover,
+.qc-inline-gap-link:focus-visible {
+	text-decoration-line: underline;
+}
+
+.qc-inline-gap-link:focus-visible {
+	outline: 2px solid var(--qc-ui-focus-ring);
+	outline-offset: 3px;
 }
 
 .qc-quick-recall {
