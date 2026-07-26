@@ -205,6 +205,7 @@
 			gradePhase === 'thinking' ||
 			gradePhase === 'grading'
 	);
+	const rewriteCheckPending = $derived(checkingRewrite);
 	const canCheck = $derived(answerText.trim().length > 0 && !isChecking);
 	const statusText = $derived(statusLabelForPhase(gradePhase));
 	const statusDescription = $derived(statusDescriptionForPhase(gradePhase));
@@ -259,9 +260,9 @@
 				? 'Back to answer'
 				: data.user && requestedReturnTo?.startsWith('/questions/')
 					? 'Back to question'
-				: requestedReturnTo
-					? `Back to ${topbarSubject}`
-					: 'Back to question'
+					: requestedReturnTo
+						? `Back to ${topbarSubject}`
+						: 'Back to question'
 	);
 	const completionHref = $derived(
 		requestedReturnTo ? resolveInternalPath(requestedReturnTo) : constellationHref
@@ -273,9 +274,9 @@
 				? 'Back to answer'
 				: requestedReturnTo?.startsWith('/questions/')
 					? 'Back to question'
-				: requestedReturnTo
-					? `Continue in ${topbarSubject}`
-					: 'See related questions'
+					: requestedReturnTo
+						? `Continue in ${topbarSubject}`
+						: 'See related questions'
 	);
 	const topbarSubjects = [...BROWSE_SUBJECTS];
 	const answerRows = $derived(
@@ -774,7 +775,7 @@
 
 	async function checkRewrite() {
 		const rewrittenAnswer = rewriteText.trim();
-		if (!rewrittenAnswer || isChecking) return;
+		if (!rewrittenAnswer || isChecking || checkingRewrite) return;
 		answerText = rewrittenAnswer;
 		answerExternalInputSources = [...rewriteExternalInputSources];
 		pendingAttemptId = '';
@@ -1206,13 +1207,15 @@
 					>
 						<p class="qc-real-kicker"><MathText text={data.question.sourceRef} /></p>
 						<h2>
-							{choiceNeedsRetry
-								? 'Not quite'
-								: hasMissingLinks
-									? resultTitle
-									: `${gradeResult?.awardedMarks ?? 0}/${gradeResult?.maxMarks ?? data.question.meta.marks} marks`}
+							{rewriteCheckPending
+								? 'Rewrite submitted'
+								: choiceNeedsRetry
+									? 'Not quite'
+									: hasMissingLinks
+										? resultTitle
+										: `${gradeResult?.awardedMarks ?? 0}/${gradeResult?.maxMarks ?? data.question.meta.marks} marks`}
 						</h2>
-						{#if hasMissingLinks}
+						{#if !rewriteCheckPending && hasMissingLinks}
 							<p class="qc-practice-result-meta">
 								<strong>
 									{gradeResult?.awardedMarks ?? 0}/{gradeResult?.maxMarks ??
@@ -1222,7 +1225,7 @@
 								Complete the missing links below.
 							</p>
 						{/if}
-						{#if gradeResult?.evidence?.externalInputDetected}
+						{#if !rewriteCheckPending && gradeResult?.evidence?.externalInputDetected}
 							<p class="qc-assisted-evidence-note">
 								Paste and drop are blocked here. Type the answer yourself; this attempted input is
 								not counted as independent evidence.
@@ -1256,29 +1259,42 @@
 						/>
 					{/if}
 
-					{#if resultPresentation.showStepDiagnostics}
-						<section class="qc-chain-result" aria-label="Checked answer chain">
+					{#if resultPresentation.showStepDiagnostics || rewriteCheckPending}
+						<section
+							class="qc-chain-result"
+							aria-label={rewriteCheckPending
+								? 'Answer chain update in progress'
+								: 'Checked answer chain'}
+							aria-busy={rewriteCheckPending}
+						>
 							<p class="qc-panel-label">Answer chain</p>
 							<ol>
 								{#each data.chain.steps as step, index (step.id)}
 									{@const gapHref = gapHrefByStepId.get(step.id)}
 									<li
-										class:present={presentStepIds.has(step.id)}
-										class:missing={missingStepIds.has(step.id)}
+										class:present={!rewriteCheckPending && presentStepIds.has(step.id)}
+										class:missing={!rewriteCheckPending && missingStepIds.has(step.id)}
 									>
 										<span class="qc-chain-result-index">{index + 1}</span>
-										{#if presentStepIds.has(step.id)}
+										{#if rewriteCheckPending}
+											<span class="loading-spinner qc-chain-result-spinner" aria-hidden="true"
+											></span>
+										{:else if presentStepIds.has(step.id)}
 											<CheckCircle2 size={18} aria-hidden="true" />
 										{:else}
 											<CircleAlert size={18} aria-hidden="true" />
 										{/if}
 										<span>
 											<span class="sr-only">
-												{presentStepIds.has(step.id) ? 'Present: ' : 'Missing: '}
+												{rewriteCheckPending
+													? 'Step: '
+													: presentStepIds.has(step.id)
+														? 'Present: '
+														: 'Missing: '}
 											</span>
 											<MathText text={step.short} />
 										</span>
-										{#if missingStepIds.has(step.id) && gapHref}
+										{#if !rewriteCheckPending && missingStepIds.has(step.id) && gapHref}
 											<a class="qc-inline-gap-link" href={resolveInternalPath(gapHref)}>
 												Practise this step
 											</a>
@@ -1307,12 +1323,18 @@
 							<div class="qc-practice-actions">
 								<button
 									class="qc-action-button primary"
+									class:qc-rewrite-checking={rewriteCheckPending}
 									type="button"
 									onclick={checkRewrite}
-									disabled={!rewriteText.trim() || isChecking}
+									disabled={!rewriteText.trim() || isChecking || rewriteCheckPending}
+									aria-busy={rewriteCheckPending}
 								>
-									<CheckCircle2 size={18} aria-hidden="true" />
-									{isChecking ? 'Checking...' : 'Check rewrite'}
+									{#if rewriteCheckPending}
+										<span class="loading-spinner button-spinner" aria-hidden="true"></span>
+									{:else}
+										<CheckCircle2 size={18} aria-hidden="true" />
+									{/if}
+									{rewriteCheckPending ? 'Checking...' : 'Check rewrite'}
 								</button>
 							</div>
 						{:else}
@@ -1342,7 +1364,7 @@
 						</div>
 					{/if}
 
-					{#if recallPrompt && hasMissingLinks}
+					{#if !rewriteCheckPending && recallPrompt && hasMissingLinks}
 						<section class="qc-quick-recall">
 							<div>
 								<p class="qc-panel-label">Quick recall</p>
@@ -1354,7 +1376,22 @@
 						</section>
 					{/if}
 
-					{#if feedbackMarkdown}
+					{#if rewriteCheckPending}
+						<section
+							class="qc-practice-detail qc-practice-feedback-pending"
+							aria-label="Detailed feedback"
+							aria-live="polite"
+							aria-busy="true"
+						>
+							<div class="qc-practice-feedback-status">
+								<span>Detailed feedback</span>
+								<span class="qc-working-ellipsis" aria-hidden="true">
+									<span>.</span><span>.</span><span>.</span>
+								</span>
+								<span class="sr-only">Working</span>
+							</div>
+						</section>
+					{:else if feedbackMarkdown}
 						<details class="qc-practice-detail">
 							<summary>
 								Detailed feedback
