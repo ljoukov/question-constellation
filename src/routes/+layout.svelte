@@ -20,7 +20,7 @@
 	import ConnectionStatus from '$lib/components/ConnectionStatus.svelte';
 	import ChallengeProgressSync from '$lib/components/ChallengeProgressSync.svelte';
 	import HomeSnapshotRefresh from '$lib/components/HomeSnapshotRefresh.svelte';
-	import LocalLearnerStateSync from '$lib/components/LocalLearnerStateSync.svelte';
+	import GuestLearnerStateSync from '$lib/components/GuestLearnerStateSync.svelte';
 	import {
 		createHomeSnapshotBootstrapState,
 		homeSnapshotBootstrapReady,
@@ -192,7 +192,7 @@
 			snapshot={data.homeSnapshot}
 			bootstrapReady={canRefreshHomeSnapshot}
 		/>
-		<LocalLearnerStateSync
+		<GuestLearnerStateSync
 			user={data.user}
 			onInitialSettled={(userId) => settleHomeSnapshotBootstrap(userId, 'profile')}
 		/>

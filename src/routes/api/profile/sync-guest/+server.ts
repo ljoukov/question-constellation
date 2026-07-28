@@ -3,7 +3,7 @@ import {
 	parseAnonymousLearnerProfile
 } from '$lib/anonymousLearnerProfile';
 import {
-	getLearnerProfileSettingsForLocalImport,
+	getLearnerProfileSettingsForGuestSync,
 	updateEnglishLiteratureSelections,
 	updateLearnerSubjects
 } from '$lib/server/personalLearning';
@@ -15,9 +15,9 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 	const profile = parseAnonymousLearnerProfile(body?.profile);
 	if (!profile) return json({ error: 'invalid_profile' }, { status: 400 });
 
-	const { settings, persistedSubjectNames, localProfileImportPending } =
-		await getLearnerProfileSettingsForLocalImport(locals.user);
-	const initializePrimaryProfile = localProfileImportPending;
+	const { settings, persistedSubjectNames, guestProfileSyncPending } =
+		await getLearnerProfileSettingsForGuestSync(locals.user);
+	const initializePrimaryProfile = guestProfileSyncPending;
 	const establishedSubjectNames = initializePrimaryProfile
 		? persistedSubjectNames
 		: [...new Set([...persistedSubjectNames, settings.profile.selectedSubject])];

@@ -208,8 +208,8 @@ export async function recordAnalyticsBatch(args: {
 				screen_height, cf_json, request_headers_json, event_count, page_view_count, engaged_ms,
 				environment, app_version, connection_effective_type, connection_downlink_mbps,
 				connection_rtt_ms, connection_save_data, device_memory_gb, hardware_concurrency,
-				traffic_class, traffic_source, traffic_detail, classification_version, classified_at
-			) VALUES (${Array.from({ length: 52 }, () => '?').join(', ')})
+				traffic_class, traffic_source, traffic_detail
+			) VALUES (${Array.from({ length: 50 }, () => '?').join(', ')})
 			ON CONFLICT(session_id) DO UPDATE SET
 				last_seen_at = excluded.last_seen_at,
 				user_id = COALESCE(excluded.user_id, analytics_sessions.user_id),
@@ -242,9 +242,7 @@ export async function recordAnalyticsBatch(args: {
 				hardware_concurrency = COALESCE(excluded.hardware_concurrency, analytics_sessions.hardware_concurrency),
 				traffic_class = excluded.traffic_class,
 				traffic_source = excluded.traffic_source,
-				traffic_detail = excluded.traffic_detail,
-				classification_version = excluded.classification_version,
-				classified_at = excluded.classified_at`,
+				traffic_detail = excluded.traffic_detail`,
 		params: [
 			payload.sessionId,
 			payload.anonymousId,
@@ -295,9 +293,7 @@ export async function recordAnalyticsBatch(args: {
 			integer(context.hardwareConcurrency, 0, 10_000),
 			traffic.trafficClass,
 			traffic.source,
-			traffic.detail,
-			traffic.version,
-			receivedAt
+			traffic.detail
 		]
 	};
 

@@ -163,7 +163,7 @@ describe('study-card 17-offering browser harness', () => {
 		).toBe('learner-model-or-grade');
 		expect(
 			classifyUnexpectedApiWrite(
-				{ method: 'POST', url: `${baseUrl}/api/profile/import-local` },
+				{ method: 'POST', url: `${baseUrl}/api/profile/sync-guest` },
 				baseUrl
 			)
 		).toBe('unexpected-api-write');

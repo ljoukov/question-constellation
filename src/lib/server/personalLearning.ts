@@ -44,7 +44,7 @@ type UserProfileRow = {
 	selected_subject: string;
 	selected_tier: string;
 	theme_preference: string | null;
-	local_profile_import_pending: number;
+	guest_profile_sync_pending: number;
 	created_at: string;
 	updated_at: string;
 	last_seen_at: string;
@@ -755,7 +755,7 @@ function gapBandLabel(value: string): string {
 async function readUserProfile(userId: string): Promise<UserProfile> {
 	const row = await queryPersonalFirst<UserProfileRow>(
 		`SELECT uid, email, name, photo_url, selected_board, selected_qualification,
-		        selected_subject, selected_tier, theme_preference, local_profile_import_pending,
+		        selected_subject, selected_tier, theme_preference, guest_profile_sync_pending,
 		        created_at, updated_at, last_seen_at
 		 FROM user_profiles
 		 WHERE uid = ?`,
@@ -782,10 +782,10 @@ export async function upsertUserProfile(user: AdminUser): Promise<UserProfile> {
 
 async function getOrCreateUserProfileState(
 	user: AdminUser
-): Promise<{ profile: UserProfile; localProfileImportPending: boolean }> {
+): Promise<{ profile: UserProfile; guestProfileSyncPending: boolean }> {
 	const existing = await queryPersonalFirst<UserProfileRow>(
 		`SELECT uid, email, name, photo_url, selected_board, selected_qualification,
-		        selected_subject, selected_tier, theme_preference, local_profile_import_pending,
+		        selected_subject, selected_tier, theme_preference, guest_profile_sync_pending,
 		        created_at, updated_at, last_seen_at
 		 FROM user_profiles
 		 WHERE uid = ?`,
@@ -794,7 +794,7 @@ async function getOrCreateUserProfileState(
 	if (existing) {
 		return {
 			profile: toProfile(existing),
-			localProfileImportPending: existing.local_profile_import_pending === 1
+			guestProfileSyncPending: existing.guest_profile_sync_pending === 1
 		};
 	}
 
@@ -804,18 +804,18 @@ async function getOrCreateUserProfileState(
 		 ON CONFLICT(uid) DO NOTHING
 		 RETURNING uid, email, name, photo_url, selected_board, selected_qualification,
 		           selected_subject, selected_tier, theme_preference,
-		           local_profile_import_pending, created_at, updated_at, last_seen_at`,
+		           guest_profile_sync_pending, created_at, updated_at, last_seen_at`,
 		[user.uid, user.email, user.name, user.photoUrl]
 	);
 	if (inserted) {
 		return {
 			profile: toProfile(inserted),
-			localProfileImportPending: inserted.local_profile_import_pending === 1
+			guestProfileSyncPending: inserted.guest_profile_sync_pending === 1
 		};
 	}
 	const concurrent = await queryPersonalFirst<UserProfileRow>(
 		`SELECT uid, email, name, photo_url, selected_board, selected_qualification,
-		        selected_subject, selected_tier, theme_preference, local_profile_import_pending,
+		        selected_subject, selected_tier, theme_preference, guest_profile_sync_pending,
 		        created_at, updated_at, last_seen_at
 		 FROM user_profiles
 		 WHERE uid = ?`,
@@ -824,7 +824,7 @@ async function getOrCreateUserProfileState(
 	if (!concurrent) throw new Error(`User profile was not created for ${user.uid}`);
 	return {
 		profile: toProfile(concurrent),
-		localProfileImportPending: concurrent.local_profile_import_pending === 1
+		guestProfileSyncPending: concurrent.guest_profile_sync_pending === 1
 	};
 }
 
@@ -874,7 +874,7 @@ export async function updateUserPreferences({
 	await executePersonalQuery(
 		`UPDATE user_profiles
 		 SET selected_board = ?, selected_qualification = 'GCSE', selected_subject = ?,
-		     selected_tier = ?, local_profile_import_pending = 0,
+		     selected_tier = ?, guest_profile_sync_pending = 0,
 		     updated_at = CURRENT_TIMESTAMP
 		 WHERE uid = ?`,
 		[normalizedBoard, safeSubject, normalizedTier, userId]
@@ -938,7 +938,7 @@ export async function updateLearnerSubjects({
 			? ` AND selected_board = ?
 			   AND selected_subject = ?
 			   AND selected_tier = ?
-			   AND local_profile_import_pending = 1`
+			   AND guest_profile_sync_pending = 1`
 			: '';
 		const expectedParams = expectedPrimaryProfile
 			? [expectedPrimaryProfile.board, expectedPrimaryProfile.subject, expectedPrimaryProfile.tier]
@@ -946,7 +946,7 @@ export async function updateLearnerSubjects({
 		await executePersonalQuery(
 			`UPDATE user_profiles
 			 SET selected_board = ?, selected_qualification = 'GCSE', selected_subject = ?,
-			     selected_tier = ?, local_profile_import_pending = 0,
+			     selected_tier = ?, guest_profile_sync_pending = 0,
 			     updated_at = CURRENT_TIMESTAMP
 			 WHERE uid = ?${expectedWhere}`,
 			[primary.board, primary.subject, primary.tier, userId, ...expectedParams]
@@ -1007,7 +1007,7 @@ export async function updateLearnerSubjects({
 	if (updatePrimaryProfile && !updatePrimaryProfileBeforeSubjects) await updatePrimary();
 }
 
-export async function consumeLocalProfileImportPending({
+export async function consumeGuestProfileSyncPending({
 	userId,
 	expectedPrimaryProfile
 }: {
@@ -1020,13 +1020,13 @@ export async function consumeLocalProfileImportPending({
 }): Promise<void> {
 	await executePersonalQuery(
 		`UPDATE user_profiles
-		 SET local_profile_import_pending = 0,
+		 SET guest_profile_sync_pending = 0,
 		     updated_at = CURRENT_TIMESTAMP
 		 WHERE uid = ?
 		   AND selected_board = ?
 		   AND selected_subject = ?
 		   AND selected_tier = ?
-		   AND local_profile_import_pending = 1`,
+		   AND guest_profile_sync_pending = 1`,
 		[
 			userId,
 			expectedPrimaryProfile.board,
@@ -1119,7 +1119,7 @@ async function readLearnerProfileSettings(
 ): Promise<{
 	settings: LearnerProfileSettings;
 	persistedSubjectNames: string[];
-	localProfileImportPending: boolean;
+	guestProfileSyncPending: boolean;
 }> {
 	const [profileState, boardAvailability] = await Promise.all([
 		getOrCreateUserProfileState(user),
@@ -1148,7 +1148,7 @@ async function readLearnerProfileSettings(
 			englishLiteratureSelections
 		},
 		persistedSubjectNames: subjectState.persistedSubjectNames,
-		localProfileImportPending: profileState.localProfileImportPending
+		guestProfileSyncPending: profileState.guestProfileSyncPending
 	};
 }
 
@@ -1163,10 +1163,10 @@ export async function getLearnerProfileSettings(
 	return (await readLearnerProfileSettings(user, boardAvailability)).settings;
 }
 
-export async function getLearnerProfileSettingsForLocalImport(user: AdminUser): Promise<{
+export async function getLearnerProfileSettingsForGuestSync(user: AdminUser): Promise<{
 	settings: LearnerProfileSettings;
 	persistedSubjectNames: string[];
-	localProfileImportPending: boolean;
+	guestProfileSyncPending: boolean;
 }> {
 	return readLearnerProfileSettings(user);
 }

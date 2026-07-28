@@ -1,5 +1,3 @@
-export const ANALYTICS_CLASSIFICATION_VERSION = 2;
-
 export type AnalyticsTrafficClass =
 	| 'human'
 	| 'verified_bot'
@@ -11,7 +9,6 @@ export type AnalyticsTrafficClassification = {
 	trafficClass: AnalyticsTrafficClass;
 	source: string;
 	detail: string | null;
-	version: number;
 };
 
 const AUTOMATION_USER_AGENT =
@@ -30,8 +27,7 @@ export function classifyAnalyticsTraffic(input: {
 		return {
 			trafficClass: 'internal_test',
 			source: 'development_environment',
-			detail: input.environment || 'development',
-			version: ANALYTICS_CLASSIFICATION_VERSION
+			detail: input.environment || 'development'
 		};
 	}
 
@@ -42,8 +38,7 @@ export function classifyAnalyticsTraffic(input: {
 		return {
 			trafficClass: 'verified_bot',
 			source: 'cloudflare_verified_bot',
-			detail: verifiedBotCategory,
-			version: ANALYTICS_CLASSIFICATION_VERSION
+			detail: verifiedBotCategory
 		};
 	}
 
@@ -55,8 +50,7 @@ export function classifyAnalyticsTraffic(input: {
 			detail:
 				typeof botManagement.verifiedBotCategory === 'string'
 					? botManagement.verifiedBotCategory
-					: null,
-			version: ANALYTICS_CLASSIFICATION_VERSION
+					: null
 		};
 	}
 
@@ -68,8 +62,7 @@ export function classifyAnalyticsTraffic(input: {
 		return {
 			trafficClass: 'suspected_bot',
 			source: 'cloudflare_bot_score',
-			detail: `score ${botScore}`,
-			version: ANALYTICS_CLASSIFICATION_VERSION
+			detail: `score ${botScore}`
 		};
 	}
 
@@ -79,8 +72,7 @@ export function classifyAnalyticsTraffic(input: {
 		return {
 			trafficClass: 'suspected_bot',
 			source: 'user_agent_rule',
-			detail: automationMatch,
-			version: ANALYTICS_CLASSIFICATION_VERSION
+			detail: automationMatch
 		};
 	}
 
@@ -88,15 +80,13 @@ export function classifyAnalyticsTraffic(input: {
 		return {
 			trafficClass: 'unknown',
 			source: 'missing_user_agent',
-			detail: null,
-			version: ANALYTICS_CLASSIFICATION_VERSION
+			detail: null
 		};
 	}
 
 	return {
 		trafficClass: 'human',
 		source: 'browser_traffic',
-		detail: null,
-		version: ANALYTICS_CLASSIFICATION_VERSION
+		detail: null
 	};
 }

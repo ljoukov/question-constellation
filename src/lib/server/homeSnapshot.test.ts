@@ -37,7 +37,6 @@ vi.mock('$lib/server/challengeCatalog', () => ({
 }));
 
 import type { ChallengeProgress, ChallengeProgressEntry } from '$lib/challenges/progress';
-import { USER_HOME_SNAPSHOT_VERSION } from '$lib/learning/homeSnapshotTypes';
 import type { SignedInLearningHome, SignedInSubjectView } from '$lib/learning/viewTypes';
 import type { AdminUser } from '$lib/server/auth/session';
 import {
@@ -158,7 +157,6 @@ function snapshotRow({
 	snapshot?: unknown;
 } = {}) {
 	return {
-		schema_version: USER_HOME_SNAPSHOT_VERSION,
 		payload_json: JSON.stringify(snapshot),
 		dirty,
 		source_revision: sourceRevision,
@@ -204,7 +202,6 @@ describe('user home snapshot reads', () => {
 			visualEffectsEnabled: false
 		});
 		mocks.queryPersonalFirst.mockResolvedValue({
-			schema_version: USER_HOME_SNAPSHOT_VERSION,
 			payload_json: JSON.stringify(snapshot),
 			dirty: 0,
 			source_revision: 7,
@@ -220,11 +217,10 @@ describe('user home snapshot reads', () => {
 		expect(mocks.queryPersonalFirst).toHaveBeenCalledTimes(1);
 	});
 
-	it('rejects version 2 rows so cached links are rebuilt for the canonical navigation', async () => {
+	it('rejects payloads carrying the retired snapshot version key', async () => {
 		const currentSnapshot = fallbackUserHomeSnapshot(user);
 		mocks.queryPersonalFirst.mockResolvedValue({
-			schema_version: 2,
-			payload_json: JSON.stringify({ ...currentSnapshot, version: 2 }),
+			payload_json: JSON.stringify({ ...currentSnapshot, version: 4 }),
 			dirty: 0,
 			source_revision: 7,
 			snapshot_revision: 7,
@@ -235,7 +231,7 @@ describe('user home snapshot reads', () => {
 
 		expect(result.status).toBe('fallback');
 		expect(result.shouldRefresh).toBe(true);
-		expect(result.snapshot.version).toBe(USER_HOME_SNAPSHOT_VERSION);
+		expect(result.snapshot).not.toHaveProperty('version');
 	});
 
 	it('round-trips a production-shaped snapshot with a non-empty subject view', () => {
@@ -255,7 +251,6 @@ describe('user home snapshot reads', () => {
 	it('keeps a valid stale payload visible and rejects corrupt projections safely', async () => {
 		const snapshot = fallbackUserHomeSnapshot(user);
 		mocks.queryPersonalFirst.mockResolvedValueOnce({
-			schema_version: USER_HOME_SNAPSHOT_VERSION,
 			payload_json: JSON.stringify(snapshot),
 			dirty: 1,
 			source_revision: 8,
@@ -269,7 +264,6 @@ describe('user home snapshot reads', () => {
 		});
 
 		mocks.queryPersonalFirst.mockResolvedValueOnce({
-			schema_version: USER_HOME_SNAPSHOT_VERSION,
 			payload_json: JSON.stringify({
 				...snapshot,
 				challengeCompletedCount: 999
@@ -288,7 +282,6 @@ describe('user home snapshot reads', () => {
 	it('refreshes time-dependent home state at least daily without adding another read', async () => {
 		const snapshot = fallbackUserHomeSnapshot(user);
 		mocks.queryPersonalFirst.mockResolvedValue({
-			schema_version: USER_HOME_SNAPSHOT_VERSION,
 			payload_json: JSON.stringify(snapshot),
 			dirty: 0,
 			source_revision: 3,
@@ -422,7 +415,7 @@ describe('immediate challenge projection', () => {
 		expect(update[0]).toContain('FROM user_challenge_progress AS canonical');
 		expect(update[0]).not.toContain('dirty = 0');
 		expect(update[0]).not.toContain('source_revision = source_revision + 1');
-		expect(update[1]).toEqual(expect.arrayContaining([425, 1, user.uid, 1, 20]));
+		expect(update[1]).toEqual(expect.arrayContaining([425, 1, user.uid, 20]));
 	});
 
 	it('keeps a 500-entry projection below the D1 bound-parameter limit', async () => {
@@ -444,7 +437,7 @@ describe('immediate challenge projection', () => {
 		const [query, params] = mocks.queryPersonalFirst.mock.calls[1] as [string, unknown[]];
 		expect(query).toContain('FROM json_each(?)');
 		expect(params.length).toBeLessThanOrEqual(100);
-		expect(params).toHaveLength(11);
+		expect(params).toHaveLength(10);
 		const projected = JSON.parse(params[0] as string) as ChallengeProgress;
 		expect(Object.keys(projected.challenges)).toHaveLength(500);
 	});

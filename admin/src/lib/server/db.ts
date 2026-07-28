@@ -1,7 +1,7 @@
 import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 
-const DATABASE_ID = 'd989edc1-26d8-4bd6-83f1-97b09c4d50a2';
+const DATABASE_ID = '7f7d15d6-62e9-45b9-bbde-b30836a97e01';
 type Param = string | number | null;
 type AnalyticsDbSession = App.Locals['analyticsDb'];
 

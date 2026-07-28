@@ -49,7 +49,7 @@
 			// the Worker did not commit. Conservatively republish the projection;
 			// retries remain idempotent and the coordinator coalesces this signal.
 			serverMayHavePartiallyCommitted = true;
-			const response = await fetchWithResponseTimeout('/api/profile/import-local', {
+			const response = await fetchWithResponseTimeout('/api/profile/sync-guest', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ profile }),
@@ -71,7 +71,7 @@
 			if (result.snapshotChanged === true) markHomeSnapshotDirty({ immediate: true });
 		} catch (error) {
 			if (serverMayHavePartiallyCommitted) markHomeSnapshotDirty({ immediate: true });
-			console.warn('[local-profile-sync] import deferred', error);
+			console.warn('[guest-profile-sync] sync deferred', error);
 			syncFailure = classifyRequestFailure(error, {
 				action: 'sync your saved profile',
 				serverLabel: 'Profile sync'

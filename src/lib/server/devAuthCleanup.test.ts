@@ -130,17 +130,7 @@ function personalFixture() {
 function analyticsFixture() {
 	const db = new DatabaseSync(':memory:');
 	db.exec('PRAGMA foreign_keys = ON');
-	for (const migration of [
-		'0001_analytics.sql',
-		'0002_environment_and_model_runs.sql',
-		'0003_ai_summaries.sql',
-		'0004_admin_audit.sql',
-		'0005_traffic_classification.sql',
-		'0006_classifier_v2.sql',
-		'0007_backfill_unclassified_traffic.sql'
-	]) {
-		db.exec(readFileSync(path.resolve('migrations/analytics', migration), 'utf8'));
-	}
+	db.exec(readFileSync(path.resolve('migrations/analytics/0001_analytics.sql'), 'utf8'));
 	for (const [sessionId, userId, environment] of [
 		['dev-target', uid, 'development'],
 		['dev-shared', 'other-user', 'development'],

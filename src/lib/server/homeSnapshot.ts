@@ -5,7 +5,6 @@ import {
 	type ChallengeProgress
 } from '$lib/challenges/progress';
 import {
-	USER_HOME_SNAPSHOT_VERSION,
 	type UserHomeDashboard,
 	type UserHomeSnapshot,
 	type UserHomeSnapshotReadResult,
@@ -36,7 +35,6 @@ const CHALLENGE_PROJECTION_CAS_ATTEMPTS = 3;
 const HOME_SNAPSHOT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 type HomeSnapshotRow = {
-	schema_version: number;
 	payload_json: string;
 	dirty: number;
 	source_revision: number;
@@ -135,7 +133,6 @@ export function fallbackUserHomeSnapshot(
 	}
 ): UserHomeSnapshot {
 	return {
-		version: USER_HOME_SNAPSHOT_VERSION,
 		dashboard: {
 			studentName: firstName(user.name),
 			subjects: [],
@@ -469,9 +466,18 @@ function parseSubjectView(value: unknown): SignedInSubjectView | null {
 }
 
 export function parseUserHomeSnapshot(value: unknown): UserHomeSnapshot | null {
+	const topLevelKeys = isRecord(value) ? Object.keys(value).sort() : [];
 	if (
 		!isRecord(value) ||
-		value.version !== USER_HOME_SNAPSHOT_VERSION ||
+		JSON.stringify(topLevelKeys) !==
+			JSON.stringify([
+				'appearance',
+				'challengeCompletedCount',
+				'challengeProgress',
+				'challengeTotalBestScore',
+				'dashboard',
+				'subjectViews'
+			]) ||
 		!isRecord(value.appearance) ||
 		!isRecord(value.challengeProgress) ||
 		!Array.isArray(value.subjectViews) ||
@@ -518,7 +524,6 @@ export function parseUserHomeSnapshot(value: unknown): UserHomeSnapshot | null {
 	}
 
 	return {
-		version: USER_HOME_SNAPSHOT_VERSION,
 		dashboard,
 		subjectViews: parsedSubjectViews,
 		appearance: { themePreference, visualEffectsEnabled },
@@ -535,9 +540,7 @@ function parseSnapshotJson(raw: string): UserHomeSnapshot | null {
 }
 
 function snapshotFromRow(row: HomeSnapshotRow): UserHomeSnapshot | null {
-	return row.schema_version === USER_HOME_SNAPSHOT_VERSION
-		? parseSnapshotJson(row.payload_json)
-		: null;
+	return parseSnapshotJson(row.payload_json);
 }
 
 function snapshotRowIsStale(row: HomeSnapshotRow): boolean {
@@ -552,8 +555,7 @@ function snapshotRowIsStale(row: HomeSnapshotRow): boolean {
 
 async function readHomeSnapshotRow(userId: string): Promise<HomeSnapshotRow | null> {
 	return await queryPersonalFirst<HomeSnapshotRow>(
-		`SELECT schema_version, payload_json, dirty, source_revision, snapshot_revision,
-		        refreshed_at
+		`SELECT payload_json, dirty, source_revision, snapshot_revision, refreshed_at
 		   FROM user_home_snapshots
 		  WHERE user_id = ?`,
 		[userId]
@@ -562,8 +564,8 @@ async function readHomeSnapshotRow(userId: string): Promise<HomeSnapshotRow | nu
 
 /**
  * The signed-in home critical path is deliberately one primary-key point read.
- * Missing, stale-schema, or corrupt rows return a bundled fallback and ask the
- * caller to schedule a refresh; they never invoke the old learner-data fanout.
+ * Missing or corrupt rows return an empty current payload and ask the caller to
+ * schedule a refresh; they never invoke the learner-data fanout on this path.
  */
 export async function getUserHomeSnapshot(user: AdminUser): Promise<UserHomeSnapshotReadResult> {
 	let row: HomeSnapshotRow | null;
@@ -606,7 +608,6 @@ function builtSnapshot(
 	progress: ChallengeProgress
 ): UserHomeSnapshot {
 	return {
-		version: USER_HOME_SNAPSHOT_VERSION,
 		dashboard: compactSignedInLearningHome(home),
 		subjectViews: home.subjects,
 		appearance,
@@ -635,8 +636,8 @@ export async function refreshUserHomeSnapshot(
 ): Promise<UserHomeSnapshotRefreshResult> {
 	const claim = crypto.randomUUID();
 	try {
-		// An authenticated POST must not be able to force the expensive legacy
-		// builder when the point-readable row is already current.
+		// An authenticated POST must not be able to force the builder when the
+		// point-readable row is already current.
 		const observed = await readHomeSnapshotRow(user.uid);
 		if (observed && snapshotFromRow(observed) && !snapshotRowIsStale(observed)) {
 			return { status: 'current' };
@@ -648,15 +649,13 @@ export async function refreshUserHomeSnapshot(
 		const fallback = fallbackUserHomeSnapshot(user, initialAppearance);
 		await executePersonalQuery(
 			`INSERT INTO user_home_snapshots (
-			   user_id, schema_version, payload_json, dirty,
-			   source_revision, snapshot_revision
-			 ) VALUES (?, ?, ?, 1, 0, 0)
+			   user_id, payload_json, dirty, source_revision, snapshot_revision
+			 ) VALUES (?, ?, 1, 0, 0)
 			 ON CONFLICT(user_id) DO NOTHING`,
-			[user.uid, USER_HOME_SNAPSHOT_VERSION, JSON.stringify(fallback)]
+			[user.uid, JSON.stringify(fallback)]
 		);
 		const observedClaimFence = observed
-			? `AND schema_version = ?
-			   AND payload_json = ?
+			? `AND payload_json = ?
 			   AND dirty = ?
 			   AND source_revision = ?
 			   AND snapshot_revision = ?
@@ -664,7 +663,6 @@ export async function refreshUserHomeSnapshot(
 			: 'AND dirty = 1';
 		const observedClaimParams = observed
 			? [
-					observed.schema_version,
 					observed.payload_json,
 					observed.dirty,
 					observed.source_revision,
@@ -706,8 +704,7 @@ export async function refreshUserHomeSnapshot(
 		const snapshot = builtSnapshot(home, appearance, progress);
 		const published = await queryPersonalFirst<{ source_revision: number }>(
 			`UPDATE user_home_snapshots
-			    SET schema_version = ?,
-			        payload_json = ?,
+			    SET payload_json = ?,
 			        dirty = 0,
 			        snapshot_revision = source_revision,
 			        refresh_claim = NULL,
@@ -718,13 +715,7 @@ export async function refreshUserHomeSnapshot(
 			    AND refresh_claim = ?
 			    AND source_revision = ?
 			  RETURNING source_revision`,
-			[
-				USER_HOME_SNAPSHOT_VERSION,
-				JSON.stringify(snapshot),
-				user.uid,
-				claim,
-				claimed.source_revision
-			]
+			[JSON.stringify(snapshot), user.uid, claim, claimed.source_revision]
 		);
 		if (!published) {
 			await releaseRefreshClaim(user.uid, claim);
@@ -778,9 +769,8 @@ export async function updateUserHomeSnapshotChallengeProjection(
 			const row = await queryPersonalFirst<{ source_revision: number }>(
 				`SELECT source_revision
 				   FROM user_home_snapshots
-				  WHERE user_id = ?
-				    AND schema_version = ?`,
-				[userId, USER_HOME_SNAPSHOT_VERSION]
+				  WHERE user_id = ?`,
+				[userId]
 			);
 			if (!row) return;
 			const projection = withChallengeProjection(progress);
@@ -796,7 +786,6 @@ export async function updateUserHomeSnapshotChallengeProjection(
 			        snapshot_revision = source_revision,
 			        updated_at = CURRENT_TIMESTAMP
 			  WHERE user_id = ?
-			    AND schema_version = ?
 			    AND source_revision = ?
 			    AND NOT EXISTS (
 			      SELECT 1
@@ -844,7 +833,6 @@ export async function updateUserHomeSnapshotChallengeProjection(
 					projection.challengeCompletedCount,
 					projection.challengeTotalBestScore,
 					userId,
-					USER_HOME_SNAPSHOT_VERSION,
 					row.source_revision,
 					userId,
 					challengeProjectionIdsJson,

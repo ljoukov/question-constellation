@@ -5,7 +5,7 @@ import { clearQuestionBindings, setPersonalDb } from './bindings';
 import { d1PaperSittingSessionStore, type PaperSittingSessionRecord } from './paperSittingSession';
 
 const migration = readFileSync(
-	new URL('../../../migrations/personal/0008_paper_sitting_sessions.sql', import.meta.url),
+	new URL('../../../migrations/personal/0001_personal.sql', import.meta.url),
 	'utf8'
 );
 

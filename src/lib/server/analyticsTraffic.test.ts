@@ -1,11 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { ANALYTICS_CLASSIFICATION_VERSION, classifyAnalyticsTraffic } from './analyticsTraffic';
+import { classifyAnalyticsTraffic } from './analyticsTraffic';
 
 describe('classifyAnalyticsTraffic', () => {
-	it('records the current classifier version', () => {
-		expect(ANALYTICS_CLASSIFICATION_VERSION).toBe(2);
-	});
-
 	it('keeps every non-production environment in the internal/test lane', () => {
 		expect(
 			classifyAnalyticsTraffic({
@@ -65,9 +61,7 @@ describe('classifyAnalyticsTraffic', () => {
 	});
 
 	it('keeps missing user agents separate from people', () => {
-		expect(
-			classifyAnalyticsTraffic({ environment: 'production', userAgent: null })
-		).toMatchObject({
+		expect(classifyAnalyticsTraffic({ environment: 'production', userAgent: null })).toMatchObject({
 			trafficClass: 'unknown',
 			source: 'missing_user_agent'
 		});

@@ -1,29 +1,16 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { describe, expect, it } from 'vitest';
 
-const personalMigrationDirectory = new URL('../../../migrations/personal/', import.meta.url);
-const migrationFiles = readdirSync(personalMigrationDirectory)
-	.filter((file) => file.endsWith('.sql'))
-	.sort();
+const personalSchema = readFileSync(
+	new URL('../../../migrations/personal/0001_personal.sql', import.meta.url),
+	'utf8'
+);
 
-function applyThrough(db: DatabaseSync, lastMigration: string) {
-	for (const file of migrationFiles) {
-		db.exec(readFileSync(new URL(file, personalMigrationDirectory), 'utf8'));
-		if (file === lastMigration) break;
-	}
-}
-
-describe('learning evidence supersedes index migration', () => {
-	it('adds a partial covering index used by the evidence anti-join', () => {
+describe('learning evidence supersedes index schema', () => {
+	it('includes the partial covering index used by the evidence anti-join', () => {
 		const db = new DatabaseSync(':memory:');
-		applyThrough(db, '0015_user_home_snapshot_v2.sql');
-		db.exec(
-			readFileSync(
-				new URL('0016_user_learning_evidence_supersedes_index.sql', personalMigrationDirectory),
-				'utf8'
-			)
-		);
+		db.exec(personalSchema);
 
 		const index = (
 			db.prepare(`PRAGMA index_list('user_learning_evidence')`).all() as Array<{

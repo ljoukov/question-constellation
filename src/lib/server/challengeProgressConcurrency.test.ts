@@ -6,7 +6,7 @@ import { clearQuestionBindings, setPersonalDb, setQuestionDb } from './bindings'
 import { getUserChallengeProgress, mergeUserChallengeProgress } from './challengeProgress';
 
 const migration = readFileSync(
-	new URL('../../../migrations/personal/0009_challenge_progress.sql', import.meta.url),
+	new URL('../../../migrations/personal/0001_personal.sql', import.meta.url),
 	'utf8'
 );
 const challengeId = 'biology-data-conclusions';
@@ -240,39 +240,10 @@ describe('challenge progress concurrent merges', () => {
 	it('cannot publish an older projection after a delayed merge loses to a newer request', async () => {
 		const db = new DatabaseSync(':memory:');
 		db.exec(migration);
-		db.exec(`
-			CREATE TABLE user_home_snapshots (
-				user_id TEXT PRIMARY KEY,
-				schema_version INTEGER NOT NULL,
-				payload_json TEXT NOT NULL,
-				source_revision INTEGER NOT NULL DEFAULT 0,
-				snapshot_revision INTEGER NOT NULL DEFAULT 0,
-				updated_at TEXT
-			);
-			INSERT INTO user_home_snapshots (
-				user_id, schema_version, payload_json, source_revision, snapshot_revision
-			) VALUES (
-				'learner-projection-race',
-					4,
-					'{"version":4,"subjectViews":[],"challengeProgress":{"version":2,"challenges":{}},"challengeCompletedCount":0,"challengeTotalBestScore":0}',
-				0,
-				0
-			);
-			CREATE TRIGGER user_home_snapshot_challenge_progress_insert
-			AFTER INSERT ON user_challenge_progress
-			BEGIN
-				UPDATE user_home_snapshots
-				SET source_revision = source_revision + 1
-				WHERE user_id = NEW.user_id;
-			END;
-			CREATE TRIGGER user_home_snapshot_challenge_progress_update
-			AFTER UPDATE ON user_challenge_progress
-			BEGIN
-				UPDATE user_home_snapshots
-				SET source_revision = source_revision + 1
-				WHERE user_id = NEW.user_id;
-			END;
-		`);
+		db.prepare('INSERT INTO user_profiles (uid, email) VALUES (?, ?)').run(
+			'learner-projection-race',
+			'learner-projection-race@example.test'
+		);
 		const delayed = bindingWithDelayedSecondProgressRead(db);
 		setPersonalDb(delayed.binding);
 

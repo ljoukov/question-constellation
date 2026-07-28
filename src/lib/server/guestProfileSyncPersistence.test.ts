@@ -26,29 +26,16 @@ vi.mock('./curriculumCatalog', () => ({
 }));
 
 import {
-	consumeLocalProfileImportPending,
-	getLearnerProfileSettingsForLocalImport,
+	consumeGuestProfileSyncPending,
+	getLearnerProfileSettingsForGuestSync,
 	updateEnglishLiteratureSelections,
 	updateLearnerSubjects
 } from './personalLearning';
 
-const personalMigration = [
-	readFileSync(
-		new URL('../../../migrations/personal/0001_personal_learning.sql', import.meta.url),
-		'utf8'
-	),
-	readFileSync(
-		new URL('../../../migrations/personal/0002_english_literature_selections.sql', import.meta.url),
-		'utf8'
-	),
-	readFileSync(
-		new URL(
-			'../../../migrations/personal/0014_local_profile_import_provenance.sql',
-			import.meta.url
-		),
-		'utf8'
-	)
-].join('\n');
+const personalSchema = readFileSync(
+	new URL('../../../migrations/personal/0001_personal.sql', import.meta.url),
+	'utf8'
+);
 
 function sqliteBinding(db: DatabaseSync, failAfterSubjectWrites: number | null = null) {
 	let subjectWrites = 0;
@@ -116,7 +103,7 @@ let db: DatabaseSync;
 
 beforeEach(() => {
 	db = new DatabaseSync(':memory:');
-	db.exec(personalMigration);
+	db.exec(personalSchema);
 	db.prepare(
 		`INSERT INTO user_profiles (
 		   uid, email, selected_board, selected_subject, selected_tier
@@ -130,7 +117,7 @@ afterEach(() => {
 	db.close();
 });
 
-describe('local profile import persistence', () => {
+describe('guest profile sync persistence', () => {
 	it('cannot let a delayed older import or direct save replace stronger stored data', async () => {
 		await updateLearnerSubjects({
 			userId: 'learner-1',
@@ -253,7 +240,7 @@ describe('local profile import persistence', () => {
 		});
 	});
 
-	it('keeps first-import provenance until all subject rows land, then finalizes the primary', async () => {
+	it('keeps the first-sync fence until all subject rows land, then finalizes the primary', async () => {
 		setPersonalDb(sqliteBinding(db, 0));
 		const separateBiologyProfile = profileSubjects(
 			subject('Biology', {
@@ -282,7 +269,7 @@ describe('local profile import persistence', () => {
 			db
 				.prepare(
 					`SELECT selected_board, selected_subject, selected_tier,
-					        local_profile_import_pending
+					        guest_profile_sync_pending
 					 FROM user_profiles WHERE uid = ?`
 				)
 				.get('learner-1')
@@ -290,7 +277,7 @@ describe('local profile import persistence', () => {
 			selected_board: 'AQA',
 			selected_subject: 'Biology',
 			selected_tier: 'Higher',
-			local_profile_import_pending: 1
+			guest_profile_sync_pending: 1
 		});
 
 		setPersonalDb(sqliteBinding(db));
@@ -319,22 +306,22 @@ describe('local profile import persistence', () => {
 		expect(
 			db
 				.prepare(
-					`SELECT selected_subject, selected_tier, local_profile_import_pending
+					`SELECT selected_subject, selected_tier, guest_profile_sync_pending
 					 FROM user_profiles WHERE uid = ?`
 				)
 				.get('learner-1')
 		).toEqual({
 			selected_subject: 'Biology',
 			selected_tier: 'Foundation',
-			local_profile_import_pending: 0
+			guest_profile_sync_pending: 0
 		});
 	});
 
-	it('CAS-protects an explicit legacy primary with no subject rows', async () => {
+	it('CAS-protects an established primary with no subject rows', async () => {
 		db.prepare(
 			`UPDATE user_profiles
 			 SET selected_board = 'Edexcel', selected_subject = 'History', selected_tier = 'Higher',
-			     local_profile_import_pending = 0
+			     guest_profile_sync_pending = 0
 			 WHERE uid = ?`
 		).run('learner-1');
 
@@ -372,11 +359,11 @@ describe('local profile import persistence', () => {
 			photoUrl: null
 		};
 
-		const createdByProfileLoader = await getLearnerProfileSettingsForLocalImport(user);
-		const observedByImport = await getLearnerProfileSettingsForLocalImport(user);
+		const createdByProfileLoader = await getLearnerProfileSettingsForGuestSync(user);
+		const observedBySync = await getLearnerProfileSettingsForGuestSync(user);
 
-		expect(createdByProfileLoader.localProfileImportPending).toBe(true);
-		expect(observedByImport.localProfileImportPending).toBe(true);
+		expect(createdByProfileLoader.guestProfileSyncPending).toBe(true);
+		expect(observedBySync.guestProfileSyncPending).toBe(true);
 
 		await updateLearnerSubjects({
 			userId: user.uid,
@@ -391,9 +378,7 @@ describe('local profile import persistence', () => {
 			preserveExistingRows: true
 		});
 
-		expect((await getLearnerProfileSettingsForLocalImport(user)).localProfileImportPending).toBe(
-			false
-		);
+		expect((await getLearnerProfileSettingsForGuestSync(user)).guestProfileSyncPending).toBe(false);
 	});
 
 	it('consumes an unchanged first import without materializing subject rows', async () => {
@@ -403,7 +388,7 @@ describe('local profile import persistence', () => {
 			 VALUES (?, ?, 'AQA', 'Biology', 'Higher')`
 		).run(userId, 'unchanged-first-import@example.test');
 
-		await consumeLocalProfileImportPending({
+		await consumeGuestProfileSyncPending({
 			userId,
 			expectedPrimaryProfile: {
 				board: 'AQA',
@@ -415,12 +400,12 @@ describe('local profile import persistence', () => {
 		expect(
 			db
 				.prepare(
-					`SELECT local_profile_import_pending
+					`SELECT guest_profile_sync_pending
 					 FROM user_profiles
 					 WHERE uid = ?`
 				)
 				.get(userId)
-		).toEqual({ local_profile_import_pending: 0 });
+		).toEqual({ guest_profile_sync_pending: 0 });
 		expect(
 			db
 				.prepare(
@@ -444,7 +429,7 @@ describe('local profile import persistence', () => {
 			 WHERE uid = ?`
 		).run(userId);
 
-		await consumeLocalProfileImportPending({
+		await consumeGuestProfileSyncPending({
 			userId,
 			expectedPrimaryProfile: {
 				board: 'AQA',
@@ -456,7 +441,7 @@ describe('local profile import persistence', () => {
 		expect(
 			db
 				.prepare(
-					`SELECT selected_board, selected_subject, local_profile_import_pending
+					`SELECT selected_board, selected_subject, guest_profile_sync_pending
 					 FROM user_profiles
 					 WHERE uid = ?`
 				)
@@ -464,7 +449,7 @@ describe('local profile import persistence', () => {
 		).toEqual({
 			selected_board: 'Edexcel',
 			selected_subject: 'History',
-			local_profile_import_pending: 1
+			guest_profile_sync_pending: 1
 		});
 	});
 
@@ -474,13 +459,13 @@ describe('local profile import persistence', () => {
 			 VALUES (?, ?, 'AQA', 'Biology')`
 		).run('snapshot-created-learner', 'snapshot-created@example.test');
 
-		const observed = await getLearnerProfileSettingsForLocalImport({
+		const observed = await getLearnerProfileSettingsForGuestSync({
 			uid: 'snapshot-created-learner',
 			email: 'snapshot-created@example.test',
 			name: null,
 			photoUrl: null
 		});
 
-		expect(observed.localProfileImportPending).toBe(true);
+		expect(observed.guestProfileSyncPending).toBe(true);
 	});
 });

@@ -49,7 +49,7 @@ describe('home snapshot mutation wiring', () => {
 	});
 
 	it('republishes after an ambiguous local-profile import failure', () => {
-		const localSync = source('./components/LocalLearnerStateSync.svelte');
+		const localSync = source('./components/GuestLearnerStateSync.svelte');
 		expect(localSync).toContain('serverMayHavePartiallyCommitted = true;');
 		expect(localSync).toContain(
 			'if (serverMayHavePartiallyCommitted) markHomeSnapshotDirty({ immediate: true });'

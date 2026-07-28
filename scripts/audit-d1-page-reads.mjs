@@ -134,8 +134,7 @@ if (typeof sampleUserId === 'string' && sampleUserId.length > 0) {
 	personalHome = await measuredQuery({
 		id: 'personal-home-snapshot',
 		binding: 'PERSONAL_DB',
-		sql: `SELECT schema_version, payload_json, dirty, source_revision, snapshot_revision,
-		            refreshed_at
+		sql: `SELECT payload_json, dirty, source_revision, snapshot_revision, refreshed_at
 		       FROM user_home_snapshots
 		      WHERE user_id = ?`,
 		params: [sampleUserId]

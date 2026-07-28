@@ -24,13 +24,13 @@
 		{
 			"binding": "PERSONAL_DB",
 			"database_name": "question-constellation-personal",
-			"database_id": "2bdf9ac4-649a-4861-84b4-a5d5cbc64908",
+			"database_id": "7ee64a86-878b-4d18-b65d-9ff843b137c8",
 			"migrations_dir": "migrations/personal"
 		},
 		{
 			"binding": "ANALYTICS_DB",
 			"database_name": "question-constellation-analytics",
-			"database_id": "d989edc1-26d8-4bd6-83f1-97b09c4d50a2",
+			"database_id": "7f7d15d6-62e9-45b9-bbde-b30836a97e01",
 			"migrations_dir": "migrations/analytics"
 		}
 	],

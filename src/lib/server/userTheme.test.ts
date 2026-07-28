@@ -65,9 +65,7 @@ describe('user appearance preferences', () => {
 		});
 		expect(mocks.executePersonalQuery).toHaveBeenCalledTimes(1);
 		expect(mocks.executePersonalQuery.mock.calls[0][0]).toContain('INSERT INTO user_profiles');
-		expect(mocks.executePersonalQuery.mock.calls[0][0]).not.toContain(
-			'local_profile_import_pending'
-		);
+		expect(mocks.executePersonalQuery.mock.calls[0][0]).not.toContain('guest_profile_sync_pending');
 	});
 
 	it('persists theme and visual effects in independent columns', async () => {
@@ -84,11 +82,11 @@ describe('user appearance preferences', () => {
 		expect(updates).toHaveLength(2);
 		expect(updates[0][0]).toContain('theme_preference = ?');
 		expect(updates[0][0]).not.toContain('visual_effects_enabled = ?');
-		expect(updates[0][0]).not.toContain('local_profile_import_pending');
+		expect(updates[0][0]).not.toContain('guest_profile_sync_pending');
 		expect(updates[0][1]).toEqual(['dark', user.uid]);
 		expect(updates[1][0]).toContain('visual_effects_enabled = ?');
 		expect(updates[1][0]).not.toContain('theme_preference = ?');
-		expect(updates[1][0]).not.toContain('local_profile_import_pending');
+		expect(updates[1][0]).not.toContain('guest_profile_sync_pending');
 		expect(updates[1][1]).toEqual([0, user.uid]);
 	});
 });

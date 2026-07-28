@@ -90,7 +90,7 @@ describe('home snapshot initial sync barrier', () => {
 	});
 
 	it('settles profile no-work and failure paths and challenge failure paths', () => {
-		const profileSync = componentSource('./LocalLearnerStateSync.svelte');
+		const profileSync = componentSource('./GuestLearnerStateSync.svelte');
 		const challengeSync = componentSource('./ChallengeProgressSync.svelte');
 
 		expect(profileSync).toMatch(
@@ -108,7 +108,7 @@ describe('home snapshot initial sync barrier', () => {
 		const layout = componentSource('../../routes/+layout.svelte');
 
 		expect(layout.indexOf('<HomeSnapshotRefresh')).toBeLessThan(
-			layout.indexOf('<LocalLearnerStateSync')
+			layout.indexOf('<GuestLearnerStateSync')
 		);
 		expect(layout.indexOf('<HomeSnapshotRefresh')).toBeLessThan(
 			layout.indexOf('<ChallengeProgressSync')

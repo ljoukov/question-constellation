@@ -3,11 +3,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { describe, expect, it } from 'vitest';
 
 const migration = readFileSync(
-	new URL('../../../migrations/personal/0009_challenge_progress.sql', import.meta.url),
-	'utf8'
-);
-const relaxCompletionTimeMigration = readFileSync(
-	new URL('../../../migrations/personal/0011_relax_challenge_completion_time.sql', import.meta.url),
+	new URL('../../../migrations/personal/0001_personal.sql', import.meta.url),
 	'utf8'
 );
 function insertProgress(db: DatabaseSync, overrides: Record<string, unknown> = {}) {
@@ -45,7 +41,7 @@ function insertProgress(db: DatabaseSync, overrides: Record<string, unknown> = {
 	);
 }
 
-describe('personal challenge progress migration', () => {
+describe('personal challenge progress schema', () => {
 	it('keeps one bounded row per user and challenge', () => {
 		const db = new DatabaseSync(':memory:');
 		db.exec(migration);
@@ -88,24 +84,6 @@ describe('personal challenge progress migration', () => {
 		db.exec(migration);
 		insertProgress(db);
 
-		expect(() =>
-			db
-				.prepare(
-					`UPDATE user_challenge_progress
-					    SET started_at = ?, updated_at = ?, plays = ?, last_stage = ?
-					  WHERE user_id = ? AND challenge_id = ?`
-				)
-				.run(
-					'2026-07-18T10:05:00.000Z',
-					'2026-07-18T10:06:00.000Z',
-					2,
-					'showdown',
-					'learner-1',
-					'biology-data-conclusions'
-				)
-		).toThrow(/CHECK constraint failed/);
-
-		db.exec(relaxCompletionTimeMigration);
 		expect(() =>
 			db
 				.prepare(

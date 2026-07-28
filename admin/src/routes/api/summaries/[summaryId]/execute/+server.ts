@@ -1,11 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { queryRows } from '$lib/server/db';
 import { generateSummaryJob } from '$lib/server/aiSummary';
-import type {
-	EnvironmentScope,
-	IdentityScope,
-	TrafficScope
-} from '$lib/server/analyticsScope';
+import type { EnvironmentScope, IdentityScope, TrafficScope } from '$lib/server/analyticsScope';
 
 export const POST: RequestHandler = async ({ params, locals }) => {
 	if (locals.adminIdentity !== 'analytics-summary-workflow') {
@@ -34,9 +30,10 @@ export const POST: RequestHandler = async ({ params, locals }) => {
 	const environment = ['production', 'development'].includes(summary.environment)
 		? (summary.environment as EnvironmentScope)
 		: 'all';
-	const normalizedTraffic = summary.traffic_scope === 'legacy_all' ? 'all' : summary.traffic_scope;
-	const traffic = ['human', 'bots', 'internal_test', 'unknown', 'all'].includes(normalizedTraffic)
-		? (normalizedTraffic as TrafficScope)
+	const traffic = ['human', 'bots', 'internal_test', 'unknown', 'all'].includes(
+		summary.traffic_scope
+	)
+		? (summary.traffic_scope as TrafficScope)
 		: 'human';
 	const identity = ['authenticated', 'anonymous', 'all'].includes(summary.identity_scope)
 		? (summary.identity_scope as IdentityScope)

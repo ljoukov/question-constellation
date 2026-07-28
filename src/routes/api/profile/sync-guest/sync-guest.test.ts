@@ -3,13 +3,13 @@ import type { AnonymousLearnerProfile } from '$lib/anonymousLearnerProfile';
 import type { LearnerProfileSettings } from '$lib/server/personalLearning';
 
 const mocks = vi.hoisted(() => ({
-	getLearnerProfileSettingsForLocalImport: vi.fn(),
+	getLearnerProfileSettingsForGuestSync: vi.fn(),
 	updateEnglishLiteratureSelections: vi.fn(),
 	updateLearnerSubjects: vi.fn()
 }));
 
 vi.mock('$lib/server/personalLearning', () => ({
-	getLearnerProfileSettingsForLocalImport: mocks.getLearnerProfileSettingsForLocalImport,
+	getLearnerProfileSettingsForGuestSync: mocks.getLearnerProfileSettingsForGuestSync,
 	updateEnglishLiteratureSelections: mocks.updateEnglishLiteratureSelections,
 	updateLearnerSubjects: mocks.updateLearnerSubjects
 }));
@@ -127,7 +127,7 @@ const guest: AnonymousLearnerProfile = {
 function post(profile: unknown, authenticated = true) {
 	return POST({
 		locals: { user: authenticated ? user : null },
-		request: new Request('http://localhost/api/profile/import-local', {
+		request: new Request('http://localhost/api/profile/sync-guest', {
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify({ profile })
@@ -137,20 +137,20 @@ function post(profile: unknown, authenticated = true) {
 
 beforeEach(() => {
 	vi.clearAllMocks();
-	mocks.getLearnerProfileSettingsForLocalImport.mockResolvedValue({
+	mocks.getLearnerProfileSettingsForGuestSync.mockResolvedValue({
 		settings: account,
 		persistedSubjectNames: ['History'],
-		localProfileImportPending: false
+		guestProfileSyncPending: false
 	});
 	mocks.updateEnglishLiteratureSelections.mockResolvedValue(undefined);
 	mocks.updateLearnerSubjects.mockResolvedValue(undefined);
 });
 
-describe('POST /api/profile/import-local', () => {
+describe('POST /api/profile/sync-guest', () => {
 	it('requires authentication and validates the complete anonymous profile', async () => {
 		expect((await post(guest, false)).status).toBe(401);
 		expect((await post({ ...guest, pendingSync: 'yes' })).status).toBe(400);
-		expect(mocks.getLearnerProfileSettingsForLocalImport).not.toHaveBeenCalled();
+		expect(mocks.getLearnerProfileSettingsForGuestSync).not.toHaveBeenCalled();
 		expect(mocks.updateLearnerSubjects).not.toHaveBeenCalled();
 	});
 
@@ -226,7 +226,7 @@ describe('POST /api/profile/import-local', () => {
 
 		const importedSubjects = mocks.updateLearnerSubjects.mock.calls[0][0].subjects;
 		const importedSelections = mocks.updateEnglishLiteratureSelections.mock.calls[0][0].selections;
-		mocks.getLearnerProfileSettingsForLocalImport.mockResolvedValue({
+		mocks.getLearnerProfileSettingsForGuestSync.mockResolvedValue({
 			settings: {
 				...account,
 				subjects: importedSubjects,
@@ -235,7 +235,7 @@ describe('POST /api/profile/import-local', () => {
 			persistedSubjectNames: importedSubjects.map(
 				(subject: { subject: string }) => subject.subject
 			),
-			localProfileImportPending: false
+			guestProfileSyncPending: false
 		});
 
 		const retryResponse = await post(guest);
@@ -298,10 +298,10 @@ describe('POST /api/profile/import-local', () => {
 				}
 			]
 		};
-		mocks.getLearnerProfileSettingsForLocalImport.mockResolvedValue({
+		mocks.getLearnerProfileSettingsForGuestSync.mockResolvedValue({
 			settings: freshAccount,
 			persistedSubjectNames: [],
-			localProfileImportPending: true
+			guestProfileSyncPending: true
 		});
 
 		const response = await post(historyGuest);
@@ -373,7 +373,7 @@ describe('POST /api/profile/import-local', () => {
 				targetGrade: null
 			}
 		] satisfies LearnerProfileSettings['subjects'];
-		mocks.getLearnerProfileSettingsForLocalImport.mockResolvedValue({
+		mocks.getLearnerProfileSettingsForGuestSync.mockResolvedValue({
 			settings: {
 				...account,
 				profile: {
@@ -393,7 +393,7 @@ describe('POST /api/profile/import-local', () => {
 				}
 			},
 			persistedSubjectNames: [],
-			localProfileImportPending: true
+			guestProfileSyncPending: true
 		});
 
 		const response = await post({
@@ -426,11 +426,11 @@ describe('POST /api/profile/import-local', () => {
 		expect(mocks.updateEnglishLiteratureSelections).not.toHaveBeenCalled();
 	});
 
-	it('preserves an explicit legacy primary even when no subject rows exist yet', async () => {
-		mocks.getLearnerProfileSettingsForLocalImport.mockResolvedValue({
+	it('preserves an established primary even when no subject rows exist yet', async () => {
+		mocks.getLearnerProfileSettingsForGuestSync.mockResolvedValue({
 			settings: account,
 			persistedSubjectNames: [],
-			localProfileImportPending: false
+			guestProfileSyncPending: false
 		});
 
 		const response = await post(guest);
@@ -467,10 +467,10 @@ describe('POST /api/profile/import-local', () => {
 				entry.subject === 'Biology' ? { ...entry, enabled: true } : entry
 			)
 		};
-		mocks.getLearnerProfileSettingsForLocalImport.mockResolvedValue({
+		mocks.getLearnerProfileSettingsForGuestSync.mockResolvedValue({
 			settings: exactDefaultAccount,
 			persistedSubjectNames: [],
-			localProfileImportPending: false
+			guestProfileSyncPending: false
 		});
 
 		const response = await post({
