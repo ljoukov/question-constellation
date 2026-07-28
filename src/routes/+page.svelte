@@ -74,7 +74,7 @@
 		if (question.id) {
 			return resolve('/questions/[questionId]', { questionId: question.id });
 		}
-		return resolve('/constellations/[chainId]', { chainId: chain.id });
+		return questionBankHref;
 	}
 </script>
 
@@ -88,14 +88,14 @@
 		name="description"
 		content={data.user && data.dashboard
 			? 'See your progress by subject and start the next GCSE practice activity selected for you.'
-			: 'Free GCSE exam questions: try a real question, see the answer chain behind the marks, then practise similar questions.'}
+			: 'Free GCSE exam questions: write an answer, check it against clear marking points, then improve it.'}
 	/>
 	<link rel="canonical" href="https://constellation.eviworld.com/" />
 	<meta property="og:title" content="Free GCSE Questions And Past Papers" />
 	<meta property="og:site_name" content="Question Constellation" />
 	<meta
 		property="og:description"
-		content="GCSE exam questions with answer chains, marking points and similar practice questions."
+		content="GCSE exam questions with marking points, full-mark answers and related practice."
 	/>
 	<meta
 		property="og:image"
@@ -133,8 +133,8 @@
 					<p class="qc-home-eyebrow">Free GCSE exam questions</p>
 					<h1 id="home-title">See how the marks are won.</h1>
 					<p class="qc-home-hero-copy">
-						Start with a real exam question. Reveal the answer chain behind it, then try the same
-						method in a new question.
+						Start with a real exam question. Check which marking points you earned, improve your
+						answer, then try another.
 					</p>
 					<div class="qc-home-actions" aria-label="Homepage actions">
 						<a class="qc-home-button primary" href={startQuestionHref}>

@@ -21,7 +21,7 @@ describe('catalog-backed resume lookup', () => {
 		mocks.queryPersonalRows.mockResolvedValue([
 			{
 				question_id: 'biology-question',
-				draft_kind: 'science-practice',
+				draft_kind: 'question-practice',
 				answer_text: 'Cells release energy by respiration.',
 				draft_json: JSON.stringify({
 					answerText: 'Cells release energy by respiration.',

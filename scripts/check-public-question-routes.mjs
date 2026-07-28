@@ -51,19 +51,10 @@ if (rows.length === 0) {
 
 const questionRoutes = rows.flatMap((row) => [
 	route('question', `/questions/${encodeURIComponent(row.question_id)}`, row),
-	route('question-chain', `/questions/${encodeURIComponent(row.question_id)}/answer-chain`, row),
 	route('practice', `/questions/${encodeURIComponent(row.question_id)}/practice`, row)
 ]);
 const chainIds = [...new Set(rows.map((row) => row.answer_chain_id).filter(Boolean))].sort();
 const chainVisibility = await loadChainVisibility(chainIds);
-const visibilityByChainId = new Map(chainVisibility.map((item) => [item.answer_chain_id, item]));
-const chainRoutes = chainIds.flatMap((chainId) => {
-	const metadata = {
-		answer_chain_id: chainId,
-		public_visibility: visibilityByChainId.get(chainId) ?? null
-	};
-	return [route('constellation', `/constellations/${encodeURIComponent(chainId)}`, metadata)];
-});
 const assetRoutes = includeAssets
 	? [
 			...new Map(
@@ -75,7 +66,7 @@ const assetRoutes = includeAssets
 	: [];
 
 const checks = await mapLimit(
-	[...questionRoutes, ...chainRoutes, ...assetRoutes],
+	[...questionRoutes, ...assetRoutes],
 	concurrency,
 	checkRoute
 );

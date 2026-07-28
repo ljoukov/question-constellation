@@ -1,8 +1,7 @@
-import {
-	getQuestionTeaser,
-	type ChainQuestionLabel,
-	type ChainQuestionTeaser,
-	type LearningChain
+import type {
+	ChainQuestionLabel,
+	ChainQuestionTeaser,
+	LearningChain
 } from '$lib/learningChains';
 import { storedQuestionTitle, storedQuestionTitleIssues } from '$lib/storedQuestionTitle.js';
 import {
@@ -18,7 +17,6 @@ import {
 	type EnglishSourceAssetEvidence
 } from '$lib/englishPracticeEligibility';
 import { subjectSymbol } from '$lib/subjectSymbols.js';
-import { getPublishedChainIllustration } from './chainIllustrations';
 import { sourceDocumentSlug } from './questionExperimentData';
 import { queryRows } from './db';
 import { getPublicRoutePayload } from './publicRoutePayloads';
@@ -572,12 +570,12 @@ function questionHintFromWeakAnswer(
 		.map((item) => item.replace(/\.$/, ''));
 
 	if (missingSteps.length > 0) {
-		return truncateRichText(`Focus on this link: ${missingSteps.join(' -> ')}`, 160);
+		return truncateRichText(`Focus on: ${missingSteps.join('; ')}`, 160);
 	}
 
 	const weakAnswer = row.weak_answer_text ? cleanSingleLine(row.weak_answer_text) : '';
 	if (weakAnswer) {
-		return truncateRichText(`Do not stop at "${weakAnswer}". Use the full chain.`, 160);
+		return truncateRichText(`Do not stop at "${weakAnswer}". Include every marking point.`, 160);
 	}
 
 	return null;
@@ -931,94 +929,6 @@ function buildQuestionBankTopics(questions: QuestionBankQuestion[]): QuestionBan
 	);
 }
 
-async function fetchChainRow(chainId: string) {
-	const rows = await queryRows<ChainRow>(
-		`SELECT ac.id, ac.title, ac.canonical_chain_text, ac.subject, ac.subject_area,
-		        ac.broad_topic, ac.summary, ac.confidence, ac.needs_human_review,
-		        COUNT(DISTINCT q.id) AS question_count
-		 FROM answer_chains ac
-		 JOIN question_answer_chains qac ON qac.answer_chain_id = ac.id
-		 JOIN questions q ON q.id = qac.question_id
-		 WHERE (ac.id = ? OR ac.slug = ?)
-		   AND ac.needs_human_review = 0
-		   AND ac.status = 'published'
-		   AND qac.needs_human_review = 0
-		   AND q.needs_human_review = 0
-		   AND q.status = 'published'
-		 GROUP BY ac.id
-		 HAVING question_count > 0
-		 LIMIT 1`,
-		[chainId, chainId]
-	);
-	return rows[0] ?? null;
-}
-
-async function fetchStepRowsForChain(chainId: string) {
-	return queryRows<ChainStepRow>(
-		`SELECT id, answer_chain_id, display_order, step_text, common_omission
-		 FROM answer_chain_steps
-		 WHERE answer_chain_id = ?
-		 ORDER BY display_order`,
-		[chainId]
-	);
-}
-
-async function fetchQuestionRowsForChain(chainId: string) {
-	return queryRows<QuestionMembershipRow>(
-		`SELECT qac.answer_chain_id, qac.transfer_distance, qac.display_order,
-		        q.id, q.source_document_id, q.source_question_ref, q.prompt_text,
-		        q.command_word, q.marks, q.subject, q.subject_area, q.paper,
-		        q.series, q.year, q.topic_path_json, q.metadata_json,
-		        sd.board AS source_board, sd.qualification AS source_qualification,
-		        sd.subject AS source_subject, sd.tier AS source_tier,
-		        sd.paper AS source_paper, sd.series AS source_series,
-		        sd.year AS source_year, sd.component_code AS source_component_code,
-		        cwa.weak_answer_text AS weak_answer_text,
-		        cwa.explanation AS weak_answer_explanation,
-		        cwa.missing_chain_step_ids_json AS weak_missing_chain_step_ids_json
-		 FROM question_answer_chains qac
-		 JOIN questions q ON q.id = qac.question_id
-		 LEFT JOIN source_documents sd ON sd.id = q.source_document_id
-		 LEFT JOIN common_weak_answers cwa
-		   ON cwa.question_id = q.id
-		  AND cwa.needs_human_review = 0
-		  AND cwa.id = (
-			SELECT cwa2.id
-			FROM common_weak_answers cwa2
-			WHERE cwa2.question_id = q.id
-			  AND cwa2.needs_human_review = 0
-			ORDER BY CASE
-			           WHEN cwa2.explanation IS NOT NULL AND TRIM(cwa2.explanation) <> '' THEN 0
-			           ELSE 1
-			         END,
-			         CASE
-			           WHEN cwa2.missing_chain_step_ids_json IS NOT NULL
-			             AND cwa2.missing_chain_step_ids_json <> '[]' THEN 0
-			           ELSE 1
-			         END,
-			         COALESCE(cwa2.confidence, 0) DESC,
-			         LENGTH(COALESCE(cwa2.explanation, '')) DESC,
-			         cwa2.id
-			LIMIT 1
-		  )
-		 WHERE qac.answer_chain_id = ?
-		   AND qac.needs_human_review = 0
-		   AND q.needs_human_review = 0
-		   AND q.status = 'published'
-		 ORDER BY CASE qac.transfer_distance
-		            WHEN 'start' THEN 0
-		            WHEN 'near' THEN 1
-		            WHEN 'stretch' THEN 2
-		            WHEN 'exam_transfer' THEN 3
-		            ELSE 4
-		          END,
-		          COALESCE(qac.display_order, 9999),
-		          q.year,
-		          q.source_question_ref`,
-		[chainId]
-	);
-}
-
 const homeFeaturedChainIds = [
 	'bio-chain-vaccine-antigen-antibodies-memory-immunity',
 	'chem-chain-alloy-hardness-distorted-layers',
@@ -1319,22 +1229,3 @@ export async function getHomePagePublicData(): Promise<HomePagePublicData> {
 	}
 	return materialized;
 }
-
-export async function getExplorableLearningChain(chainId: string): Promise<LearningChain | null> {
-	const row = await fetchChainRow(chainId);
-	if (!row) return null;
-
-	const [steps, questions] = await Promise.all([
-		fetchStepRowsForChain(row.id),
-		fetchQuestionRowsForChain(row.id)
-	]);
-	const chain = buildLearningChain(row, steps, questions);
-	if (!chain) return null;
-
-	return {
-		...chain,
-		illustration: await getPublishedChainIllustration(row.id)
-	};
-}
-
-export { getQuestionTeaser };

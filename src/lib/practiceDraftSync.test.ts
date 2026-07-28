@@ -26,7 +26,7 @@ class MemoryStorage {
 function draft(questionId: string, clientUpdatedAt: number): PracticeDraftSave {
 	return {
 		questionId,
-		draftKind: 'science-practice',
+		draftKind: 'question-practice',
 		answerText: `answer ${questionId}`,
 		payload: { answerText: `answer ${questionId}` },
 		clientUpdatedAt

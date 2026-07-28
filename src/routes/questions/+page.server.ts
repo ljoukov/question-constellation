@@ -11,9 +11,20 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		board: url.searchParams.get('board') ?? 'all',
 		page: Number.isFinite(requestedPage) ? requestedPage : 1
 	});
+	const { sections, ...pageData } = browseData;
 
 	return {
-		...browseData,
+		...pageData,
+		sections: sections.map((section) => {
+			const { chainCount: _chainCount, ...topic } = section.topic;
+			return {
+				topic,
+				questions: section.questions.map((question) => {
+					const { chainId: _chainId, chainTitle: _chainTitle, ...publicQuestion } = question;
+					return publicQuestion;
+				})
+			};
+		}),
 		user: locals.user
 	};
 };

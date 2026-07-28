@@ -1,6 +1,5 @@
-import { isResumableEnglishGuidedDraft } from '$lib/learning/englishGuidedDraft';
 import { enabledProfileCombinationForQuestion } from '$lib/learning/profileQuestionCompatibility';
-import { isResumableSciencePracticeDraft } from '$lib/learning/sciencePracticeDraft';
+import { isResumableQuestionPracticeDraft } from '$lib/learning/questionPracticeDraft';
 import type { LearningActionView } from '$lib/learning/viewTypes';
 import type { PracticeDraftKind, SavedPracticeDraft } from '$lib/practiceDrafts';
 import type { LearnerSubject } from '$lib/server/personalLearning';
@@ -77,7 +76,7 @@ function savedDraftFromRow(row: QuestionDraftRow): SavedPracticeDraft {
 }
 
 export function isResumableQuestionDraft(draft: SavedPracticeDraft): boolean {
-	return isResumableSciencePracticeDraft(draft) || isResumableEnglishGuidedDraft(draft);
+	return isResumableQuestionPracticeDraft(draft);
 }
 
 function resumeAction(subject: LearnerSubject, questionId: string): LearningActionView {

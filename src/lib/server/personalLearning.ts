@@ -10,11 +10,7 @@ import {
 	type RecallSubject
 } from '$lib/recall/aqaScienceRecall';
 import { recallEvidenceComponentId } from '$lib/server/recallCatalog';
-import {
-	recallActivityHref,
-	recallCoverageHref,
-	recallSessionHref
-} from '$lib/recall/routes';
+import { recallActivityHref, recallCoverageHref, recallSessionHref } from '$lib/recall/routes';
 import type { QuestionGradeResult } from '$lib/server/answerGrading';
 import {
 	constructedAnswerIsIndependent,
@@ -1202,7 +1198,9 @@ function toDashboardGap(row: DashboardGapRow): DashboardGap {
 	const topic = topicLabel(row.topic_path_json, row.subject ?? 'GCSE science');
 	return {
 		id: row.id,
-		href: `/gaps/${encodeURIComponent(row.id)}`,
+		href: row.source_question_id
+			? `/questions/${encodeURIComponent(row.source_question_id)}/practice`
+			: '/questions',
 		chainId: row.answer_chain_id,
 		chainTitle: row.chain_title,
 		stepId: row.chain_step_id,
@@ -1736,7 +1734,11 @@ function buildSubjectLane(
 	const browseHref = `/questions?${new URLSearchParams({ subject: learnerSubject.subject }).toString()}`;
 	let primaryAction: SubjectLearningLane['primaryAction'];
 	if (openGap) {
-		primaryAction = { label: 'Close the gap', href: openGap.href, kind: 'gap' };
+		primaryAction = {
+			label: 'Improve an exam answer',
+			href: openGap.href,
+			kind: 'gap'
+		};
 	} else if (nextQuestion) {
 		primaryAction = {
 			label: stats.attemptCount === 0 ? 'Start exam question' : 'Continue practice',
@@ -2219,7 +2221,10 @@ export async function recordQuestionAttempt({
 			.map((gap) => ({
 				gapId: gap.id,
 				stepId: gap.chain_step_id,
-				href: `/gaps/${encodeURIComponent(gap.id)}`
+				href:
+					data.nextQuestion.id !== data.question.id
+						? `/questions/${encodeURIComponent(data.nextQuestion.id)}/practice?entry=related`
+						: `/questions/${encodeURIComponent(data.question.id)}/practice`
 			})),
 		recallPrompt
 	};
@@ -2348,7 +2353,7 @@ function buildGuidedQuestions(gap: GapDetailRow, steps: ChainStepRow[]): GapGuid
 	const hasNext = Boolean(next && next.id !== target.id);
 	const questions: GapGuidedQuestion[] = [];
 
-	// At a chain boundary, asking for the neighbour as well as the missing step creates
+	// At a chain boundary, asking for the neighbour as well as the missing link creates
 	// two reciprocal prompts whose wording gives both answers away. Keep the wider
 	// three-step reconstruction only when the missing idea genuinely sits between two links.
 	if (hasPrevious && hasNext && previous) {
@@ -2555,8 +2560,8 @@ export async function getGapLearningData(
 			id: row.answer_chain_id,
 			title: row.chain_title,
 			href: row.source_question_id
-				? `/questions/${encodeURIComponent(row.source_question_id)}/answer-chain`
-				: `/constellations/${encodeURIComponent(row.answer_chain_id)}`,
+				? `/questions/${encodeURIComponent(row.source_question_id)}`
+				: '/questions',
 			steps: chainSteps
 		},
 		presentation: {
@@ -2667,10 +2672,10 @@ export async function judgeGapFinalAnswer({
 	);
 	const summary =
 		normalizedAssistance.externalInputDetected && targetStepPresent
-			? 'The missing step is present. Because text was pasted or dropped, this check stays as assisted practice and the gap remains open.'
+			? 'The missing link is present. Because text was pasted or dropped, this check stays as assisted practice and is not counted as independent.'
 			: gapClosed
-				? 'The missing step is now explicit. Use the same method on the next similar question.'
-				: 'The answer still needs the target missing step. Add it directly, then connect it to the next step.';
+				? 'The missing link is now explicit. Use the full answer chain on the next similar question.'
+				: 'The answer still needs the target missing link. Add it directly, then connect it to the next link.';
 	const runId = submissionId ?? randomId('gaprun');
 
 	const insertedRun = await queryPersonalFirst<{ id: string }>(

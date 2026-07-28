@@ -936,7 +936,7 @@ async function getGradeContexts(
 				warnings.push('The extracted checklist for this subpart is not usable yet.');
 			}
 			if (!evidence.chain) {
-				warnings.push('No answer chain is linked to this subpart in D1 yet.');
+				warnings.push('No reviewed marking structure is linked to this subpart in D1 yet.');
 			}
 			if (response?.kind === 'asset-canvas') {
 				warnings.push(
@@ -1106,11 +1106,11 @@ function contextPrompt(context: GradeableQuestionContext) {
 function buildPrompt(contexts: GradeableQuestionContext[], answers: Record<string, string>) {
 	return [
 		'You are grading GCSE Combined Science answers for Question Constellation.',
-		'Grade only from the supplied D1 mark scheme, checklist, model answer, structured answer keys, and answer-chain evidence.',
+		'Grade only from the supplied D1 mark scheme, checklist, model answer, structured answer keys, and reviewed marking evidence.',
 		'Never award more than GRADEABLE_MARKS_FROM_SUPPLIED_EVIDENCE for a question.',
 		'Do not use generic textbook expectations unless they are needed to interpret a supplied marking point.',
 		'Award credit for scientifically equivalent wording, but do not credit missing causal links.',
-		'For answer-chain questions, mark chain steps as credited only when the student clearly includes that reasoning link.',
+		'For questions with diagnostic marking points, credit a point only when the student clearly includes the required reasoning.',
 		'Keep feedback concise but readable.',
 		'Write summary as a neutral marking note, not as direct address. Prefer "The answer..." over "you/your".',
 		'For incorrect answers, summary should be at most eight words, or an empty string if checklist items carry the useful feedback.',
@@ -1941,7 +1941,7 @@ function mergeModelResult(
 							text: step.text,
 							role: step.role,
 							verdict: normalizeVerdict(grade?.verdict),
-							explanation: grade?.explanation?.trim() || 'Compared with this answer-chain link.'
+							explanation: grade?.explanation?.trim() || 'Compared with this marking point.'
 						};
 					})
 				}

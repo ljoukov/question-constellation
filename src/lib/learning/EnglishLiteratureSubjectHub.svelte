@@ -136,7 +136,7 @@
 				{/if}
 			{/if}
 
-			<nav class="qc-real-chain-list" aria-label="Jump to a set-text section">
+			<nav class="qc-set-text-list" aria-label="Jump to a set-text section">
 				{#each hub.sections as section (section.id)}
 					<a href={`#${section.id}`}>
 						<span>{section.paperNumber}</span>
@@ -200,7 +200,7 @@
 					{#if visibleCounts[section.id] < section.questions.length}
 						<button
 							type="button"
-							class="qc-show-more-chains"
+							class="qc-show-more-sections"
 							onclick={() => showMore(section.id, section.questions.length)}
 						>
 							Show older {section.selection} questions ({section.questions.length -

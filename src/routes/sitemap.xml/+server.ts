@@ -7,7 +7,6 @@ const _SITEMAP_SECTION_PATHS = [
 	'/sitemaps/blog.xml',
 	'/sitemaps/past-papers.xml',
 	'/sitemaps/questions.xml',
-	'/sitemaps/chains.xml',
 	'/sitemaps/topics.xml'
 ] as const;
 

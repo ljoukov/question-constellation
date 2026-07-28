@@ -36,7 +36,6 @@ import {
 	getSignedInLearningHome,
 	getSignedInSubjectView,
 	officialTopicForQuestion,
-	recordEnglishStepAttemptEvidence,
 	recordLearnerEvidence,
 	recordQuestionAttemptEvidence,
 	recordRecallReviewEvidence,
@@ -1033,7 +1032,7 @@ describe('signed-in subject action integrity', () => {
 		expect(mocks.executePersonalQuery).not.toHaveBeenCalled();
 	});
 
-	it('recommends a confirmed in-scope gap and encodes its direct practice route', async () => {
+	it('does not turn a confirmed internal gap into a learner-facing destination', async () => {
 		mockBiologyGapSubject({
 			selectedTopicIds: ['biology-topic-4-3'],
 			states: [
@@ -1068,14 +1067,16 @@ describe('signed-in subject action integrity', () => {
 		const view = await getSignedInSubjectView(testUser, 'Biology');
 
 		expect(view?.nextAction).toMatchObject({
-			id: 'gap:confirmed gap/1',
-			kind: 'close_gap',
-			href: '/gaps/confirmed%20gap%2F1',
+			id: 'scope-adjust:Biology',
+			kind: 'scope',
+			eyebrow: 'Subject content',
 			available: true
 		});
+		expect(JSON.stringify(view)).not.toContain('confirmed gap/1');
+		expect(JSON.stringify(view)).not.toContain('vaccine-chain');
 	});
 
-	it('does not offer gap practice after evidence from only one distinct item', async () => {
+	it('does not expose unconfirmed internal gap evidence as an action', async () => {
 		mockBiologyGapSubject({
 			selectedTopicIds: ['biology-topic-4-3'],
 			states: [
@@ -1108,13 +1109,8 @@ describe('signed-in subject action integrity', () => {
 		});
 
 		const view = await getSignedInSubjectView(testUser, 'Biology');
-		const gapAlternative = view?.alternatives.find((action) => action.kind === 'close_gap');
-
 		expect(view?.nextAction.id).not.toBe('gap:unconfirmed-gap');
-		expect(gapAlternative).toMatchObject({
-			id: 'unavailable:close_gap',
-			available: false
-		});
+		expect(view?.alternatives.some((action) => action.kind === 'close_gap')).toBe(false);
 		expect(JSON.stringify(view)).not.toContain('/gaps/unconfirmed-gap');
 	});
 
@@ -2143,161 +2139,5 @@ describe('recall learner evidence', () => {
 		expect(
 			mocks.queryPersonalRows.mock.calls.every(([, params]) => params[0] === testUser.uid)
 		).toBe(true);
-	});
-});
-
-describe('English guided-practice learner evidence', () => {
-	it('stores one idempotent stage result plus reusable skill evidence on the official curriculum', async () => {
-		mocks.getLearnerProfileSettings.mockResolvedValue(
-			learnerSettings('English Literature', 'OCR', {
-				board: 'OCR',
-				specificationCode: 'J352',
-				modernText: 'An Inspector Calls',
-				nineteenthCenturyNovel: 'A Christmas Carol',
-				poetryCluster: 'Conflict',
-				shakespearePlay: 'Macbeth'
-			})
-		);
-		mocks.getCurriculumOffering.mockResolvedValue(
-			curriculumOffering({
-				subject: 'English Literature',
-				board: 'OCR',
-				specificationCode: 'J352',
-				groups: [
-					{
-						id: 'course-texts',
-						title: 'Course texts',
-						kind: 'option_group',
-						displayOrder: 0,
-						components: [curriculumComponent('ocr-macbeth', '02-macbeth', 'Macbeth', 0)]
-					}
-				]
-			})
-		);
-		mocks.queryRows.mockImplementation(async (sql: string) => {
-			if (sql.includes('FROM questions q')) {
-				return [
-					{
-						id: 'ocr-macbeth-question',
-						board: 'OCR',
-						qualification: 'GCSE',
-						subject: 'English Literature',
-						subject_area: 'English Literature',
-						component_code: 'J352/02',
-						tier: null,
-						spec_ref: '02-macbeth',
-						topic_path_json: JSON.stringify(['Macbeth']),
-						marks: 40,
-						answer_chain_id: 'english-chain-1',
-						transfer_distance: 'start'
-					}
-				];
-			}
-			if (sql.includes('mapped_ancestors')) {
-				return [{ curriculum_component_id: 'ocr-macbeth' }];
-			}
-			return [];
-		});
-		const insertedEvidenceIds = new Set<string>();
-		mocks.queryPersonalFirst.mockImplementation(async (sql: string, params: unknown[]) => {
-			if (sql.includes('INSERT INTO user_learning_evidence')) {
-				const id = String(params[0]);
-				if (insertedEvidenceIds.has(id)) return null;
-				insertedEvidenceIds.add(id);
-				return { id };
-			}
-			if (sql.includes('matches_write')) return { matches_write: 1 };
-			return null;
-		});
-		mocks.queryPersonalRows.mockResolvedValue([]);
-
-		const result = {
-			status: 'ok' as const,
-			decision: 'revise' as const,
-			stepId: 'method',
-			stepTitle: 'Analyse the writer’s method',
-			checkedAnswer: 'The violent verb shows Macbeth becoming more ruthless.',
-			checks: [
-				{
-					id: 'meaningful-method',
-					label: 'Meaningful method',
-					status: 'met' as const,
-					feedback: 'The response identifies the violent verb.'
-				},
-				{
-					id: 'argument-link',
-					label: 'Argument link',
-					status: 'not_yet' as const,
-					feedback: 'Connect this change to the central argument.'
-				}
-			],
-			nextImprovement: 'Link the verb to the argument about ambition.',
-			coachingNote: 'Method selection is precise; the argument link is still inconsistent.',
-			learnerModel: {
-				observedStrength: 'Precise method selection',
-				recurringNeed: 'Argument links',
-				nextStrategy: 'End each method point by returning to the thesis.'
-			},
-			confidence: 0.9,
-			model: 'test-model',
-			modelVersion: 'test-version'
-		};
-
-		for (let run = 0; run < 2; run += 1) {
-			await recordEnglishStepAttemptEvidence({
-				user: testUser,
-				checkId: 'english-step-check-1',
-				questionId: 'ocr-macbeth-question',
-				stepId: 'method',
-				result,
-				hintOpened: true,
-				assistance: {
-					externalInputDetected: true,
-					externalInputSources: ['drop']
-				},
-				sourceSessionId: 'english-session-1',
-				responseDurationMs: 42_000
-			});
-		}
-
-		expect([...insertedEvidenceIds]).toEqual([
-			'english_english-step-check-1',
-			'english_english-step-check-1_meaningful-method',
-			'english_english-step-check-1_argument-link'
-		]);
-		const evidenceWrites = mocks.queryPersonalFirst.mock.calls.filter(([sql]) =>
-			String(sql).includes('INSERT INTO user_learning_evidence')
-		);
-		const stageWrite = evidenceWrites[0][1] as unknown[];
-		expect(stageWrite.slice(2, 11)).toEqual([
-			'English Literature',
-			'OCR',
-			'GCSE',
-			'GCSE Subject',
-			'Higher',
-			'ocr-macbeth',
-			'english_practice_step',
-			'english-chain-1:method',
-			'Analyse the writer’s method'
-		]);
-		expect(JSON.parse(String(stageWrite[23]))).toMatchObject({
-			guided: true,
-			hintOpened: true,
-			assistance: {
-				externalInputDetected: true,
-				externalInputSources: ['drop']
-			},
-			learnerModel: {
-				recurringNeed: 'Argument links'
-			}
-		});
-		const stateWrites = mocks.executePersonalQuery.mock.calls.filter(([sql]) =>
-			String(sql).includes('INSERT INTO user_learner_component_states')
-		);
-		expect(stateWrites).toHaveLength(6);
-		for (const [sql, params] of stateWrites) {
-			expect((String(sql).match(/\?/g) ?? []).length).toBe((params as unknown[]).length);
-			expect((params as unknown[]).slice(1, 4)).toEqual(['English Literature', 'OCR', 'GCSE']);
-		}
 	});
 });

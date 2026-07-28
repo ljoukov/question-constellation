@@ -3,16 +3,11 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import type { ResolvedPathname } from '$app/types';
-	import { authStartHref } from '$lib/authReturn';
-	import ChainIllustration from '$lib/chains/ChainIllustration.svelte';
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
-	import AuthRequiredDialog from '$lib/components/AuthRequiredDialog.svelte';
-	import EnglishGuidedPractice from '$lib/components/EnglishGuidedPractice.svelte';
 	import ExamQuestionCard from '$lib/components/ExamQuestionCard.svelte';
 	import HintPanel from '$lib/components/HintPanel.svelte';
 	import IconBackLink from '$lib/components/IconBackLink.svelte';
 	import MarkdownContent from '$lib/components/MarkdownContent.svelte';
-	import MarkSchemeDisclosure from '$lib/components/MarkSchemeDisclosure.svelte';
 	import PracticeAnswerEditor from '$lib/components/PracticeAnswerEditor.svelte';
 	import RequestFailureNotice from '$lib/components/RequestFailureNotice.svelte';
 	import { BROWSE_SUBJECTS, englishSubjectOrDefault, isEnglishSubject } from '$lib/englishSubjects';
@@ -58,7 +53,7 @@
 	} from '$lib/requestFailure';
 	import { ArrowRight, CheckCircle2, ChevronDown, CircleAlert } from '@lucide/svelte';
 	import { onMount } from 'svelte';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
+	import { slide } from 'svelte/transition';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -83,7 +78,6 @@
 		};
 		savedAttempt?: {
 			id: string;
-			activeGaps: Array<{ gapId: string; stepId: string; href: string }>;
 			recallPrompt: { href: string; label: string; cardCount: number } | null;
 		} | null;
 	};
@@ -124,16 +118,15 @@
 	let gradeFailure = $state<RequestFailure | null>(null);
 	let gradeResult = $state<GradeResult | null>(null);
 	let showHint = $state(false);
-	let showMarkingPoints = $state(false);
 	let hintUsed = $state(false);
 	let markingPointsUsed = $state(false);
 	let answerExternalInputSources = $state<ExternalInputSource[]>([]);
 	let rewriteExternalInputSources = $state<ExternalInputSource[]>([]);
 	let copyAttempt = $state(0);
-	let authDialogOpen = $state(false);
 	let checkingRewrite = $state(false);
+	let showDetailedFeedback = $state(true);
+	let showFullMarkAnswer = $state(false);
 	let migratedAnonymousState = false;
-	let practiceQuestionList: HTMLElement | undefined = $state();
 	let resultHeader: HTMLElement | undefined = $state();
 	let lastFocusedResultSignature = '';
 	let activitySessionId = '';
@@ -144,25 +137,7 @@
 	let gradeRequestSequence = 0;
 	let activeGradeController: AbortController | null = null;
 
-	function withPracticeContext(href: string) {
-		const params = new SvelteURLSearchParams();
-		const entry = page.url.searchParams.get('entry');
-		if (entry) params.set('entry', entry);
-		const returnTo = safeInternalReturnPath(page.url.searchParams.get('returnTo'));
-		if (returnTo) params.set('returnTo', returnTo);
-		const query = params.toString();
-		return query ? `${href}?${query}` : href;
-	}
-
 	const requestedReturnTo = $derived(safeInternalReturnPath(page.url.searchParams.get('returnTo')));
-	const showPracticeSet = $derived(
-		page.url.searchParams.get('entry') === 'constellation' && data.questions.length > 1
-	);
-	const questionIndex = $derived(
-		data.questions.findIndex((question) => question.id === data.question.id)
-	);
-	const questionNumber = $derived(questionIndex + 1);
-	const progressPercent = $derived(`${((questionNumber || 1) / data.questions.length) * 100}%`);
 	const isChoiceResponse = $derived(
 		data.question.renderingOverlay?.responseInteraction?.kind === 'choice'
 	);
@@ -178,27 +153,37 @@
 	const resultPresentation = $derived(
 		resolvePracticeResultPresentation({
 			gradeResult,
-			checklistStepIds: data.chain.steps.map((step) => step.id),
+			checklistStepIds: data.markingPoints.map((point) => point.id),
 			choiceResponse: isChoiceResponse,
 			choiceAnswerCorrect
 		})
 	);
 	const presentStepIds = $derived(resultPresentation.presentStepIds);
 	const missingStepIds = $derived(resultPresentation.missingStepIds);
-	const includedSteps = $derived(data.chain.steps.filter((step) => presentStepIds.has(step.id)));
-	const resultTitle = $derived(`${includedSteps.length} of ${data.chain.steps.length} steps found`);
+	const includedPointCount = $derived(
+		data.markingPoints.filter((point) => presentStepIds.has(point.id)).length
+	);
+	const resultTitle = $derived(
+		`${includedPointCount} of ${data.markingPoints.length} marking ${data.markingPoints.length === 1 ? 'point' : 'points'} included`
+	);
+	const fullMarksTitle = $derived(
+		`All ${data.markingPoints.length} marking ${data.markingPoints.length === 1 ? 'point is' : 'points are'} included`
+	);
 	const questionHref = $derived(
 		resolve('/questions/[questionId]', { questionId: data.question.id })
 	);
-	const nextQuestionHref = $derived(
-		withPracticeContext(
-			resolve('/questions/[questionId]/practice', { questionId: data.nextQuestion.id })
-		) as ResolvedPathname
-	);
-	const constellationHref = $derived(
-		resolve('/constellations/[chainId]', { chainId: data.chain.id })
-	);
-	const isLastQuestion = $derived(questionIndex === data.questions.length - 1);
+	const hasRelatedQuestion = $derived(data.nextQuestionId !== data.question.id);
+	const relatedQuestionHref = $derived.by(() => {
+		const base = resolve('/questions/[questionId]/practice', {
+			questionId: data.nextQuestionId
+		});
+		const currentResult = `/questions/${encodeURIComponent(data.question.id)}/practice?view=result`;
+		const params = new URLSearchParams({
+			entry: 'related',
+			returnTo: currentResult
+		});
+		return resolveInternalPath(`${base}?${params.toString()}`);
+	});
 	const isChecking = $derived(
 		gradePhase === 'connecting' ||
 			gradePhase === 'calling' ||
@@ -208,21 +193,14 @@
 	const rewriteCheckPending = $derived(checkingRewrite);
 	const canCheck = $derived(answerText.trim().length > 0 && !isChecking);
 	const statusText = $derived(statusLabelForPhase(gradePhase));
-	const statusDescription = $derived(statusDescriptionForPhase(gradePhase));
 	const feedbackMarkdown = $derived(
 		gradeResult?.model === 'deterministic' ? '' : (gradeResult?.feedbackMarkdown ?? '').trim()
 	);
-	const hasMissingLinks = $derived(resultPresentation.repairKind === 'rewrite');
-	const choiceNeedsRetry = $derived(resultPresentation.repairKind === 'retry_choice');
-	const gapHrefByStepId = $derived(
-		new Map((gradeResult?.savedAttempt?.activeGaps ?? []).map((gap) => [gap.stepId, gap.href]))
-	);
-	const recallPrompt = $derived(gradeResult?.savedAttempt?.recallPrompt ?? null);
-	const hintMissingLinks = $derived(
+	const needsImprovement = $derived(resultPresentation.nextAction === 'improve_answer');
+	const choiceNeedsRetry = $derived(resultPresentation.nextAction === 'retry_choice');
+	const hintedMarkingPoints = $derived(
 		data.question.weakAnswerMissingStepIds
-			.map(
-				(stepId) => data.question.repairChain.find((node) => node.stepId === stepId)?.label ?? null
-			)
+			.map((pointId) => data.markingPoints.find((point) => point.id === pointId)?.label ?? null)
 			.filter((label): label is string => Boolean(label))
 	);
 	const weakAnswerExplanation = $derived(
@@ -233,9 +211,11 @@
 			{
 				title: 'Hint',
 				text:
-					hintMissingLinks.length > 0
-						? `Include: ${hintMissingLinks.join(' → ')}.`
-						: weakAnswerExplanation || data.chain.commonMissingLink
+					hintedMarkingPoints.length > 0
+						? `Include: ${hintedMarkingPoints.join('; ')}.`
+						: weakAnswerExplanation ||
+							data.question.checklist[0]?.text ||
+							'Make each marking point explicit in your answer.'
 			}
 		].filter((hint) => Boolean(hint.text))
 	);
@@ -254,30 +234,35 @@
 	);
 	const practiceBackHref = $derived(requestedReturnTo ?? questionHref);
 	const practiceBackLabel = $derived(
-		data.user && requestedReturnTo?.startsWith('/constellations/')
-			? 'Back to related questions'
-			: data.user && requestedReturnTo?.includes('/answer-chain')
-				? 'Back to answer'
-				: data.user && requestedReturnTo?.startsWith('/questions/')
-					? 'Back to question'
-					: requestedReturnTo
-						? `Back to ${topbarSubject}`
-						: 'Back to question'
+		requestedReturnTo?.includes('/practice')
+			? 'Back to previous result'
+			: requestedReturnTo?.startsWith('/questions/')
+				? 'Back to question'
+				: requestedReturnTo
+					? `Back to ${topbarSubject}`
+					: 'Back to question'
 	);
-	const completionHref = $derived(
-		requestedReturnTo ? resolveInternalPath(requestedReturnTo) : constellationHref
-	);
+	const completionHref = $derived(requestedReturnTo ?? questionHref);
 	const completionLabel = $derived(
-		requestedReturnTo?.startsWith('/constellations/')
-			? 'Back to related questions'
-			: requestedReturnTo?.includes('/answer-chain')
-				? 'Back to answer'
-				: requestedReturnTo?.startsWith('/questions/')
-					? 'Back to question'
-					: requestedReturnTo
-						? `Continue in ${topbarSubject}`
-						: 'See related questions'
+		requestedReturnTo?.includes('/practice')
+			? 'Back to previous result'
+			: requestedReturnTo?.startsWith('/questions/')
+				? 'Back to question'
+				: requestedReturnTo
+					? `Continue in ${topbarSubject}`
+					: 'Back to question'
 	);
+	const successfulNextHref = $derived(
+		hasRelatedQuestion ? relatedQuestionHref : resolveInternalPath(completionHref)
+	);
+	const successfulNextLabel = $derived(
+		hasRelatedQuestion ? 'Try another question' : completionLabel
+	);
+
+	function checkedMarkingPointText(point: (typeof data.markingPoints)[number]) {
+		const checklistPoint = data.question.checklist.find((item) => item.stepId === point.id);
+		return checklistPoint ? shortChecklistText(checklistPoint.text) : point.label || point.short;
+	}
 	const topbarSubjects = [...BROWSE_SUBJECTS];
 	const answerRows = $derived(
 		data.question.meta.marks >= 30
@@ -314,10 +299,8 @@
 		requestedPracticeView === 'result' && Boolean(gradeResult || checkingRewrite)
 	);
 	const currentUserId = $derived(data.user?.uid ?? null);
-	const signInHref = $derived(authStartHref(`${page.url.pathname}${page.url.search}`));
 
-	const practiceStoragePrefix = 'question-constellation:science-practice:v1:';
-	const pendingGradeStorageKey = 'question-constellation:pending-model-check:v1';
+	const practiceStoragePrefix = 'question-constellation:question-practice:v2:';
 	let lastQueuedDraftSignature = '';
 
 	function invalidateGradeRequest() {
@@ -341,27 +324,11 @@
 		void flushPracticeDraftQueue(currentUserId, { keepalive: true });
 	});
 
-	function scrollActiveQuestionIntoView() {
-		if (typeof window === 'undefined') return;
-		window.requestAnimationFrame(() => {
-			if (!window.matchMedia('(max-width: 980px)').matches) return;
-			practiceQuestionList
-				?.querySelector<HTMLElement>('.active')
-				?.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'center' });
-		});
-	}
-
 	onMount(() => {
 		const cleanup = installPracticeDraftWindowFlush(currentUserId);
-		scrollActiveQuestionIntoView();
 		if (currentUserId && migratedAnonymousState) {
-			persistSciencePracticeState();
+			persistQuestionPracticeState();
 			void flushPracticeDraftQueue(currentUserId);
-		}
-		const pendingFeedbackRewrite = consumePendingScienceGrade();
-		if (pendingFeedbackRewrite !== null) {
-			checkingRewrite = pendingFeedbackRewrite;
-			window.setTimeout(() => void checkAnswer(pendingFeedbackRewrite), 0);
 		}
 		return cleanup;
 	});
@@ -420,8 +387,8 @@
 		}
 	}
 
-	function scienceStateFromDraft(draft: PracticeDraftSave | SavedPracticeDraft | null) {
-		if (!draft || draft.draftKind !== 'science-practice' || !isRecord(draft.payload)) return null;
+	function questionStateFromDraft(draft: PracticeDraftSave | SavedPracticeDraft | null) {
+		if (!draft || draft.draftKind !== 'question-practice' || !isRecord(draft.payload)) return null;
 		const gradeResultPayload = recordFromRecord(draft.payload, 'gradeResult');
 		const view = stringFromRecord(draft.payload, 'view');
 		return {
@@ -453,7 +420,7 @@
 	function initialPracticeState(questionId: string) {
 		const storedState = loadStoredPracticeState(questionId);
 		const anonymousState = currentUserId ? loadStoredPracticeState(questionId, 'anonymous') : null;
-		const draftState = scienceStateFromDraft(savedDraftCandidate(questionId));
+		const draftState = questionStateFromDraft(savedDraftCandidate(questionId));
 		const candidates = [storedState, anonymousState, draftState].filter(
 			(candidate): candidate is StoredPracticeState => Boolean(candidate)
 		);
@@ -464,7 +431,7 @@
 		return newest ?? null;
 	}
 
-	function scienceDraftPayload(overrides: Partial<StoredPracticeState> = {}) {
+	function questionDraftPayload(overrides: Partial<StoredPracticeState> = {}) {
 		return {
 			answerText,
 			rewriteText,
@@ -484,41 +451,36 @@
 		} satisfies Record<string, unknown>;
 	}
 
-	function scienceDraftSignature(overrides: Partial<StoredPracticeState> = {}) {
-		return JSON.stringify(scienceDraftPayload(overrides));
+	function questionDraftSignature(overrides: Partial<StoredPracticeState> = {}) {
+		return JSON.stringify(questionDraftPayload(overrides));
 	}
 
-	function scienceDraft(
+	function questionDraft(
 		questionId: string,
 		overrides: Partial<StoredPracticeState> = {}
 	): PracticeDraftSave {
 		return {
 			questionId,
-			draftKind: 'science-practice',
+			draftKind: 'question-practice',
 			answerText: overrides.answerText ?? answerText,
-			payload: scienceDraftPayload(overrides),
+			payload: questionDraftPayload(overrides),
 			clientUpdatedAt: Date.now()
 		};
 	}
 
-	function markSciencePracticeTouched() {
+	function markQuestionPracticeTouched() {
 		if (loadedQuestionId === data.question.id) return;
 		loadedQuestionId = data.question.id;
 		lastQueuedDraftSignature = '';
 	}
 
-	function persistSciencePracticeState(overrides: Partial<StoredPracticeState> = {}) {
-		if (data.englishPractice || (loadedQuestionId && loadedQuestionId !== data.question.id)) return;
+	function persistQuestionPracticeState(overrides: Partial<StoredPracticeState> = {}) {
+		if (loadedQuestionId && loadedQuestionId !== data.question.id) return;
 		saveStoredPracticeState(data.question.id, overrides);
-		const signature = scienceDraftSignature(overrides);
+		const signature = questionDraftSignature(overrides);
 		if (!currentUserId || signature === lastQueuedDraftSignature) return;
 		lastQueuedDraftSignature = signature;
-		queuePracticeDraft(currentUserId, scienceDraft(data.question.id, overrides));
-	}
-
-	function openAuthDialog() {
-		persistSciencePracticeState();
-		authDialogOpen = true;
+		queuePracticeDraft(currentUserId, questionDraft(data.question.id, overrides));
 	}
 
 	function currentAssistance(feedbackRewrite = false) {
@@ -543,7 +505,7 @@
 		pendingAttemptId = '';
 		pendingAttemptSignature = '';
 		pendingResponseDurationMs = null;
-		persistSciencePracticeState();
+		persistQuestionPracticeState();
 	}
 
 	function blockCopy(event: ClipboardEvent) {
@@ -551,14 +513,8 @@
 		copyAttempt += 1;
 	}
 
-	function recordMarkSchemeReveal() {
-		if (markingPointsUsed) return;
-		markingPointsUsed = true;
-		persistSciencePracticeState();
-	}
-
 	function ensurePendingAttempt(feedbackRewrite = false) {
-		if (!activitySessionId) activitySessionId = createActivityId('science-session');
+		if (!activitySessionId) activitySessionId = createActivityId('question-session');
 		if (!responseStartedAt) responseStartedAt = Date.now();
 		const assistance = currentAssistance(feedbackRewrite);
 		const signature = JSON.stringify({ answer: answerText, assistance });
@@ -566,7 +522,7 @@
 			pendingAttemptId = createActivityId('attempt');
 			pendingAttemptSignature = signature;
 			pendingResponseDurationMs = responseDurationMs(responseStartedAt);
-			persistSciencePracticeState();
+			persistQuestionPracticeState();
 		}
 		return {
 			attemptId: pendingAttemptId,
@@ -576,80 +532,16 @@
 		};
 	}
 
-	function prepareScienceAuthRedirect() {
-		if (typeof window === 'undefined') return;
-		const pendingAttempt = ensurePendingAttempt(
-			requestedPracticeView === 'result' || checkingRewrite
-		);
-		persistSciencePracticeState();
-		window.sessionStorage.setItem(
-			pendingGradeStorageKey,
-			JSON.stringify({
-				kind: 'science',
-				questionId: data.question.id,
-				answer: answerText,
-				...pendingAttempt,
-				createdAt: Date.now()
-			})
-		);
-	}
-
-	function consumePendingScienceGrade(): boolean | null {
-		if (!currentUserId || typeof window === 'undefined') return null;
-		try {
-			const raw = window.sessionStorage.getItem(pendingGradeStorageKey);
-			if (!raw) return null;
-			const pending = JSON.parse(raw) as {
-				kind?: string;
-				questionId?: string;
-				answer?: string;
-				attemptId?: string;
-				sourceSessionId?: string;
-				responseDurationMs?: number | null;
-				assistance?: ReturnType<typeof currentAssistance>;
-				createdAt?: number;
-			};
-			const matches =
-				pending.kind === 'science' &&
-				pending.questionId === data.question.id &&
-				pending.answer === answerText &&
-				Date.now() - Number(pending.createdAt ?? 0) < 30 * 60 * 1000;
-			window.sessionStorage.removeItem(pendingGradeStorageKey);
-			if (matches) {
-				hintUsed = pending.assistance?.hintOpened ?? hintUsed;
-				markingPointsUsed = pending.assistance?.markingPointsViewed ?? markingPointsUsed;
-				const restoredExternalInputSources = normalizeExternalInputSources(
-					pending.assistance?.externalInputSources
-				);
-				if (pending.assistance?.feedbackRewrite) {
-					rewriteExternalInputSources = restoredExternalInputSources;
-				} else {
-					answerExternalInputSources = restoredExternalInputSources;
-				}
-				pendingAttemptId = pending.attemptId ?? '';
-				activitySessionId = pending.sourceSessionId || activitySessionId;
-				pendingResponseDurationMs = pending.responseDurationMs ?? null;
-				pendingAttemptSignature = JSON.stringify({
-					answer: pending.answer,
-					assistance: pending.assistance ?? currentAssistance(false)
-				});
-			}
-			return matches ? (pending.assistance?.feedbackRewrite ?? false) : null;
-		} catch {
-			window.sessionStorage.removeItem(pendingGradeStorageKey);
-			return null;
-		}
-	}
-
-	function applySciencePracticeState(storedState: StoredPracticeState | null) {
+	function applyQuestionPracticeState(storedState: StoredPracticeState | null) {
 		answerText = storedState?.answerText ?? '';
 		rewriteText = storedState?.rewriteText ?? '';
 		gradedAnswerText = storedState?.gradedAnswerText ?? '';
 		gradeResult = storedState?.gradeResult ?? null;
 		gradePhase = gradeResult ? 'done' : 'idle';
 		gradeFailure = null;
+		showDetailedFeedback = true;
+		showFullMarkAnswer = false;
 		showHint = false;
-		showMarkingPoints = false;
 		hintUsed = storedState?.hintUsed ?? false;
 		markingPointsUsed = storedState?.markingPointsUsed ?? false;
 		answerExternalInputSources = normalizeExternalInputSources(
@@ -658,7 +550,7 @@
 		rewriteExternalInputSources = normalizeExternalInputSources(
 			storedState?.rewriteExternalInputSources
 		);
-		activitySessionId = storedState?.activitySessionId || createActivityId('science-session');
+		activitySessionId = storedState?.activitySessionId || createActivityId('question-session');
 		responseStartedAt =
 			storedState?.responseStartedAt &&
 			responseDurationMs(storedState.responseStartedAt, Date.now()) !== null
@@ -669,7 +561,7 @@
 		pendingResponseDurationMs = storedState?.pendingResponseDurationMs ?? null;
 		lastQueuedDraftSignature = migratedAnonymousState
 			? ''
-			: scienceDraftSignature({
+			: questionDraftSignature({
 					answerText,
 					rewriteText,
 					gradedAnswerText,
@@ -718,20 +610,21 @@
 		gradeResult = null;
 		gradeFailure = null;
 		gradePhase = 'idle';
+		showDetailedFeedback = true;
+		showFullMarkAnswer = false;
 		showHint = false;
-		showMarkingPoints = false;
 		hintUsed = false;
 		markingPointsUsed = false;
 		answerExternalInputSources = [];
 		rewriteExternalInputSources = [];
 		checkingRewrite = false;
-		activitySessionId = createActivityId('science-session');
+		activitySessionId = createActivityId('question-session');
 		responseStartedAt = Date.now();
 		pendingAttemptId = '';
 		pendingAttemptSignature = '';
 		pendingResponseDurationMs = null;
 		updatePracticeView('attempt', 'replace');
-		persistSciencePracticeState({
+		persistQuestionPracticeState({
 			answerText: '',
 			rewriteText: '',
 			gradedAnswerText: '',
@@ -745,7 +638,7 @@
 	}
 
 	function setAnswerText(value: string) {
-		markSciencePracticeTouched();
+		markQuestionPracticeTouched();
 		if (isChecking && value !== answerText) {
 			invalidateGradeRequest();
 			gradePhase = 'idle';
@@ -759,18 +652,18 @@
 		}
 		answerText = value;
 		if (invalidatesResult) clearCheckedResult();
-		persistSciencePracticeState(invalidatesResult ? { view: 'attempt' } : {});
+		persistQuestionPracticeState(invalidatesResult ? { view: 'attempt' } : {});
 	}
 
 	function setRewriteText(value: string) {
-		markSciencePracticeTouched();
+		markQuestionPracticeTouched();
 		if (isChecking && value !== rewriteText) {
 			invalidateGradeRequest();
 			if (gradeResult && gradedAnswerText) answerText = gradedAnswerText;
 			gradePhase = gradeResult ? 'done' : 'idle';
 		}
 		rewriteText = value;
-		persistSciencePracticeState();
+		persistQuestionPracticeState();
 	}
 
 	async function checkRewrite() {
@@ -783,7 +676,7 @@
 		pendingResponseDurationMs = null;
 		responseStartedAt = Date.now();
 		checkingRewrite = true;
-		persistSciencePracticeState({ answerText: rewrittenAnswer, view: 'result' });
+		persistQuestionPracticeState({ answerText: rewrittenAnswer, view: 'result' });
 		await checkAnswer(true);
 	}
 
@@ -792,12 +685,7 @@
 			if (preserveVisibleResult) checkingRewrite = false;
 			return;
 		}
-		markSciencePracticeTouched();
-		if (!data.user) {
-			if (preserveVisibleResult) checkingRewrite = false;
-			openAuthDialog();
-			return;
-		}
+		markQuestionPracticeTouched();
 
 		if (!preserveVisibleResult) rewriteText = '';
 		if (!preserveVisibleResult) gradedAnswerText = '';
@@ -832,11 +720,6 @@
 				}
 			);
 			if (!gradeRequestIsCurrent(request)) return;
-			if (response.status === 401) {
-				gradePhase = 'idle';
-				openAuthDialog();
-				return;
-			}
 
 			if (!response.ok || !response.body) {
 				throw await requestErrorFromResponse(response, 'Answer check request failed.');
@@ -884,21 +767,10 @@
 		return cleaned ? `${cleaned.charAt(0).toUpperCase()}${cleaned.slice(1)}` : cleaned;
 	}
 
-	function statusDescriptionForPhase(phase: GradePhase) {
-		if (phase === 'connecting') return 'Starting the answer check.';
-		if (phase === 'calling') return 'Looking for the steps you included.';
-		if (phase === 'thinking') {
-			return 'Comparing your answer with the method.';
-		}
-		if (phase === 'grading') return 'Preparing feedback.';
-		if (phase === 'error') return 'The check could not finish.';
-		return '';
-	}
-
 	function statusLabelForPhase(phase: GradePhase) {
 		if (phase === 'connecting') return 'Starting check';
-		if (phase === 'calling') return 'Finding steps';
-		if (phase === 'thinking') return 'Comparing method';
+		if (phase === 'calling') return 'Finding marking points';
+		if (phase === 'thinking') return 'Comparing with marking guidance';
 		if (phase === 'grading') return 'Preparing feedback';
 		if (phase === 'done') return 'Checked';
 		if (phase === 'error') return 'Could not check';
@@ -955,12 +827,14 @@
 		if (message.event === 'done') {
 			gradeResult = JSON.parse(message.data) as GradeResult;
 			request.completed = true;
+			showDetailedFeedback = true;
+			showFullMarkAnswer = false;
 			rewriteText = request.answer;
 			rewriteExternalInputSources = [...answerExternalInputSources];
 			gradedAnswerText = request.answer;
 			gradePhase = 'done';
 			updatePracticeView('result');
-			persistSciencePracticeState({ view: 'result' });
+			persistQuestionPracticeState({ view: 'result' });
 			return;
 		}
 
@@ -1003,41 +877,36 @@
 	}
 
 	$effect(() => {
-		if (data.englishPractice) return;
 		if (loadedQuestionId === data.question.id) {
 			return;
 		}
 
 		invalidateGradeRequest();
 		loadedQuestionId = data.question.id;
-		scrollActiveQuestionIntoView();
 		const storedState = initialPracticeState(data.question.id);
 		const restoreMode = practiceStateRestoreMode(storedState, requestedPracticeView);
 		if (restoreMode === 'checked_result') {
-			applySciencePracticeState(storedState);
+			applyQuestionPracticeState(storedState);
 		} else if (restoreMode === 'fresh_attempt') {
-			applySciencePracticeState(null);
+			applyQuestionPracticeState(null);
 			if (requestedPracticeView === 'result') updatePracticeView('attempt', 'replace');
 		} else {
-			applySciencePracticeState(storedState);
+			applyQuestionPracticeState(storedState);
 		}
 	});
 
 	$effect(() => {
-		if (data.englishPractice) return;
 		if (loadedQuestionId !== data.question.id) return;
-		persistSciencePracticeState();
+		persistQuestionPracticeState();
 	});
 
 	$effect(() => {
-		if (data.englishPractice || loadedQuestionId !== data.question.id || !showHint || hintUsed)
-			return;
+		if (loadedQuestionId !== data.question.id || !showHint || hintUsed) return;
 		hintUsed = true;
-		persistSciencePracticeState();
+		persistQuestionPracticeState();
 	});
 
 	$effect(() => {
-		if (data.englishPractice) return;
 		if (requestedPracticeView === 'result' && !showCheckedResult && !isChecking) {
 			updatePracticeView('attempt', 'replace');
 		}
@@ -1068,369 +937,371 @@
 		name="description"
 		content={isEnglish
 			? 'Write and check a GCSE English answer against the mark focus.'
-			: 'Write and check a GCSE answer against the mark-scoring method.'}
+			: 'Write and check a GCSE answer against clear marking points.'}
 	/>
 </svelte:head>
 
-{#if data.englishPractice}
-	<EnglishGuidedPractice
-		practice={data.englishPractice}
-		savedDraft={data.savedDraft}
-		userId={currentUserId}
+<main
+	class="qc-real-app qc-practice-page qc-test-taking-view"
+	oncopy={blockCopy}
+	oncut={(event) => event.preventDefault()}
+>
+	<AppTopbar
 		user={data.user}
+		subject={topbarSubject}
+		subjects={topbarSubjects}
+		searchPlaceholder="Search questions"
 	/>
-{:else}
-	<main
-		class="qc-real-app qc-practice-page qc-test-taking-view"
-		oncopy={blockCopy}
-		oncut={(event) => event.preventDefault()}
-	>
-		<AppTopbar
-			user={data.user}
-			subject={topbarSubject}
-			subjects={topbarSubjects}
-			searchPlaceholder="Search questions"
-		/>
 
-		<div class="qc-real-layout qc-question-layout" class:singleton={!showPracticeSet}>
-			<aside class="qc-context-rail qc-real-rail qc-question-rail" aria-label="Practice route">
-				<IconBackLink href={practiceBackHref} label={practiceBackLabel} />
-				<p class="qc-real-kicker"><MathText text={topbarSubject} /></p>
-				<h1>{showPracticeSet ? 'Practice set' : 'Exam practice'}</h1>
-				{#if showPracticeSet}
-					<div class="qc-practice-progress" aria-label="Practice progress">
-						<span>Question {questionNumber} of {data.questions.length}</span>
-						<div class="qc-practice-progress-track" aria-hidden="true">
-							<span class="qc-practice-progress-fill" style={`width: ${progressPercent}`}></span>
-						</div>
+	<div class="qc-real-layout qc-question-layout singleton">
+		<aside class="qc-context-rail qc-real-rail qc-question-rail" aria-label="Practice route">
+			<IconBackLink href={practiceBackHref} label={practiceBackLabel} />
+			<p class="qc-real-kicker"><MathText text={topbarSubject} /></p>
+			<h1>Exam practice</h1>
+		</aside>
+
+		<section class="qc-real-main qc-practice-main" aria-label="Practice workspace">
+			{#if !showCheckedResult}
+				<ExamQuestionCard question={data.question} showTitle={false} assetLoading="eager" />
+
+				<HintPanel hints={practiceHints} bind:open={showHint} />
+
+				<section class="qc-practice-answer-card">
+					<PracticeAnswerEditor
+						id="answer"
+						label="Your answer"
+						response={structuredResponse}
+						assets={responseAssets}
+						value={answerText}
+						rows={answerRows}
+						extended={data.question.meta.marks >= 20}
+						placeholder="Write your answer..."
+						{copyAttempt}
+						onValueChange={setAnswerText}
+						onExternalInput={(source) => markAnswerExternalInput(source)}
+					/>
+					<div class="qc-practice-actions" aria-label="Answer actions">
+						<button
+							class="qc-action-button primary"
+							type="button"
+							onclick={() => void checkAnswer()}
+							disabled={!canCheck}
+						>
+							{#if isChecking}
+								<span class="loading-spinner button-spinner" aria-hidden="true"></span>
+								Checking...
+							{:else}
+								<CheckCircle2 size={18} aria-hidden="true" />
+								Check answer
+							{/if}
+						</button>
 					</div>
+				</section>
+
+				{#if isChecking}
+					<section class="qc-status-panel" aria-live="polite">
+						<span class="loading-spinner" aria-hidden="true"></span>
+						<p class="qc-panel-label">{statusText}</p>
+					</section>
 				{/if}
-				{#if showPracticeSet}
-					<nav
-						bind:this={practiceQuestionList}
-						class="qc-real-chain-list"
-						aria-label="Practice questions"
+
+				{#if gradeFailure}
+					<RequestFailureNotice
+						failure={gradeFailure}
+						onRetry={() => void checkAnswer()}
+						retryLabel="Retry check"
+					/>
+				{/if}
+			{:else}
+				<header
+					bind:this={resultHeader}
+					class="qc-practice-result-header"
+					tabindex="-1"
+					aria-live="polite"
+				>
+					<p class="qc-real-kicker"><MathText text={data.question.sourceRef} /></p>
+					<h2>
+						{rewriteCheckPending
+							? 'Checking your improved answer'
+							: choiceNeedsRetry
+								? 'Not quite'
+								: needsImprovement
+									? resultTitle
+									: isChoiceResponse
+										? `${gradeResult?.awardedMarks ?? 0}/${gradeResult?.maxMarks ?? data.question.meta.marks} marks`
+										: fullMarksTitle}
+					</h2>
+					{#if !rewriteCheckPending && needsImprovement}
+						<p class="qc-practice-result-meta">
+							<strong>
+								{gradeResult?.awardedMarks ?? 0}/{gradeResult?.maxMarks ?? data.question.meta.marks}
+								marks
+							</strong>
+							Use the missing marking points below to improve it.
+						</p>
+					{:else if !rewriteCheckPending && !choiceNeedsRetry && !isChoiceResponse}
+						<p class="qc-practice-result-meta">
+							<strong>
+								{gradeResult?.awardedMarks ?? 0}/{gradeResult?.maxMarks ?? data.question.meta.marks}
+								marks
+							</strong>
+							You are ready for another question.
+						</p>
+					{/if}
+					{#if !rewriteCheckPending && gradeResult?.evidence?.externalInputDetected}
+						<p class="qc-assisted-evidence-note">
+							Paste and drop are blocked here. Type the answer yourself; this attempted input is not
+							counted as independent evidence.
+						</p>
+					{/if}
+				</header>
+
+				<section class="qc-practice-original-question" aria-labelledby="original-question-title">
+					<header>
+						<p id="original-question-title" class="qc-panel-label">Original question</p>
+					</header>
+					<ExamQuestionCard
+						question={data.question}
+						compact
+						showHeader={false}
+						showMeta={false}
+						showTitle={false}
+						assetLoading="eager"
+					/>
+				</section>
+
+				{#if resultPresentation.showStepDiagnostics || rewriteCheckPending}
+					<section
+						class="qc-marking-result"
+						aria-label={rewriteCheckPending
+							? 'Marking-point update in progress'
+							: 'Checked marking points'}
+						aria-busy={rewriteCheckPending}
 					>
-						{#each data.questions as question, index (question.id)}
-							<a
-								class:active={question.id === data.question.id}
-								aria-current={question.id === data.question.id ? 'page' : undefined}
-								href={resolveInternalPath(
-									withPracticeContext(
-										resolve('/questions/[questionId]/practice', { questionId: question.id })
-									)
-								)}
-							>
-								<span>{index + 1}</span>
-								<span><MathText text={question.title} /></span>
-								<small>{question.distanceLabel}</small>
-							</a>
-						{/each}
-					</nav>
+						<header class="qc-marking-result-heading">
+							<div>
+								<p class="qc-panel-label">Marking points</p>
+								<p>These are the ideas the examiner can credit in this answer.</p>
+							</div>
+							{#if !rewriteCheckPending}
+								<span>{includedPointCount}/{data.markingPoints.length} included</span>
+							{/if}
+						</header>
+						<ol>
+							{#each data.markingPoints as point, index (point.id)}
+								<li
+									class:present={!rewriteCheckPending && presentStepIds.has(point.id)}
+									class:missing={!rewriteCheckPending && missingStepIds.has(point.id)}
+								>
+									<span class="qc-marking-result-index">{index + 1}</span>
+									{#if rewriteCheckPending}
+										<span class="loading-spinner qc-marking-result-spinner" aria-hidden="true"
+										></span>
+									{:else if presentStepIds.has(point.id)}
+										<CheckCircle2 size={18} aria-hidden="true" />
+									{:else}
+										<CircleAlert size={18} aria-hidden="true" />
+									{/if}
+									<span>
+										<span class="sr-only">
+											{rewriteCheckPending
+												? 'Marking point: '
+												: presentStepIds.has(point.id)
+													? 'Included: '
+													: 'Missing: '}
+										</span>
+										<MathText text={checkedMarkingPointText(point)} />
+									</span>
+									<span class="qc-marking-result-status">
+										{rewriteCheckPending
+											? 'Checking'
+											: presentStepIds.has(point.id)
+												? 'Included'
+												: 'Missing'}
+									</span>
+								</li>
+							{/each}
+						</ol>
+					</section>
 				{/if}
-			</aside>
 
-			<section class="qc-real-main qc-practice-main" aria-label="Practice workspace">
-				{#if !showCheckedResult}
-					<ExamQuestionCard question={data.question} showTitle={false} assetLoading="eager" />
-
-					<HintPanel hints={practiceHints} bind:open={showHint} />
-
-					<section class="qc-practice-answer-card">
+				<section class="qc-practice-answer-card" class:qc-practice-improve-card={needsImprovement}>
+					{#if needsImprovement}
+						<header class="qc-practice-improve-copy">
+							<p class="qc-panel-label">Improve your answer</p>
+							<p>Keep what was right, then add the missing marking points.</p>
+						</header>
 						<PracticeAnswerEditor
-							id="answer"
-							label="Your answer"
+							id="rewrite"
+							label="Your improved answer"
 							response={structuredResponse}
 							assets={responseAssets}
-							value={answerText}
+							value={rewriteText}
 							rows={answerRows}
 							extended={data.question.meta.marks >= 20}
-							placeholder="Write your answer..."
+							placeholder="Improve your answer using the marking feedback..."
 							{copyAttempt}
-							onValueChange={setAnswerText}
-							onExternalInput={(source) => markAnswerExternalInput(source)}
+							onValueChange={setRewriteText}
+							onExternalInput={(source) => markAnswerExternalInput(source, true)}
 						/>
-						<div class="qc-practice-actions" aria-label="Answer actions">
+						<div class="qc-practice-actions">
 							<button
 								class="qc-action-button primary"
+								class:qc-rewrite-checking={rewriteCheckPending}
 								type="button"
-								onclick={() => void checkAnswer()}
-								disabled={!canCheck}
+								onclick={checkRewrite}
+								disabled={!rewriteText.trim() || isChecking || rewriteCheckPending}
+								aria-busy={rewriteCheckPending}
 							>
-								{#if isChecking}
+								{#if rewriteCheckPending}
 									<span class="loading-spinner button-spinner" aria-hidden="true"></span>
-									Checking...
 								{:else}
 									<CheckCircle2 size={18} aria-hidden="true" />
-									Check answer
 								{/if}
+								{rewriteCheckPending ? 'Checking...' : 'Check improved answer'}
 							</button>
 						</div>
-					</section>
-
-					{#if !isChoiceResponse && data.question.checklist.length > 0}
-						<MarkSchemeDisclosure
-							points={data.question.checklist.map((item) => ({
-								id: item.id,
-								text: shortChecklistText(item.text)
-							}))}
-							marks={data.question.meta.marks}
-							source={data.question.checklistSource}
-							bind:open={showMarkingPoints}
-							onReveal={recordMarkSchemeReveal}
-						/>
+					{:else}
+						<p class="qc-practice-answer-label">Your checked answer</p>
+						<p class="qc-checked-answer">{answerText}</p>
 					{/if}
+				</section>
 
-					{#if isChecking}
-						<section class="qc-status-panel" aria-live="polite">
-							<span class="loading-spinner" aria-hidden="true"></span>
-							<div>
-								<p class="qc-panel-label">{statusText}</p>
-								<p>{statusDescription}</p>
-							</div>
-						</section>
-					{/if}
+				{#if choiceNeedsRetry}
+					<div class="qc-practice-actions qc-check-next-actions" aria-label="Retry answer">
+						<button class="qc-action-button primary" type="button" onclick={restartQuestion}>
+							Try again
+						</button>
+					</div>
+				{:else if !needsImprovement}
+					<div class="qc-practice-actions qc-check-next-actions" aria-label="Next action">
+						<a class="qc-action-button primary" href={successfulNextHref}>
+							{successfulNextLabel}
+							<ArrowRight size={18} aria-hidden="true" />
+						</a>
+						<button class="qc-action-button" type="button" onclick={restartQuestion}>
+							Try again
+						</button>
+					</div>
+				{/if}
 
-					{#if gradeFailure}
-						<RequestFailureNotice
-							failure={gradeFailure}
-							onRetry={() => void checkAnswer()}
-							retryLabel="Retry check"
-						/>
-					{/if}
-				{:else}
-					<header
-						bind:this={resultHeader}
-						class="qc-practice-result-header"
-						tabindex="-1"
+				{#if rewriteCheckPending}
+					<section
+						class="qc-practice-feedback-pending"
+						aria-label="Detailed feedback"
 						aria-live="polite"
+						aria-busy="true"
 					>
-						<p class="qc-real-kicker"><MathText text={data.question.sourceRef} /></p>
-						<h2>
-							{rewriteCheckPending
-								? 'Rewrite submitted'
-								: choiceNeedsRetry
-									? 'Not quite'
-									: hasMissingLinks
-										? resultTitle
-										: `${gradeResult?.awardedMarks ?? 0}/${gradeResult?.maxMarks ?? data.question.meta.marks} marks`}
-						</h2>
-						{#if !rewriteCheckPending && hasMissingLinks}
-							<p class="qc-practice-result-meta">
-								<strong>
-									{gradeResult?.awardedMarks ?? 0}/{gradeResult?.maxMarks ??
-										data.question.meta.marks}
-									marks
-								</strong>
-								Complete the missing links below.
-							</p>
-						{/if}
-						{#if !rewriteCheckPending && gradeResult?.evidence?.externalInputDetected}
-							<p class="qc-assisted-evidence-note">
-								Paste and drop are blocked here. Type the answer yourself; this attempted input is
-								not counted as independent evidence.
-							</p>
-						{/if}
-					</header>
-
-					{#if hasMissingLinks}
-						<details class="qc-practice-detail qc-practice-original-question">
-							<summary>
-								Original question
-								<ChevronDown size={17} aria-hidden="true" />
-							</summary>
-							<ExamQuestionCard
-								question={data.question}
-								compact
-								showHeader={false}
-								showMeta={false}
-								showTitle={false}
-								assetLoading="eager"
-							/>
-						</details>
-					{/if}
-
-					{#if data.chain.illustration && !isChoiceResponse}
-						<ChainIllustration
-							illustration={data.chain.illustration}
-							eager
-							showCaption={false}
-							expandable
-						/>
-					{/if}
-
-					{#if resultPresentation.showStepDiagnostics || rewriteCheckPending}
-						<section
-							class="qc-chain-result"
-							aria-label={rewriteCheckPending
-								? 'Answer chain update in progress'
-								: 'Checked answer chain'}
-							aria-busy={rewriteCheckPending}
-						>
-							<p class="qc-panel-label">Answer chain</p>
-							<ol>
-								{#each data.chain.steps as step, index (step.id)}
-									{@const gapHref = gapHrefByStepId.get(step.id)}
-									<li
-										class:present={!rewriteCheckPending && presentStepIds.has(step.id)}
-										class:missing={!rewriteCheckPending && missingStepIds.has(step.id)}
-									>
-										<span class="qc-chain-result-index">{index + 1}</span>
-										{#if rewriteCheckPending}
-											<span class="loading-spinner qc-chain-result-spinner" aria-hidden="true"
-											></span>
-										{:else if presentStepIds.has(step.id)}
-											<CheckCircle2 size={18} aria-hidden="true" />
-										{:else}
-											<CircleAlert size={18} aria-hidden="true" />
-										{/if}
-										<span>
-											<span class="sr-only">
-												{rewriteCheckPending
-													? 'Step: '
-													: presentStepIds.has(step.id)
-														? 'Present: '
-														: 'Missing: '}
-											</span>
-											<MathText text={step.short} />
-										</span>
-										{#if !rewriteCheckPending && missingStepIds.has(step.id) && gapHref}
-											<a class="qc-inline-gap-link" href={resolveInternalPath(gapHref)}>
-												Practise this step
-											</a>
-										{/if}
-									</li>
-								{/each}
-							</ol>
-						</section>
-					{/if}
-
-					<section class="qc-practice-answer-card">
-						{#if hasMissingLinks}
-							<PracticeAnswerEditor
-								id="rewrite"
-								label="Rewrite with the missing steps"
-								response={structuredResponse}
-								assets={responseAssets}
-								value={rewriteText}
-								rows={answerRows}
-								extended={data.question.meta.marks >= 20}
-								placeholder="Rewrite your answer..."
-								{copyAttempt}
-								onValueChange={setRewriteText}
-								onExternalInput={(source) => markAnswerExternalInput(source, true)}
-							/>
-							<div class="qc-practice-actions">
-								<button
-									class="qc-action-button primary"
-									class:qc-rewrite-checking={rewriteCheckPending}
-									type="button"
-									onclick={checkRewrite}
-									disabled={!rewriteText.trim() || isChecking || rewriteCheckPending}
-									aria-busy={rewriteCheckPending}
-								>
-									{#if rewriteCheckPending}
-										<span class="loading-spinner button-spinner" aria-hidden="true"></span>
-									{:else}
-										<CheckCircle2 size={18} aria-hidden="true" />
-									{/if}
-									{rewriteCheckPending ? 'Checking...' : 'Check rewrite'}
-								</button>
+						<div class="qc-practice-feedback-status">
+							<span>Detailed feedback</span>
+							<span class="qc-working-ellipsis" aria-hidden="true">
+								<span>.</span><span>.</span><span>.</span>
+							</span>
+							<span class="sr-only">Working</span>
+						</div>
+					</section>
+				{:else if feedbackMarkdown}
+					<section class="qc-practice-reveal qc-practice-feedback-reveal">
+						<header class="qc-practice-reveal-header">
+							<div>
+								<p class="qc-panel-label">Detailed feedback</p>
+								<p>Specific guidance based on the answer you submitted.</p>
 							</div>
-						{:else}
-							<p class="qc-practice-answer-label">Your checked answer</p>
-							<p class="qc-checked-answer">{answerText}</p>
+							<button
+								class="qc-practice-reveal-button"
+								type="button"
+								onclick={() => (showDetailedFeedback = !showDetailedFeedback)}
+								aria-expanded={showDetailedFeedback}
+								aria-controls="practice-detailed-feedback"
+							>
+								{showDetailedFeedback ? 'Hide feedback' : 'Show detailed feedback'}
+								<ChevronDown
+									size={17}
+									aria-hidden="true"
+									class={showDetailedFeedback ? 'expanded' : undefined}
+								/>
+							</button>
+						</header>
+						{#if showDetailedFeedback}
+							<div
+								id="practice-detailed-feedback"
+								class="qc-practice-reveal-content"
+								transition:slide={{ duration: 220 }}
+							>
+								<MarkdownContent markdown={feedbackMarkdown} class="qc-feedback-markdown" />
+							</div>
 						{/if}
 					</section>
+				{/if}
 
-					{#if choiceNeedsRetry}
-						<div class="qc-practice-actions qc-check-next-actions" aria-label="Retry answer">
-							<button class="qc-action-button primary" type="button" onclick={restartQuestion}>
-								Try again
-							</button>
-						</div>
-					{:else if !hasMissingLinks}
-						<div class="qc-practice-actions qc-check-next-actions" aria-label="Next action">
-							<a
-								class="qc-action-button primary"
-								href={showPracticeSet && !isLastQuestion ? nextQuestionHref : completionHref}
-							>
-								{showPracticeSet && !isLastQuestion ? 'Next question' : completionLabel}
-								<ArrowRight size={18} aria-hidden="true" />
-							</a>
-							<button class="qc-action-button" type="button" onclick={restartQuestion}>
-								Try again
-							</button>
-						</div>
-					{/if}
-
-					{#if !rewriteCheckPending && recallPrompt && hasMissingLinks}
-						<section class="qc-quick-recall">
+				{#if !isChoiceResponse && data.question.modelAnswer}
+					<section class="qc-practice-reveal qc-practice-full-mark-reveal">
+						<header class="qc-practice-reveal-header">
 							<div>
-								<p class="qc-panel-label">Quick recall</p>
+								<p class="qc-panel-label">Full-mark answer</p>
+								<p>Compare your response with one complete answer.</p>
+							</div>
+							<button
+								class="qc-practice-reveal-button primary"
+								type="button"
+								onclick={() => (showFullMarkAnswer = !showFullMarkAnswer)}
+								aria-expanded={showFullMarkAnswer}
+								aria-controls="practice-full-mark-answer"
+							>
+								{showFullMarkAnswer ? 'Hide full-mark answer' : 'Show full-mark answer'}
+								<ChevronDown
+									size={17}
+									aria-hidden="true"
+									class={showFullMarkAnswer ? 'expanded' : undefined}
+								/>
+							</button>
+						</header>
+						{#if showFullMarkAnswer}
+							<div
+								id="practice-full-mark-answer"
+								class="qc-practice-reveal-content qc-practice-model-answer"
+								transition:slide={{ duration: 220 }}
+							>
+								<p><MathText text={data.question.modelAnswer} /></p>
+							</div>
+						{/if}
+					</section>
+				{:else if isChoiceResponse && choiceNeedsRetry && (choiceCorrectAnswerText || data.question.modelAnswer)}
+					<section class="qc-practice-reveal qc-practice-full-mark-reveal">
+						<header class="qc-practice-reveal-header">
+							<div>
+								<p class="qc-panel-label">Correct answer</p>
+								<p>Reveal the correct response when you are ready to compare.</p>
+							</div>
+							<button
+								class="qc-practice-reveal-button primary"
+								type="button"
+								onclick={() => (showFullMarkAnswer = !showFullMarkAnswer)}
+								aria-expanded={showFullMarkAnswer}
+								aria-controls="practice-correct-answer"
+							>
+								{showFullMarkAnswer ? 'Hide correct answer' : 'Show correct answer'}
+								<ChevronDown
+									size={17}
+									aria-hidden="true"
+									class={showFullMarkAnswer ? 'expanded' : undefined}
+								/>
+							</button>
+						</header>
+						{#if showFullMarkAnswer}
+							<div
+								id="practice-correct-answer"
+								class="qc-practice-reveal-content qc-practice-model-answer"
+								transition:slide={{ duration: 220 }}
+							>
 								<p>
-									{recallPrompt.cardCount} cards for {recallPrompt.label.replace(/^.*?:\s*/, '')}
+									<MathText text={choiceCorrectAnswerText || data.question.modelAnswer} />
 								</p>
 							</div>
-							<a href={resolveInternalPath(recallPrompt.href)}>Open flashcards</a>
-						</section>
-					{/if}
-
-					{#if rewriteCheckPending}
-						<section
-							class="qc-practice-detail qc-practice-feedback-pending"
-							aria-label="Detailed feedback"
-							aria-live="polite"
-							aria-busy="true"
-						>
-							<div class="qc-practice-feedback-status">
-								<span>Detailed feedback</span>
-								<span class="qc-working-ellipsis" aria-hidden="true">
-									<span>.</span><span>.</span><span>.</span>
-								</span>
-								<span class="sr-only">Working</span>
-							</div>
-						</section>
-					{:else if feedbackMarkdown}
-						<details class="qc-practice-detail">
-							<summary>
-								Detailed feedback
-								<ChevronDown size={17} aria-hidden="true" />
-							</summary>
-							<MarkdownContent markdown={feedbackMarkdown} class="qc-feedback-markdown" />
-						</details>
-					{/if}
-
-					{#if !isChoiceResponse && data.question.modelAnswer}
-						<details class="qc-practice-detail">
-							<summary>
-								Full-mark answer
-								<ChevronDown size={17} aria-hidden="true" />
-							</summary>
-							<p><MathText text={data.question.modelAnswer} /></p>
-						</details>
-					{:else if isChoiceResponse && choiceNeedsRetry && (choiceCorrectAnswerText || data.question.modelAnswer)}
-						<details class="qc-practice-detail">
-							<summary>
-								Correct answer
-								<ChevronDown size={17} aria-hidden="true" />
-							</summary>
-							<p>
-								<MathText text={choiceCorrectAnswerText || data.question.modelAnswer} />
-							</p>
-						</details>
-					{/if}
+						{/if}
+					</section>
 				{/if}
-			</section>
-		</div>
-	</main>
-{/if}
-
-{#if !data.englishPractice}
-	<AuthRequiredDialog
-		open={authDialogOpen}
-		href={signInHref}
-		onDismiss={() => (authDialogOpen = false)}
-		onSignIn={prepareScienceAuthRedirect}
-	/>
-{/if}
+			{/if}
+		</section>
+	</div>
+</main>

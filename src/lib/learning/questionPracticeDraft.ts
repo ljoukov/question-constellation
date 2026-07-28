@@ -8,7 +8,7 @@ import {
 } from '$lib/practiceDrafts';
 import { practiceStateRestoreMode } from './practiceStateRestore';
 
-export type RestoredSciencePracticeDraft = {
+export type RestoredQuestionPracticeDraft = {
 	answerText: string;
 	rewriteText: string;
 	gradedAnswerText: string;
@@ -24,10 +24,10 @@ export type RestoredSciencePracticeDraft = {
 	updatedAt: number;
 };
 
-export function sciencePracticeStateFromDraft(
+export function questionPracticeStateFromDraft(
 	draft: PracticeDraftSave | SavedPracticeDraft | null
-): RestoredSciencePracticeDraft | null {
-	if (!draft || draft.draftKind !== 'science-practice' || !isRecord(draft.payload)) return null;
+): RestoredQuestionPracticeDraft | null {
+	if (!draft || draft.draftKind !== 'question-practice' || !isRecord(draft.payload)) return null;
 	const view = stringFromRecord(draft.payload, 'view');
 	return {
 		answerText: stringFromRecord(draft.payload, 'answerText') || draft.answerText,
@@ -47,10 +47,10 @@ export function sciencePracticeStateFromDraft(
 	};
 }
 
-export function isResumableSciencePracticeDraft(
+export function isResumableQuestionPracticeDraft(
 	draft: PracticeDraftSave | SavedPracticeDraft | null
 ): boolean {
-	const state = sciencePracticeStateFromDraft(draft);
+	const state = questionPracticeStateFromDraft(draft);
 	if (!state || (!state.answerText.trim() && !state.rewriteText.trim())) return false;
 	return practiceStateRestoreMode(state, 'attempt') === 'draft';
 }

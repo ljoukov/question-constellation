@@ -9,7 +9,7 @@ import { z } from 'zod';
 const draftSchema = z
 	.object({
 		questionId: z.string().trim().min(1).max(220),
-		draftKind: z.enum(['science-practice', 'english-guided']),
+		draftKind: z.literal('question-practice'),
 		answerText: z.string().max(10_000).default(''),
 		payload: z.record(z.string(), z.unknown()).default({}),
 		clientUpdatedAt: z.number().int().nonnegative()

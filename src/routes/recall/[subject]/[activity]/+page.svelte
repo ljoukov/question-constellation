@@ -296,7 +296,6 @@
 	);
 	const completionReturnLabel = $derived.by(() => {
 		if (returnToHref.startsWith('/questions/')) return 'Back to question';
-		if (returnToHref.startsWith('/gaps/')) return 'Back to gap';
 		if (returnToHref.startsWith('/recall/')) return 'Choose another stack';
 		if (/^\/subjects\/[^/]+\/recall(?:[/?#]|$)/.test(returnToHref)) {
 			return 'Choose another deck';

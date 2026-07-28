@@ -165,28 +165,6 @@ export async function getPublicQuestionSitemapEntries(): Promise<SitemapEntry[]>
 	}));
 }
 
-export async function getPublicChainSitemapEntries(): Promise<SitemapEntry[]> {
-	const browseData = await getQuestionBankBrowseData();
-	const questionCountByChain = new Map<string, number>();
-	for (const question of browseData.questions) {
-		if (!question.chainId) continue;
-		questionCountByChain.set(
-			question.chainId,
-			(questionCountByChain.get(question.chainId) ?? 0) + 1
-		);
-	}
-	return [...questionCountByChain]
-		.sort(
-			([leftId, leftCount], [rightId, rightCount]) =>
-				rightCount - leftCount || leftId.localeCompare(rightId)
-		)
-		.map(([chainId, questionCount]) => ({
-			path: `/constellations/${encodePathSegment(chainId)}`,
-			changefreq: 'monthly',
-			priority: questionCount > 1 ? '0.76' : '0.68'
-		}));
-}
-
 function topicPageId(boardSlug: string, subjectSlug: string, topicSlug: string) {
 	return `${boardSlug}/${subjectSlug}/${topicSlug}`;
 }

@@ -14,40 +14,25 @@ function between(contents: string, start: string, end: string): string {
 }
 
 describe('home snapshot mutation wiring', () => {
-	it('latches confirmed science and English SSE writes before stale UI requests are ignored', () => {
-		const science = between(
+	it('latches confirmed answer-check writes before stale UI requests are ignored', () => {
+		const answerCheck = between(
 			source('../routes/questions/[questionId]/practice/+page.svelte'),
 			'function handleSseMessage',
 			'async function readSseStream'
 		);
-		const english = between(
-			source('./components/EnglishGuidedPractice.svelte'),
-			'function handleSseMessage',
-			'async function readSseStream'
-		);
 
-		for (const handler of [science, english]) {
-			expect(handler.indexOf("if (message.event === 'done') markHomeSnapshotDirty()")).toBeLessThan(
-				handler.indexOf('if (!gradeRequestIsCurrent(request))')
-			);
-		}
+		expect(
+			answerCheck.indexOf("if (message.event === 'done') markHomeSnapshotDirty()")
+		).toBeLessThan(answerCheck.indexOf('if (!gradeRequestIsCurrent(request))'));
 	});
 
-	it('latches confirmed gap and profile writes before superseded UI responses return', () => {
-		const gap = between(
-			source('../routes/gaps/[gapId]/+page.svelte'),
-			'async function submitFinal',
-			'function finalRequestIsCurrent'
-		);
+	it('latches confirmed profile writes before superseded UI responses return', () => {
 		const profile = between(
 			source('../routes/profile/+page.svelte'),
 			'return async ({ result }) => {',
 			'$effect(() =>'
 		);
 
-		expect(
-			gap.indexOf('if (response.ok || response.status >= 500) markHomeSnapshotDirty()')
-		).toBeLessThan(gap.indexOf('if (!finalRequestIsCurrent(request))'));
 		expect(
 			profile.indexOf('const snapshotSaveConfirmed = handleProfileSaveSnapshotResult(result)')
 		).toBeLessThan(profile.indexOf('if (activeSaveController !== controller) return'));

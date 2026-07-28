@@ -1,656 +1,292 @@
 # Product Flows
 
-Question Constellation is a lightweight GCSE exam-question atlas organized by the hidden answer chains that examiners reward. It should feel fast, public, browseable, and exam-specific. It should not feel like a generic chatbot, a heavy revision dashboard, or a broad "AI tutor" workspace.
-
-The core promise:
-
-> Questions that look different often use the same answer chain. Question Constellation helps students spot, practise, and remember those chains.
-
-## Positioning
-
-Question Constellation is built around three ideas:
-
-1. Start from a real exam-style question.
-2. Reveal the answer chain behind it.
-3. Practise transfer through nearby and harder questions that use the same chain.
-
-The first product should be closer to an exam-question atlas than a full learning operating system. Most of the value can come from curated and structured content: questions, mark checklists, common weak answers, answer chains, related questions, and model answers. Runtime model use should be optional and lightweight, mainly for explicit answer checking after the student has already tried.
-
-## Market Signals
-
-The research pointed to several recurring student behaviors:
-
-- Students discover tools through short-form exam-question clips where they can argue with the answer or try solving the question.
-- Creator and teacher review content builds trust, especially when it shows real exam use rather than abstract product claims.
-- Search intent is highly specific: students look for a board, paper, topic, mark value, or exact question type.
-- Students care whether a question is actually in their exam specification.
-- Students want visible proof of why they lost marks, not only a score.
-- Students want fast last-minute practice, printable sets, and post-question repair.
-- Students are skeptical of vague AI feedback, stale specifications, wrong diagrams, repeated questions, and generic generated practice.
-
-This means acquisition should send users to a specific question or chain page, not a generic homepage.
-
-## Acquisition Flows
-
-### 1. Short-Form Question Hook
-
-Entry content:
-
-- A short video or post shows one GCSE question.
-- The hook is participatory: "Most students miss this 4-marker. What link is missing?"
-- The content should include enough of the question for the student to attempt it mentally.
-
-Landing page:
-
-- Public question page.
-- No sign-in wall.
-- Board, paper, topic, tier, and mark value visible immediately.
-- Primary action: `Show answer chain`.
-
-Why it works:
-
-- The student arrives already trying to solve the question.
-- The page rewards that intent immediately.
-- The product difference appears within the first screen: the hidden chain, not a generic explanation.
-
-### 2. Search Result To Answer Chain
-
-Search examples:
-
-- "why does reduced blood flow cause chest pain gcse"
-- "AQA biology respiration energy 4 mark answer"
-- "GCSE heart rate exercise respiration answer"
-
-Landing page:
-
-- Exact question page or answer-chain page.
-- Model answer, mark checklist, and common weak answer should be visible without requiring an account.
-- Related questions should be framed as the same answer chain, not just "more questions".
-
-Why it works:
-
-- Search users have narrow intent.
-- A structured page can answer faster than a chat product.
-- Public pages can build organic reach over time.
-
-### 3. Teacher Or Creator Link
-
-Entry content:
-
-- A teacher, tutor, parent, or student creator links to a chain page.
-- The language should be practical: "Here are six Biology questions that use the same respiration-energy chain."
-
-Landing page:
-
-- Constellation page.
-- Shows the question list, answer chain, and common missing link.
-- Includes a printable or copyable practice set later, but not as the first interaction.
-
-Why it works:
-
-- Trust comes from a person the student already follows.
-- The product page must look credible and exam-native enough to preserve that trust.
-
-### 4. Post-Question Or Post-Exam Debrief
-
-Entry content:
-
-- A student asks why an answer was wrong, whether a topic is in the spec, or what the question was really testing.
-
-Landing page:
-
-- A debrief page for a question type or answer chain.
-- Shows what the question tested, what common answers miss, and three similar questions.
-
-Why it works:
-
-- Students often need repair after a mistake, not more content.
-- This is a natural path into the constellation: one mistake leads to a family of related questions.
-
-## Core Product Objects
-
-### Exam Context
-
-Every question should carry explicit metadata:
-
-- Qualification: `GCSE`
-- Board: `AQA`
-- Subject: `Combined Science`
-- Tier: `Higher`
-- Paper: `Biology Paper 1`
-- Topic: `Organisation`
-- Mark value: `4 marks`
-- Question type: `explain`
-
-This metadata is part of the trust surface. It should be visible, not hidden in internal data.
-
-### Question
-
-A question is the smallest public entry point. It should include:
-
-- Prompt
-- Mark value
-- Exam context
-- Optional diagram or source
-- Model answer
-- Mark checklist
-- Common weak answer
-- Link to its answer chain
-- Link to its constellation
-
-### Answer Chain
-
-An answer chain is the reusable reasoning structure behind one or more questions.
-
-Example:
+Question Constellation is a public GCSE question bank built around a short, legible learning loop:
 
 ```text
-blood flow -> oxygen -> respiration -> energy -> pain
+find a question -> write an answer -> check marking points -> improve the answer -> try another
 ```
 
-An answer chain should include:
+The learner should never need to understand an internal content model before they can use the app.
+The interface talks about questions, answers, and marking points. Chain, step, constellation, and
+gap records may still exist in D1 for grouping and grading, but they do not have public pages.
 
-- Plain-language title
-- Chain steps
-- Why each step matters
-- Common missing links
-- Model answer using the chain
-- Question families that use it
-- Review state only if a future retained-chain surface is rebuilt
-
-### Constellation
-
-A constellation is a curated set of questions that use the same answer chain.
-
-Question types within a constellation:
+## Product Map
 
-- `start`: the first concrete question.
-- `near`: same subject and close topic.
-- `stretch`: same chain in a less obvious topic.
-- `exam transfer`: harder exam-style transfer question.
-
-Example Biology constellation:
-
-1. Chest pain from reduced blood flow
-2. Heart rate during exercise
-3. Muscle fatigue in vigorous exercise
-4. Sperm cells and mitochondria
-5. Root hair cells and active transport
-6. Blocked arteries and heart muscle
-
-### Retained Chain Review
-
-The old `/thinking-memory` route is removed from the current product. A retained-chain review surface may return later, but it should be rebuilt after practice is useful enough to create earned review state. It is not the first-use taxonomy and should not be restored as a standalone old UI.
-
-A future version should show:
-
-- Retained chains
-- Where each chain was discovered
-- Questions where the chain has been used
-- Common missing link
-- Review action
-- Reset or relearn action
-
-Any retained-chain surface should grow after practice, not before it.
-
-## Primary UX Flows
-
-### Returning signed-in learner
-
-The signed-in home is a return surface, not an acquisition landing page. It should stay subordinate to the public question-first product loop.
-
-1. The student arrives at home and sees a compact weekly summary, a visual challenge recommendation, and their subjects.
-2. Every subject card is one obvious target with a visible action: `Open` for its activity hub, `Set up` for unconfigured subject content, or `Adjust` for a scope change.
-3. The card shows one current next step chosen from the learner evidence already stored for that subject.
-4. The challenge recommendation links to one playable challenge and has a separate `Explore all` route into the full challenge catalog. Challenges are a sibling product area, never a parent of a subject.
-5. Opening a subject shows the recommended action first, then a small number of genuine alternatives:
-   - recall a specific included topic;
-   - close a confirmed knowledge gap;
-   - answer a question that applies a useful answer chain.
-6. If subject content is not configured, the card says `Set up` and opens the official-curriculum selection directly.
-7. English Literature uses its selected OCR set texts to open `Choose an essay question`; it does not pass through the science-oriented recommendation pipeline.
-
-Design requirements:
-
-- Do not hide the action behind an apparently inert card.
-- Keep the recommendation rationale in its one visible detail sentence. Do not add a separate
-  `Why this?` disclosure or persist duplicate recommendation-explanation prose.
-- Do not place duplicate configuration buttons inside and beside the same card.
-- Keep subject-content settings after the subjects on mobile and in the quieter sidebar position on larger screens.
-- Past-paper links belong to public acquisition and SEO surfaces, not the signed-in next-action flow.
-- If no question matches a narrow curriculum selection, offer a concrete scope adjustment instead of a dead `being prepared` state.
-- Preserve official specification identifiers in data, but show learner-facing topic names rather than raw codes such as `4.1` as if they were chapter numbers.
-
-### Navigation hierarchy and canonical routes
-
-The app has three stable top-level destinations for a signed-in learner:
-
-- `/` is the personal home: recommendations, progress context, a challenge suggestion, and every configured subject.
-- `/questions` is the global public questions catalogue.
-- `/challenges` is the global challenge catalog.
-
-These destinations live in the signed-in account menu and reappear as contextual breadcrumbs
-or chips on non-leaf pages. Do not repeat `Home`, `Questions`, and `Challenges` as a permanent
-signed-in topbar row. The public topbar may keep its acquisition navigation for logged-out
-visitors.
-
-Subjects are another branch from home, not children of challenges. A subject hub lives at
-`/subjects/:subject`; its curriculum selection lives at `/subjects/:subject/content`. Subject
-breadcrumbs therefore read `Home / Subject` or `Home / Subject / Subject content`, with a
-quiet monochrome subject icon. Challenge catalog breadcrumbs read
-`Home / Challenges / Subject`.
-
-Learning endpoints describe the durable learning object in the path:
-
-- question: `/questions/:questionId`
-- answer chain for that question: `/questions/:questionId/answer-chain`
-- question practice: `/questions/:questionId/practice`
-- a named English practice stage: `/questions/:questionId/practice/:stepId`
-- a recall session: `/recall/:subject/:activity`
+The current product has these learner-facing areas:
 
-Recall paths carry the subject and activity (`quick`, `flashcards`, `multiple-choice`,
-`true-or-false`, or `reverse`). Query parameters are reserved for optional session filters such
-as topic and stack size, plus a safe return destination. Challenge play, recall, and active
-question practice remain immersive: they use a clear back or close action
-instead of fitting the global navigation into the task.
-
-Recall configuration belongs on the subject hub beside the recall action, not inside the
-immersive session. `Customise deck` expands in place and offers only learner-meaningful choices:
-topic, practice style, and card count. The recommended deck remains one-click when the disclosure
-is closed. Card-kind taxonomy, search, progress reset, and subject selection do not belong in this
-launcher. Leaving or completing a deck returns directly to its explicit context; it must never
-render the configuration controls as an intermediate frame.
+- `/` — public or signed-in home
+- `/questions` — public question catalogue
+- `/questions/:questionId` — public question and optional marking guidance
+- `/questions/:questionId/practice` — write, check, and improve a complete answer
+- `/subjects/:subject` — signed-in subject hub
+- `/recall/:subject/:activity` — focused recall activity
+- `/challenges` — challenge catalogue and game flow
+- `/past-papers/gcse` — public past-paper discovery
+- `/profile` — account and preferences
 
-### Flow A: Public Question To Constellation
+The following legacy learner destinations do not exist:
 
-1. Student lands on a public question page.
-2. Student reads the exam metadata and question.
-3. Student taps `Show answer chain`.
-4. The app reveals the chain and related learning surfaces:
-   - model answer
-   - mark checklist
-   - common weak answer
-5. Student taps `Open constellation`.
-6. The app shows six questions using the same chain.
-7. Student starts question 2.
+- `/questions/:questionId/answer-chain`
+- `/constellations/:chainId`
+- `/gaps/:gapId`
+- `/thinking-memory`
+- `/questions/:questionId/practice/:stepId`
 
-Design requirement:
+Do not redirect these routes into a renamed version of the same flow. A deleted learner concept
+should remain deleted.
 
-- This flow must work without sign-in.
-- The page should be shareable and indexable.
-- The product should prove itself before asking the user to create an account.
+## Entry Flows
 
-### Flow B: Constellation Practice
+### Public home
 
-1. Student opens a constellation question.
-2. The app shows one exam-style prompt and answer box.
-3. The chain is hidden or collapsed.
-4. Student writes an answer.
-5. Student taps `Check answer` or `Use mark checklist`.
-6. The app shows which chain links are present and which are missing.
-7. Student rewrites using the chain.
-8. Student continues to the next transfer question.
+1. A signed-out visitor opens `/`.
+2. The page explains the concrete value: answer an exam question, check marking points, and improve.
+3. The main action opens a real featured question or the question catalogue.
+4. Questions, past papers, and challenges remain browsable without creating an account.
 
-Design requirement:
+The home page is an orientation surface, not a dashboard pitch. Avoid abstract claims about methods,
+chains, constellations, memory systems, or repair engines.
 
-- Checking should feel like a mark checklist, not a freeform chat.
-- If model use is available, it should sit behind `Check answer`.
-- The default UI should still be useful with static checklist mode.
+### Signed-in home
 
-### Flow C: Search To Chain Review
+1. A returning learner opens `/`.
+2. They see a compact weekly summary, configured subjects, a recall recommendation, and an optional
+   challenge recommendation.
+3. A subject card opens `/subjects/:subject`.
+4. A question recommendation opens the question or its complete-answer practice page.
 
-1. Student searches for a specific question type.
-2. Student lands on an answer-chain page.
-3. The app shows the chain, model answer, and common weak answer.
-4. Student opens the full constellation.
-5. Student tries a nearby transfer question.
+This existing signed-in home, recall, challenge, and profile structure is retained. Question
+practice should not introduce a second competing progress system.
 
-Design requirement:
+### Search, teacher link, or shared URL
 
-- Search landing pages should be narrow and exact.
-- Avoid broad introductory copy.
-- The page should answer the query immediately.
+1. A learner lands directly on `/questions/:questionId`.
+2. The question, mark value, and exam metadata are visible immediately.
+3. The primary action is `Answer this question`.
+4. The learner can optionally expand `Study the marking` before attempting.
 
-### Flow D: Retained Chain Review (Future)
+There is no intermediate chain page.
 
-1. Student opens a future retained-chain review surface after practising.
-2. Student selects an earned chain.
-3. The app shows:
-   - chain steps
-   - questions already attempted
-   - common missing link
-   - next review question
-4. Student taps `Review this chain`.
-5. The app opens a question that uses the same chain in a new context.
+### Question catalogue
 
-Design requirement:
+1. A learner opens `/questions`.
+2. They filter or browse using familiar exam information.
+3. A result opens `/questions/:questionId`.
+4. The question page owns the next action.
 
-- Retained-chain review should not become a notes folder.
-- It should be a retrieval and transfer surface.
+The catalogue groups by subjects, topics, boards, and papers—not by internal grading structures.
 
-### Flow E: Relearn Or Reset
+## The Question Page
 
-1. Student sees a retained chain with a recurring weakness.
-2. Student taps `Reset / relearn`.
-3. The app returns to the original concrete question and rebuilds the chain step by step.
-4. Student can then retry a transfer question.
+Route: `/questions/:questionId`
 
-Design requirement:
+The page includes:
 
-- Memory must be reversible.
-- Students should not be forced into practice when they need to revisit the explanation.
+- question number and prompt;
+- mark value;
+- board, qualification, subject, tier, paper, topic, and question type when available;
+- any source material, table, or diagram needed to answer;
+- primary action: `Answer this question`;
+- optional `Study the marking` disclosure;
+- a quiet route back to the catalogue or source context.
 
-### Flow F: Practice Set
+`Study the marking` may reveal:
 
-1. Student opens a constellation.
-2. Student chooses a small practice set from the same chain.
-3. The app presents a clean list of questions and mark checklists.
-4. Later, the app can support print/export.
+- reviewed marking points;
+- a full-mark answer;
+- why a common weak answer loses credit;
+- a link to one related question.
 
-Design requirement:
+The disclosure is secondary. It must not compete visually with the answer action or send the learner
+to a separate conceptual page.
 
-- Print/export is useful, but it should not dominate the mobile screen.
-- The mobile-first action is `Start question`, not `Print`.
+## Complete-Answer Practice
 
-## Screen Specifications
+Route: `/questions/:questionId/practice`
 
-### Public Question Page
+### Attempt state
 
-Purpose:
+1. Show the complete question and any required source material.
+2. Show one answer field.
+3. Keep marking guidance hidden.
+4. The learner writes their whole answer.
+5. The learner selects `Check answer`.
 
-- Convert a social/search visitor into a product user by showing one concrete exam question.
+The screen should feel like answering an exam question, not operating a tutoring workflow. Do not
+show a chain diagram, sequence cards, per-point buttons, or a related-question sidebar while the
+learner is writing.
 
-Required elements:
+### Checking state
 
-- Product header
-- Exam metadata chips
-- Question prompt
-- Primary CTA: `Show answer chain`
-- Secondary CTA: `Try without hints`
-- Common missed link note
+Checking may compare the response with curated evidence and, where configured, an explicit runtime
+model call. While checking:
 
-Do not include:
+- retain the learner's answer;
+- show a calm, specific pending state;
+- do not invent a numeric exam grade;
+- do not navigate away.
 
-- Generic homepage hero
-- Bottom navigation
-- Chat prompt
-- Unrelated subjects
+If checking fails, preserve the answer and offer a clear retry.
 
-### Answer Chain Page
+### Result state
 
-Purpose:
+The result shows:
 
-- Explain the hidden reusable structure behind the question.
+- `X of Y marking points included`;
+- every marking point labelled `Included` or `Missing`;
+- concise feedback grounded in the learner's actual words;
+- the learner's submitted answer;
+- a primary action to improve the answer when anything is missing;
+- a direct `Try another question` action when the answer is secure.
 
-Required elements:
+Do not show:
 
-- Chain title: `Same answer chain`
-- Chain diagram
-- Model answer
-- Mark checklist
-- Common weak answer
-- Primary CTA: `Open constellation`
+- `steps found`;
+- `links found`;
+- `answer chain`;
+- `missing link`;
+- `practise this step`;
+- `repair chain`;
+- `close the gap`;
+- a separate practice action beside each marking point.
 
-Do not include:
+### Improvement state
 
-- Long essay explanation on first view
-- More than one chain
-- Cross-subject examples in the first-use Biology path
+1. Keep all marking points visible.
+2. Restore the learner's answer in an editable field.
+3. Ask them to improve the complete response.
+4. Re-check the rewritten answer.
+5. Acknowledge marking points newly added since the previous attempt.
 
-### Constellation Page
+This is guided correction of the current answer. It is not represented as another lesson,
+destination, or progress object.
 
-Purpose:
+### Next-question state
 
-- Show that several different questions reward the same chain.
+1. When the learner has finished reviewing or improving, offer one related question.
+2. Open `/questions/:nextQuestionId/practice`.
+3. Start with marking guidance hidden and an empty answer field.
 
-Required elements:
+The fresh question is the transfer practice. The related-question selector may use internal chain
+or curriculum evidence, but visible copy says only `Try another question`.
 
-- Topic family title
-- Count: `6 questions · 1 answer chain`
-- Chain preview
-- Ordered question list
-- Distance labels: `start`, `near`, `stretch`, `exam transfer`
-- Primary CTA: `Start question 2`
+## Subject, Recall, Challenge, and Profile Flows
 
-Do not include:
+### Subject hub
 
-- Abstract graph as the main content
-- Random recommended questions
-- A separate subject switcher
+Route: `/subjects/:subject`
 
-### Attempt Question Page
+- Show one recommended next action.
+- Offer a small number of genuine alternatives.
+- Recall actions open an immersive recall session.
+- Question actions open a concrete question or complete-answer practice.
+- Avoid gap, chain, or method language in recommendations.
 
-Purpose:
+### Recall
 
-- Let the student attempt before seeing the answer.
+Route: `/recall/:subject/:activity`
 
-Required elements:
+Recall remains a separate, focused loop for study cards. Leaving or completing it returns to its
+explicit source context. It does not feed into a legacy gap-builder page.
 
-- Progress
-- Exam metadata
-- Question prompt
-- Collapsed same-chain helper
-- Answer box
-- Primary CTA: `Check answer`
-- Secondary CTA: `Use mark checklist`
+### Challenges
 
-Do not include:
+Route: `/challenges`
 
-- Model answer before attempt
-- Full chain expanded by default
-- Chat-style conversation UI
+Challenges remain a sibling product area with their own compare, choose, explain, and transfer game
+loop. They may teach marking ideas, but learner-facing copy should not claim that the player is
+building or repairing a chain.
 
-### Checklist Result Page
+### Profile
 
-Purpose:
+Route: `/profile`
 
-- Show exactly why marks were lost.
+Profile remains for account details, preferences, and subject configuration. It does not expose
+internal learning records as chains or gaps.
 
-Required elements:
+## Navigation Rules
 
-- Found links count
-- Present links
-- Missing links
-- Short repair guidance
-- Primary CTA: `Rewrite using chain`
-- Secondary CTA: `Show model answer`
+- Keep `/`, `/questions`, and `/challenges` as stable top-level destinations.
+- Use contextual back actions inside immersive practice, recall, and challenge screens.
+- Respect a safe `returnTo` parameter when one was supplied.
+- A result-to-result journey may label the back action `Back to previous result`.
+- Do not add global navigation inside the active answer field merely to expose more product areas.
+- Deleted routes should return 404 rather than lead to an obsolete replacement journey.
 
-Do not include:
+## Language Rules
 
-- Vague score-only feedback
-- Long generated paragraph as the main result
-- Internal product claims
+Use:
 
-### Retained Chain Review Page (Future)
+- `Question`
+- `Answer this question`
+- `Check answer`
+- `Marking points`
+- `Included`
+- `Missing`
+- `Improve your answer`
+- `Try another question`
+- `Study the marking`
 
-Purpose:
+Do not use in learner-facing question flows:
 
-- Review an earned answer chain after a rebuilt retained-chain surface exists.
+- `Answer chain`
+- `Link` or `missing link`
+- `Constellation`
+- `Gap`
+- `Repair`
+- `Method`
+- `Practise this step`
+- `Close the gap`
+- `Thinking memory`
 
-Required elements:
+The product name `Question Constellation` may remain. `Constellation` is not used as the name of a
+learner object or route.
 
-- Retained chain title
-- Chain steps
-- Used-in count
-- Common missing link
-- Actions:
-  - `Review this chain`
-  - `Continue to question 3`
-  - `Reset / relearn`
+## Mobile Requirements
 
-Do not include:
+- The question and main action appear before supporting material.
+- Question source assets keep a stable aspect ratio and never shift the answer field after load.
+- The answer field, checking state, feedback, rewrite field, and primary action fit without
+  horizontal overflow.
+- Marking-point rows stack cleanly and remain scannable.
+- A sticky action may be used only when it does not cover the answer or feedback.
+- Test question, result, and rewrite states on a narrow mobile viewport as well as desktop.
 
-- Mixed-subject review cards during the first Biology flow
-- QR codes
-- Share mechanics
-- Generic progress dashboard
+## Authentication and Persistence
 
-## Mock Boards
+Public question discovery, reading, and practice routes remain reachable without an auth wall.
+Authentication may add persistence and personal recommendations, but it must not be required merely
+to understand the product.
 
-All flow mocks live in `docs/assets/product-flows/`. The mobile boards document the
-portrait-first journey. The desktop mocks document the later wide-screen direction:
-keep one focused learning surface primary, use the secondary column for guidance or
-state, and avoid revealing the full chain before the student has acted.
+Anonymous answer checking may keep temporary browser state. Signed-in checking may additionally
+persist attempts. Either way, the visible learning loop is identical.
 
-Persistent route context rails use the shared `qc-context-rail` presentation: the
-same translucent semantic surface, subtle divider, theme behavior, and circular back
-control. Their width, typography, contents, and collapse breakpoint stay specific to
-the learning task so a source-heavy English question can remain wider than a compact
-science navigation rail. Quiet dashboard sidebars and context cards are not rails and
-should not inherit this surface treatment.
+## Internal Data Boundary
 
-### Mobile: Discovery To Constellation
+The current D1 data may retain answer-chain, chain-step, constellation, and gap tables or fields.
+They can continue to support:
 
-![Question Constellation Biology Answer Chain](assets/product-flows/biology-answer-chain.png)
+- marking-point identity;
+- answer diagnostics;
+- related-question selection;
+- historical personal-learning rows;
+- migration compatibility.
 
-This board shows the first public journey:
+Do not delete or rewrite those records as part of the UI removal. Do not expose them merely because
+they remain available internally. A future data migration should be a separate, reviewed change.
 
-1. Public question page
-2. Answer chain page
-3. Constellation page
+## Acceptance Checklist
 
-### Mobile: Practice Follow-Up
+Before changing or releasing the question journey, verify:
 
-![Question Constellation Practice Memory](assets/product-flows/practice-memory.png)
-
-This board shows the continuation:
-
-1. Attempt question 2
-2. Checklist result
-3. Next transfer question
-
-### Desktop: Public Question Learning
-
-![Desktop public question learning mock](assets/product-flows/desktop-public-question-learning.png)
-
-This mock shows the desktop entry point before reveal. The central content is the
-specific exam question and learning goal; the side column teaches what to look for
-without exposing the answer chain too early.
-
-### Desktop: Answer Chain Reveal
-
-![Desktop answer chain reveal mock](assets/product-flows/desktop-answer-chain-reveal.png)
-
-This mock shows the post-reveal state: chain first, then model answer, checklist,
-weak answer, and the constellation action.
-
-### Desktop: Practice Attempt
-
-![Desktop practice attempt mock](assets/product-flows/desktop-practice-attempt.png)
-
-This mock keeps the student attempt central. The chain support is present but
-collapsed until the student chooses help or checks their answer.
-
-### Desktop: Checklist And Rewrite
-
-![Desktop checklist rewrite mock](assets/product-flows/desktop-checklist-rewrite.png)
-
-This mock shows feedback as chain-link evidence, not chat. Missing links lead into a
-rewrite task where the answer chain is visible as a repair scaffold.
-
-### Desktop: Retained Chain Review (Archived Mock)
-
-![Desktop retained-chain review mock](assets/product-flows/desktop-thinking-memory.png)
-
-This archived mock shows an older retained-chain review idea. The current app does
-not expose `/thinking-memory`; rebuild this surface before making it public again.
-
-## Content Example
-
-Initial Biology chain:
-
-```text
-Subject: Biology
-Exam context: AQA Combined Science Higher, Biology Paper 1
-Topic family: Blood Flow & Respiration
-Question type: 4-mark explain question
-Answer chain: blood flow -> oxygen -> respiration -> energy -> pain/effect
-```
-
-Start question:
-
-```text
-Explain why reduced blood flow to the heart can cause chest pain.
-```
-
-Model answer:
-
-```text
-Reduced blood flow means less oxygen reaches the heart muscle.
-The muscle cells do less aerobic respiration, so less energy is released.
-This can cause chest pain because the heart muscle cannot work properly.
-```
-
-Common weak answer:
-
-```text
-Less blood gets to the heart.
-```
-
-Why it is weak:
-
-```text
-It starts the chain but misses oxygen, respiration, and energy.
-```
-
-Transfer question:
-
-```text
-Why does heart rate increase during exercise?
-```
-
-Expected chain:
-
-```text
-heart rate -> blood flow -> oxygen -> respiration -> energy
-```
-
-## Product Boundaries
-
-First version should include:
-
-- Public question pages
-- Answer-chain pages
-- Constellation pages
-- Static mark checklists
-- Static model answers
-- Common weak answers
-- Manual or generated authoring workflow
-- Optional answer checking behind an explicit action
-
-First version should not include:
-
-- Full GCSE dashboard
-- Heavy planner
-- Broad chat interface
-- Always-on model use
-- Mandatory sign-in before value
-- Multi-subject mixing inside the first-use flow
-- Social sharing as a primary mobile screen
-
-## Implementation Notes
-
-The current app already has the right conceptual model in `docs/product-methodology.md`: subject and concrete question first, then guided reasoning, pattern naming, and transfer.
-
-The next implementation should tighten the product around public, indexable question and chain pages:
-
-```text
-/gcse/aqa/combined-science-higher/biology-paper-1/blood-flow-respiration
-/gcse/aqa/combined-science-higher/biology-paper-1/blood-flow-respiration/answer-chain
-/gcse/aqa/combined-science-higher/biology-paper-1/blood-flow-respiration/constellation
-```
-
-Data should make answer chains first-class:
-
-```text
-Question -> AnswerChain -> Constellation
-```
-
-Each question should be traceable back to:
-
-- exam context
-- answer chain
-- mark checklist
-- model answer
-- common weak answer
-- transfer distance
+- `/questions/:questionId` has one obvious answer action;
+- `/questions/:questionId` offers optional marking guidance inline;
+- `/questions/:questionId/practice` does not expose marking guidance before `Check answer`;
+- `/questions/:questionId/practice` accepts and checks a complete answer;
+- results say marking points are `Included` or `Missing`;
+- rewrite improves the whole answer;
+- the next action opens a fresh related question;
+- deleted learner routes return 404;
+- question pages contain no legacy learner terminology;
+- desktop and mobile layouts are stable;
+- D1 records and bindings were not deleted by the UI cleanup.

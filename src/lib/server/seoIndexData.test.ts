@@ -11,7 +11,6 @@ vi.mock('./learningChainData', () => ({
 vi.mock('./db', () => ({ queryRows: mocks.queryRows }));
 
 import {
-	getPublicChainSitemapEntries,
 	getPublicQuestionSitemapEntries,
 	getSeoTopicPages
 } from './seoIndexData';
@@ -41,31 +40,6 @@ describe('public question sitemap entries', () => {
 			}
 		]);
 		expect(mocks.getQuestionBankBrowseData).toHaveBeenCalledOnce();
-	});
-
-	it('lists only constellations represented by learner-visible catalogue questions', async () => {
-		mocks.getQuestionBankBrowseData.mockResolvedValue({
-			questions: [
-				{ id: 'one', chainId: 'shared-chain' },
-				{ id: 'two', chainId: 'shared-chain' },
-				{ id: 'three', chainId: 'single-chain' },
-				{ id: 'four', chainId: null }
-			],
-			topics: []
-		});
-
-		await expect(getPublicChainSitemapEntries()).resolves.toEqual([
-			{
-				path: '/constellations/shared-chain',
-				changefreq: 'monthly',
-				priority: '0.76'
-			},
-			{
-				path: '/constellations/single-chain',
-				changefreq: 'monthly',
-				priority: '0.68'
-			}
-		]);
 	});
 
 	it('removes non-visible question links from public topic pages', async () => {

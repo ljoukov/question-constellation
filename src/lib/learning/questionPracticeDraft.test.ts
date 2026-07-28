@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { SavedPracticeDraft } from '$lib/practiceDrafts';
 import {
-	isResumableSciencePracticeDraft,
-	sciencePracticeStateFromDraft
-} from './sciencePracticeDraft';
+	isResumableQuestionPracticeDraft,
+	questionPracticeStateFromDraft
+} from './questionPracticeDraft';
 
 function draft(payload: Record<string, unknown>): SavedPracticeDraft {
 	return {
 		questionId: 'question-1',
-		draftKind: 'science-practice',
+		draftKind: 'question-practice',
 		answerText: String(payload.answerText ?? ''),
 		payload,
 		clientUpdatedAt: 1234,
@@ -16,13 +16,13 @@ function draft(payload: Record<string, unknown>): SavedPracticeDraft {
 	};
 }
 
-describe('science practice cloud drafts', () => {
+describe('question-practice cloud drafts', () => {
 	it('restores the same activity and response timer across devices', () => {
-		const restored = sciencePracticeStateFromDraft(
+		const restored = questionPracticeStateFromDraft(
 			draft({
 				answerText: 'Less oxygen reaches the cells.',
 				view: 'attempt',
-				activitySessionId: 'science-session-1',
+				activitySessionId: 'question-session-1',
 				responseStartedAt: 1_700_000_000_000,
 				pendingAttemptId: 'attempt-1',
 				pendingAttemptSignature: 'signature-1',
@@ -32,7 +32,7 @@ describe('science practice cloud drafts', () => {
 		);
 
 		expect(restored).toMatchObject({
-			activitySessionId: 'science-session-1',
+			activitySessionId: 'question-session-1',
 			responseStartedAt: 1_700_000_000_000,
 			pendingAttemptId: 'attempt-1',
 			pendingAttemptSignature: 'signature-1',
@@ -43,12 +43,12 @@ describe('science practice cloud drafts', () => {
 
 	it('offers only unfinished work as resumable', () => {
 		expect(
-			isResumableSciencePracticeDraft(
+			isResumableQuestionPracticeDraft(
 				draft({ answerText: 'Unfinished answer', view: 'attempt', gradeResult: null })
 			)
 		).toBe(true);
 		expect(
-			isResumableSciencePracticeDraft(
+			isResumableQuestionPracticeDraft(
 				draft({
 					answerText: 'Checked answer',
 					gradedAnswerText: 'Checked answer',
@@ -57,6 +57,8 @@ describe('science practice cloud drafts', () => {
 				})
 			)
 		).toBe(false);
-		expect(isResumableSciencePracticeDraft(draft({ answerText: '', view: 'attempt' }))).toBe(false);
+		expect(isResumableQuestionPracticeDraft(draft({ answerText: '', view: 'attempt' }))).toBe(
+			false
+		);
 	});
 });

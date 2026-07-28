@@ -6,7 +6,7 @@ export type PracticeGradeSummary = {
 	missingStepIds: string[];
 };
 
-export type PracticeRepairKind = 'none' | 'rewrite' | 'retry_choice';
+export type PracticeResultAction = 'none' | 'improve_answer' | 'retry_choice';
 
 function normalizedFixedAnswer(value: string) {
 	return value
@@ -84,13 +84,13 @@ export function resolvePracticeResultPresentation({
 			everyStepClassified &&
 			fullMarkClassificationIsConsistent
 	);
-	const repairKind: PracticeRepairKind =
+	const nextAction: PracticeResultAction =
 		!gradeResult || fullMarks
 			? 'none'
 			: choiceResponse
 				? 'retry_choice'
 				: showStepDiagnostics && missingStepIds.size > 0
-					? 'rewrite'
+					? 'improve_answer'
 					: 'none';
 
 	return {
@@ -98,6 +98,6 @@ export function resolvePracticeResultPresentation({
 		presentStepIds,
 		missingStepIds,
 		showStepDiagnostics,
-		repairKind
+		nextAction
 	};
 }

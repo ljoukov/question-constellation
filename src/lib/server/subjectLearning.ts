@@ -57,8 +57,6 @@ import type { RecallChoiceDiagnostic } from '$lib/recall/personalization';
 import { recallSessionHref } from '$lib/recall/routes';
 import type { AdminUser } from '$lib/server/auth/session';
 import type { QuestionGradeResult } from '$lib/server/answerGrading';
-import type { EnglishStepGradeResult } from '$lib/server/englishStepGrading';
-import type { GapFinalJudgeResult } from '$lib/server/personalLearning';
 import {
 	getLearnerProfileSettings,
 	type LearnerProfileSettings,
@@ -1201,40 +1199,6 @@ function directRecallAction(
 	};
 }
 
-function gapCandidate(
-	subject: string,
-	gap: GapRow,
-	topic: StemCurriculumTopic,
-	state: LearnerState,
-	uncertainty: LearnerUncertainty
-): CandidateDetail {
-	return {
-		candidate: {
-			id: `gap:${gap.id}`,
-			subject,
-			kind: 'close_gap',
-			curriculumComponentId: topic.id,
-			componentId: gap.chain_step_id,
-			state,
-			uncertainty,
-			estimatedMinutes: 7,
-			available: gap.distinct_item_count >= 2,
-			activeGap: gap.distinct_item_count >= 2,
-			lastPractisedAt: gap.updated_at
-		},
-		action: {
-			id: `gap:${gap.id}`,
-			kind: 'close_gap',
-			eyebrow: 'Close a knowledge gap',
-			title: `Make “${gap.step_text}” explicit`,
-			detail: `Rebuild the missing link, then use it in a fresh answer.`,
-			durationMinutes: 7,
-			href: `/gaps/${encodeURIComponent(gap.id)}`,
-			available: gap.distinct_item_count >= 2
-		}
-	};
-}
-
 function questionCandidate(
 	subject: string,
 	row: SubjectLearningQuestionProjection,
@@ -1262,9 +1226,9 @@ function questionCandidate(
 		action: {
 			id: `apply:${row.id}`,
 			kind: 'apply_chain',
-			eyebrow: 'Practise exam reasoning',
+			eyebrow: 'Exam question',
 			title: row.title,
-			detail: `${row.marks}-mark question · build the links, then check them.`,
+			detail: `${row.marks}-mark question · write the whole answer, then check the marking points.`,
 			durationMinutes: row.marks >= 6 ? 10 : 7,
 			href: recommendedPracticeHref(subject, row.id),
 			available: true
@@ -1416,9 +1380,6 @@ function chooseCandidateDetails(
 	const recallSubject = supportedLearnerSubjects.includes(subject.subject as RecallRuntimeSubject)
 		? (subject.subject as RecallRuntimeSubject)
 		: null;
-	const scienceSubject = isScienceLearnerSubject(subject.subject)
-		? (subject.subject as RecallSubject)
-		: null;
 	if (recallSubject) {
 		for (const topic of topics.filter((entry) => includedIds.has(entry.id))) {
 			const topicView = topicViews.find((entry) => entry.id === topic.id);
@@ -1434,26 +1395,6 @@ function chooseCandidateDetails(
 			);
 			if (detail) details.push(detail);
 		}
-	}
-
-	for (const gap of bundle.gaps) {
-		if (!scienceSubject) continue;
-		if (gap.status !== 'active') continue;
-		const topic = officialTopicForQuestion(topics, gap);
-		if (!topic || !includedIds.has(topic.id)) continue;
-		const stateRow =
-			bundle.states.find(
-				(row) => row.component_kind === 'chain_step' && row.component_id === gap.chain_step_id
-			) ?? stateForTopic(topic, bundle.states);
-		details.push(
-			gapCandidate(
-				subject.subject,
-				gap,
-				topic,
-				stateRow?.state ?? 'developing',
-				stateRow?.uncertainty ?? 'high'
-			)
-		);
 	}
 
 	const attemptedIds = new Set(bundle.attempts.map((attempt) => attempt.question_id));
@@ -1547,18 +1488,11 @@ function chooseCandidateDetails(
 				'Write a short exam answer from memory, then check it.',
 				scope.href ?? learnerSubjectHref(subject.subject)
 			),
-		firstByKind.get('close_gap') ??
-			emptyAlternative(
-				'close_gap',
-				'Close a gap',
-				'Rebuild one missing idea and check it in a fresh answer.',
-				learnerSubjectHref(subject.subject)
-			),
 		firstByKind.get('apply_chain') ??
 			emptyAlternative(
 				'apply_chain',
 				'Longer questions',
-				'Practise a 4–6 mark answer method in a new context.',
+				'Write and check a longer exam answer.',
 				scope.href ?? learnerSubjectHref(subject.subject)
 			)
 	];
@@ -3401,136 +3335,6 @@ export async function recordQuestionAttemptEvidence({
 	return true;
 }
 
-export async function recordEnglishStepAttemptEvidence({
-	user,
-	checkId,
-	questionId,
-	stepId,
-	result,
-	hintOpened = false,
-	assistance,
-	sourceSessionId,
-	responseDurationMs
-}: {
-	user: AdminUser;
-	checkId: string;
-	questionId: string;
-	stepId: string;
-	result: EnglishStepGradeResult;
-	hintOpened?: boolean;
-	assistance?: ConstructedAnswerAssistance;
-	sourceSessionId?: string | null;
-	responseDurationMs?: number | null;
-}): Promise<void> {
-	const [rows, settings] = await Promise.all([
-		queryRows<QuestionEvidenceRow>(
-			`SELECT q.id, q.board, q.qualification, q.subject, q.subject_area, q.component_code, q.tier,
-			        q.spec_ref, q.topic_path_json, q.marks,
-			        qac.answer_chain_id, qac.transfer_distance
-			 FROM questions q
-			 JOIN question_answer_chains qac
-			   ON qac.question_id = q.id AND qac.is_primary = 1
-			 WHERE q.id = ?
-			 LIMIT 1`,
-			[questionId]
-		),
-		getLearnerProfileSettings(user)
-	]);
-	const row = rows[0];
-	if (!row) return;
-	const learnerSubject = enabledProfileCombinationForQuestion(settings.subjects, {
-		board: row.board,
-		qualification: row.qualification,
-		subject: row.subject,
-		subjectArea: row.subject_area,
-		componentCode: row.component_code,
-		tier: row.tier
-	});
-	if (
-		!learnerSubject ||
-		(learnerSubject.subject !== 'English Language' &&
-			learnerSubject.subject !== 'English Literature')
-	) {
-		return;
-	}
-	const englishSubject = learnerSubject.subject as 'English Language' | 'English Literature';
-	const curriculum = await curriculumForLearnerSubject(learnerSubject);
-	if (!curriculum) return;
-	const mappedTopic = await curriculumTopicForStoredQuestion(curriculum, questionId, row);
-	const topic =
-		mappedTopic ??
-		({
-			id: curriculum.specificationId,
-			code: curriculum.specificationCode,
-			title: curriculum.label,
-			paper: 'Full specification',
-			specUrl: curriculum.specificationUrl
-		} satisfies StemCurriculumTopic);
-	const metCount = result.checks.filter((check) => check.status === 'met').length;
-	const normalizedAssistance = normalizeConstructedAnswerAssistance({
-		...assistance,
-		hintOpened
-	});
-	const outcome: EvidenceOutcome =
-		result.decision === 'pass' ? 'correct' : metCount > 0 ? 'partial' : 'incorrect';
-	const common = {
-		user,
-		subject: englishSubject,
-		board: learnerSubject.board,
-		qualification: learnerSubject.qualification,
-		course: learnerSubject.course,
-		tier: learnerSubject.tier,
-		topic,
-		evidenceKind: 'short_constructed' as const,
-		independent: false,
-		sourceItemId: `${questionId}:${stepId}`,
-		sourceAttemptId: checkId,
-		sourceSessionId,
-		responseDurationMs,
-		questionId,
-		answerChainId: row.answer_chain_id
-	};
-	await recordLearnerEvidence({
-		...common,
-		id: `english_${checkId}`,
-		componentKind: 'english_practice_step',
-		componentId: `${row.answer_chain_id}:${stepId}`,
-		componentTitle: result.stepTitle,
-		outcome,
-		awardedMarks: metCount,
-		maxMarks: result.checks.length,
-		metadata: {
-			guided: true,
-			hintOpened,
-			assistance: normalizedAssistance,
-			decision: result.decision,
-			confidence: result.confidence,
-			learnerModel: result.learnerModel,
-			nextImprovement: result.nextImprovement,
-			coachingNote: result.coachingNote,
-			curriculumMapping: mappedTopic ? 'question' : 'specification_root'
-		}
-	});
-	for (const check of result.checks) {
-		await recordLearnerEvidence({
-			...common,
-			id: `english_${checkId}_${check.id}`,
-			componentKind: 'english_skill',
-			componentId: `${stepId}:${check.id}`,
-			componentTitle: check.label,
-			outcome: check.status === 'met' ? 'correct' : 'incorrect',
-			metadata: {
-				guided: true,
-				hintOpened,
-				assistance: normalizedAssistance,
-				stepId,
-				feedback: check.feedback,
-				curriculumMapping: mappedTopic ? 'question' : 'specification_root'
-			}
-		});
-	}
-}
-
 export async function getRecallReviewSnapshot(
 	user: AdminUser,
 	subject: RecallRuntimeSubject,
@@ -3593,82 +3397,5 @@ export async function getRecallReviewSnapshot(
 				repeated_misconception_count: diagnostic?.repeated_misconception_count ?? 0
 			}
 		];
-	});
-}
-
-export async function recordGapOutcomeEvidence({
-	user,
-	gapId,
-	result,
-	sourceSessionId,
-	responseDurationMs
-}: {
-	user: AdminUser;
-	gapId: string;
-	result: GapFinalJudgeResult;
-	sourceSessionId?: string | null;
-	responseDurationMs?: number | null;
-}): Promise<void> {
-	const gap = await queryPersonalFirst<{
-		subject: string | null;
-		answer_chain_id: string;
-		chain_step_id: string;
-		step_text: string;
-		source_question_id: string | null;
-		topic_path_json: string;
-	}>(
-		`SELECT subject, answer_chain_id, chain_step_id, step_text,
-		        source_question_id, topic_path_json
-		 FROM user_chain_gaps
-		 WHERE user_id = ? AND id = ?`,
-		[user.uid, gapId]
-	);
-	if (!gap || !isScienceLearnerSubject(gap.subject ?? '')) return;
-	const subject = gap.subject as RecallSubject;
-	const settings = await getLearnerProfileSettings(user);
-	const learnerSubject = settings.subjects.find(
-		(entry) => entry.enabled && entry.subject === subject
-	);
-	const curriculum = learnerSubject ? await curriculumForLearnerSubject(learnerSubject) : null;
-	if (!curriculum) return;
-	const topic = await curriculumTopicForStoredQuestion(curriculum, gap.source_question_id, gap);
-	if (!topic) return;
-	const common = {
-		user,
-		subject,
-		course: learnerSubject?.course,
-		tier: learnerSubject?.tier,
-		topic,
-		evidenceKind: 'short_constructed' as const,
-		outcome: result.targetStepPresent ? ('correct' as const) : ('incorrect' as const),
-		independent: false,
-		sourceItemId: gap.source_question_id ?? gapId,
-		sourceAttemptId: result.runId,
-		sourceSessionId,
-		responseDurationMs,
-		questionId: gap.source_question_id,
-		answerChainId: gap.answer_chain_id,
-		awardedMarks: result.awardedMarks,
-		maxMarks: result.maxMarks,
-		metadata: {
-			guidedGapCheck: true,
-			gapId,
-			externalInputDetected: result.externalInputDetected,
-			externalInputSources: result.externalInputSources
-		}
-	};
-	await recordLearnerEvidence({
-		...common,
-		id: `gap_${result.runId}`,
-		componentKind: 'gap_check',
-		componentId: gap.chain_step_id,
-		componentTitle: gap.step_text
-	});
-	await recordLearnerEvidence({
-		...common,
-		id: `gap_${result.runId}_${gap.chain_step_id}`,
-		componentKind: 'chain_step',
-		componentId: gap.chain_step_id,
-		componentTitle: gap.step_text
 	});
 }

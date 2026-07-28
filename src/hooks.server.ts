@@ -14,7 +14,6 @@ function shouldUseReadReplicaSession(event: Parameters<Handle>[0]['event']) {
 	if (pathname.startsWith('/api/')) return false;
 	if (pathname.startsWith('/auth/')) return false;
 	if (pathname.startsWith('/profile')) return false;
-	if (pathname.startsWith('/gaps/')) return false;
 	return true;
 }
 

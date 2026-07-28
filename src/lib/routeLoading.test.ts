@@ -22,20 +22,7 @@ describe('route loading copy', () => {
 			'Loading question...'
 		);
 		expect(
-			routeLoadingMessageFor(
-				routeLoadingContentTypeForRoute('/questions/[questionId]/answer-chain')
-			)
-		).toBe('Loading answer chain...');
-		expect(
-			routeLoadingMessageFor(routeLoadingContentTypeForRoute('/constellations/[chainId]'))
-		).toBe('Loading constellation...');
-		expect(
 			routeLoadingMessageFor(routeLoadingContentTypeForRoute('/questions/[questionId]/practice'))
-		).toBe('Loading practice...');
-		expect(
-			routeLoadingMessageFor(
-				routeLoadingContentTypeForRoute('/questions/[questionId]/practice/[stepId]')
-			)
 		).toBe('Loading practice...');
 	});
 

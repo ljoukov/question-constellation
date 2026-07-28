@@ -1,8 +1,6 @@
 export type RouteLoadingContentType =
 	| 'default'
-	| 'answer-chain'
 	| 'challenge'
-	| 'constellation'
 	| 'exam-paper'
 	| 'experiment'
 	| 'home'
@@ -14,9 +12,7 @@ export type RouteLoadingContentType =
 
 const routeLoadingMessages = {
 	default: 'Loading...',
-	'answer-chain': 'Loading answer chain...',
 	challenge: 'Loading challenge...',
-	constellation: 'Loading constellation...',
 	'exam-paper': 'Loading exam paper...',
 	experiment: 'Loading experiment...',
 	home: 'Loading home...',
@@ -46,16 +42,7 @@ export function routeLoadingContentTypeForRoute(
 	if (routeId.startsWith('/past-papers/gcse')) return 'past-papers';
 
 	if (routeId === '/questions/[questionId]') return 'question';
-	if (routeId === '/questions/[questionId]/answer-chain') {
-		return 'answer-chain';
-	}
-	if (routeId === '/constellations/[chainId]') return 'constellation';
-	if (
-		routeId === '/questions/[questionId]/practice' ||
-		routeId === '/questions/[questionId]/practice/[stepId]'
-	) {
-		return 'practice';
-	}
+	if (routeId === '/questions/[questionId]/practice') return 'practice';
 
 	if (routeId === '/experiments/questions/[paperSlug]/[ref]') return 'question';
 	if (routeId === '/experiments/questions/[paperSlug]') return 'exam-paper';
@@ -70,10 +57,6 @@ function pathContentType(pathname: string): RouteLoadingContentType {
 	if (pathname.startsWith('/recall/')) return 'recall-practice';
 	if (pathname.startsWith('/challenges')) return 'challenge';
 	if (pathname.startsWith('/past-papers/gcse')) return 'past-papers';
-	if (pathname.startsWith('/constellations/')) return 'constellation';
-	if (pathname.startsWith('/questions/') && pathname.endsWith('/answer-chain')) {
-		return 'answer-chain';
-	}
 	if (pathname.startsWith('/questions/') && pathname.includes('/practice')) return 'practice';
 	if (pathname.startsWith('/questions/')) return 'question';
 	if (pathname === '/experiments/questions') return 'experiment';

@@ -1,4 +1,4 @@
-export type PracticeDraftKind = 'science-practice' | 'english-guided';
+export type PracticeDraftKind = 'question-practice';
 
 export const MAX_PRACTICE_DRAFT_PAYLOAD_CHARS = 80_000;
 export const MAX_PRACTICE_DRAFT_BATCH_PAYLOAD_CHARS = 1_500_000;

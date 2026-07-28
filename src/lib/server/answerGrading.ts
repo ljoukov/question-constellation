@@ -152,7 +152,7 @@ function readFeedback(rawText: string): string {
 		.replace(/^%MISSING_STEP_IDS%:.*$/gim, '')
 		.replace(/^%FEEDBACK%:/gim, '')
 		.trim();
-	return fallback || 'Your answer has been checked against the answer chain.';
+	return fallback || 'Your answer has been checked against the marking guidance.';
 }
 
 function lastMarkdownParagraph(value: string): string | null {
@@ -302,7 +302,7 @@ function buildGradingMethod(data: PracticePageData): string {
 		'Grading method:',
 		'1. Read the student answer as a whole before selecting steps.',
 		'2. Award marks for correct exam-relevant ideas, not exact wording.',
-		`3. Treat the listed ${isEnglish ? 'diagnostic criteria' : 'answer-chain steps'} as diagnostic categories for the UI. They are not automatically equal mark buckets.`,
+		`3. Treat the listed ${isEnglish ? 'diagnostic criteria' : 'marking-point diagnostics'} as diagnostic categories for the UI. They are not automatically equal mark buckets.`,
 		`4. Mark a ${isEnglish ? 'criterion' : 'step'} present only when the answer makes that move clearly enough to earn credit; mark it missing when absent, vague, or only named without use.`,
 		'5. Credit valid alternative wording or a different defensible interpretation when it fits the mark scheme.'
 	];
@@ -342,7 +342,7 @@ export function buildGradePrompt(data: PracticePageData, studentAnswer: string):
 	const isEnglish = isEnglishPracticeQuestion(data);
 	return [
 		'You are grading one GCSE free-text answer for an online practice question.',
-		`Use the exact ${isEnglish ? 'diagnostic criterion' : 'answer-chain step'} ids listed below. Do not invent ids.`,
+		`Use the exact ${isEnglish ? 'diagnostic criterion' : 'marking-point diagnostic'} ids listed below. Do not invent ids.`,
 		'Your job is to give fair examiner-style feedback, not to write a chatty tutor response.',
 		'',
 		buildGradingMethod(data),
@@ -367,7 +367,7 @@ export function buildGradePrompt(data: PracticePageData, studentAnswer: string):
 			? `\nQuestion-specific OCR guidance:\n${questionSpecificGuidance}`
 			: '',
 		'',
-		`${isEnglish ? 'Diagnostic criteria' : 'Answer-chain steps'} to select from:`,
+		`${isEnglish ? 'Diagnostic criteria' : 'Marking-point diagnostics'} to select from:`,
 		stepSelectionList(data),
 		officialMarkSchemeList(data),
 		'',

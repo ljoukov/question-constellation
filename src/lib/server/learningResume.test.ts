@@ -26,30 +26,16 @@ const subjects: LearnerSubject[] = [
 	}
 ];
 
-function scienceDraft(
+function questionDraft(
 	questionId: string,
 	clientUpdatedAt: number,
 	answerText = 'My unfinished answer'
 ): SavedPracticeDraft {
 	return {
 		questionId,
-		draftKind: 'science-practice',
+		draftKind: 'question-practice',
 		answerText,
 		payload: { answerText, view: 'attempt' },
-		clientUpdatedAt,
-		updatedAt: '2026-07-16 12:00:00'
-	};
-}
-
-function englishDraft(questionId: string, clientUpdatedAt: number): SavedPracticeDraft {
-	return {
-		questionId,
-		draftKind: 'english-guided',
-		answerText: '',
-		payload: {
-			stepAnswers: { thesis: 'The writer presents conflict as corrosive.' },
-			stepResults: {}
-		},
 		clientUpdatedAt,
 		updatedAt: '2026-07-16 12:00:00'
 	};
@@ -80,9 +66,9 @@ describe('latestResumeActionsBySubject', () => {
 		const actions = latestResumeActionsBySubject(
 			subjects,
 			[
-				scienceDraft('biology-old', 10),
-				englishDraft('literature', 30),
-				scienceDraft('biology-new', 20)
+				questionDraft('biology-old', 10),
+				questionDraft('literature', 30, 'The writer presents conflict as corrosive.'),
+				questionDraft('biology-new', 20)
 			],
 			[
 				question('biology-old'),
@@ -110,24 +96,21 @@ describe('latestResumeActionsBySubject', () => {
 	});
 
 	it('rejects completed, empty, wrong-board, wrong-course and wrong-tier drafts', () => {
-		const completedEnglish = englishDraft('completed-english', 50);
+		const completedEnglish = questionDraft('completed-english', 50, 'A complete response');
 		completedEnglish.payload = {
-			stepAnswers: { thesis: 'A complete response' },
-			stepResults: {
-				thesis: {
-					decision: 'pass',
-					checkedAnswer: 'A complete response'
-				}
-			}
+			answerText: 'A complete response',
+			gradedAnswerText: 'A complete response',
+			view: 'result',
+			gradeResult: { result: 'correct' }
 		};
 		const actions = latestResumeActionsBySubject(
 			subjects,
 			[
 				completedEnglish,
-				scienceDraft('empty', 40, ''),
-				scienceDraft('wrong-board', 30),
-				scienceDraft('wrong-course', 20),
-				scienceDraft('wrong-tier', 10)
+				questionDraft('empty', 40, ''),
+				questionDraft('wrong-board', 30),
+				questionDraft('wrong-course', 20),
+				questionDraft('wrong-tier', 10)
 			],
 			[
 				question('completed-english', {
@@ -152,10 +135,10 @@ describe('latestResumeActionsBySubject', () => {
 		expect(actions.size).toBe(0);
 	});
 
-	it('skips a newer science draft outside a narrowed topic scope', () => {
+	it('skips a newer question draft outside a narrowed topic scope', () => {
 		const actions = latestResumeActionsBySubject(
 			subjects,
-			[scienceDraft('cell-draft', 30), scienceDraft('infection-draft', 20)],
+			[questionDraft('cell-draft', 30), questionDraft('infection-draft', 20)],
 			[
 				question('cell-draft'),
 				question('infection-draft', {
@@ -174,7 +157,7 @@ describe('latestResumeActionsBySubject', () => {
 	it('does not resume Macbeth after the learner replaces it with Romeo and Juliet', () => {
 		const actions = latestResumeActionsBySubject(
 			subjects,
-			[englishDraft('macbeth-draft', 40), englishDraft('romeo-draft', 30)],
+			[questionDraft('macbeth-draft', 40), questionDraft('romeo-draft', 30)],
 			[
 				question('macbeth-draft', {
 					board: 'OCR',
@@ -205,7 +188,7 @@ describe('latestResumeActionsBySubject', () => {
 	it('fails closed for a missing or ambiguous reviewed mapping', () => {
 		const actions = latestResumeActionsBySubject(
 			subjects,
-			[scienceDraft('ambiguous', 20), scienceDraft('missing', 10)],
+			[questionDraft('ambiguous', 20), questionDraft('missing', 10)],
 			[
 				question('ambiguous', {
 					reviewedPrimaryMappingCount: 2,
@@ -225,7 +208,7 @@ describe('latestResumeActionsBySubject', () => {
 	it('fails closed when only one branch of an ambiguous primary mapping is in scope', () => {
 		const actions = latestResumeActionsBySubject(
 			subjects,
-			[scienceDraft('ambiguous', 20)],
+			[questionDraft('ambiguous', 20)],
 			[
 				question('ambiguous', {
 					reviewedPrimaryMappingCount: 2,

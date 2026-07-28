@@ -6,7 +6,6 @@ import {
 import { challengeCatalog, challengePath, challengeSubjects } from '$lib/challenges/catalog';
 import { blogArticles } from '$lib/blog/articles';
 import {
-	getPublicChainSitemapEntries,
 	getPublicQuestionSitemapEntries,
 	getSeoTopicSitemapEntries
 } from '$lib/server/seoIndexData';
@@ -97,7 +96,6 @@ async function entriesForSection(section: string): Promise<SitemapEntry[] | null
 	if (section === 'blog') return uniqueEntries(blogEntries());
 	if (section === 'past-papers') return uniqueEntries(pastPaperEntries());
 	if (section === 'questions') return uniqueEntries(await getPublicQuestionSitemapEntries());
-	if (section === 'chains') return uniqueEntries(await getPublicChainSitemapEntries());
 	if (section === 'topics') return uniqueEntries(await getSeoTopicSitemapEntries());
 	return null;
 }

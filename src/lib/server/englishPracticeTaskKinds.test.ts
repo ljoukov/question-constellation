@@ -1,19 +1,9 @@
-import { classifyEnglishLiteratureTask, sourcePaperUrlForQuestion } from './questionData';
+import { classifyEnglishLiteratureTask } from './questionData';
 import { describe, expect, it } from 'vitest';
 
 const subject = 'English Literature';
 
 describe('English Literature practice task classification', () => {
-	it('finds the original paper needed for printed extracts and poems', () => {
-		expect(sourcePaperUrlForQuestion('ocr-j352-02-jun24-02-1a')).toContain(
-			'OCR_GCSE_English_Literature_2024_June_question_paper'
-		);
-		expect(sourcePaperUrlForQuestion('ocr-j352-01-jun19-07-0')).toContain(
-			'OCR_GCSE_English_Literature_2019_June_question_paper'
-		);
-		expect(sourcePaperUrlForQuestion('not-a-paper')).toBeNull();
-	});
-
 	it.each([
 		{
 			name: 'poetry comparison',

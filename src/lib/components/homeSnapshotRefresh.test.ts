@@ -201,7 +201,6 @@ describe('home snapshot refresh decision', () => {
 		expect(isHomeSnapshotConsumerPath('/challenges/physics/half-range')).toBe(false);
 		expect(isHomeSnapshotConsumerPath('/recall/biology/quick')).toBe(false);
 		expect(isHomeSnapshotConsumerPath('/questions/q-1/practice')).toBe(false);
-		expect(isHomeSnapshotConsumerPath('/gaps/gap-1')).toBe(false);
 	});
 
 	it('acknowledges a dirty version before invalidation and restores it after failure', () => {

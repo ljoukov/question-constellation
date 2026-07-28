@@ -21,7 +21,7 @@ describe('practice result presentation', () => {
 		});
 
 		expect(result.fullMarks).toBe(true);
-		expect(result.repairKind).toBe('none');
+		expect(result.nextAction).toBe('none');
 		expect([...result.presentStepIds]).toEqual(['meristem']);
 		expect([...result.missingStepIds]).toEqual(['plant-stem-cells']);
 		expect(result.showStepDiagnostics).toBe(false);
@@ -41,7 +41,7 @@ describe('practice result presentation', () => {
 			choiceAnswerCorrect: false
 		});
 
-		expect(result.repairKind).toBe('retry_choice');
+		expect(result.nextAction).toBe('retry_choice');
 	});
 
 	it('shows full-mark diagnostics only when every step was explicitly found', () => {
@@ -60,7 +60,7 @@ describe('practice result presentation', () => {
 
 		expect(result.fullMarks).toBe(true);
 		expect(result.showStepDiagnostics).toBe(true);
-		expect(result.repairKind).toBe('none');
+		expect(result.nextAction).toBe('none');
 	});
 
 	it('keeps the rewrite flow for an incomplete written answer', () => {
@@ -77,7 +77,7 @@ describe('practice result presentation', () => {
 			choiceAnswerCorrect: null
 		});
 
-		expect(result.repairKind).toBe('rewrite');
+		expect(result.nextAction).toBe('improve_answer');
 		expect([...result.missingStepIds]).toEqual(['step-2']);
 		expect(result.showStepDiagnostics).toBe(true);
 	});
@@ -103,7 +103,7 @@ describe('practice result presentation', () => {
 
 		expect(choiceAnswerCorrect).toBe(false);
 		expect(result.fullMarks).toBe(false);
-		expect(result.repairKind).toBe('retry_choice');
+		expect(result.nextAction).toBe('retry_choice');
 	});
 
 	it('exposes the exact source-grounded answer text for the result disclosure', () => {

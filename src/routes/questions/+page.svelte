@@ -108,7 +108,7 @@
 	<title>Questions | Question Constellation</title>
 	<meta
 		name="description"
-		content="Browse real GCSE questions by specification topic, then try one before seeing its answer chain."
+		content="Browse real GCSE questions by specification topic, then write an answer and check it against clear marking points."
 	/>
 	<link rel="canonical" href="https://constellation.eviworld.com/questions" />
 </svelte:head>
