@@ -239,10 +239,10 @@ function prepare(options) {
 	}
 	if (
 		!Array.isArray(options.existingDefinitions) ||
-		options.existingDefinitions.length !== inputs.basePlanPath.value.existingRoundCount
+		options.existingDefinitions.length !== inputs.basePlanPath.value.baseCatalogRecordCount
 	) {
 		return failed(
-			'Review-rebase evidence requires the exact existing catalog matching plan.existingRoundCount.'
+			'Review-rebase evidence requires the catalogue record count bound into the base plan.'
 		);
 	}
 	const validators = resolveValidators({

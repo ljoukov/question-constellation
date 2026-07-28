@@ -5,9 +5,11 @@ import path from 'node:path';
 import { canonicalHash, sha256 } from './science-challenge-release.mjs';
 
 export const SCIENCE_QUESTION_ART_PERCEPTUAL_AUDIT_SCHEMA =
-	'science-question-art-perceptual-audit/v2';
-export const SCIENCE_QUESTION_ART_DHASH_ALGORITHM = 'dhash-gray-9x8-full-mirror-center-crops-v2';
+	'science-question-art-perceptual-audit/v3';
+export const SCIENCE_QUESTION_ART_DHASH_ALGORITHM =
+	'dhash-gray-9x8-plus-17x16-confirmation-full-mirror-center-crops-v3';
 export const SCIENCE_QUESTION_ART_DHASH_THRESHOLD = 4;
+export const SCIENCE_QUESTION_ART_CONFIRMATION_DHASH_THRESHOLD = 24;
 export const SCIENCE_QUESTION_ART_DHASH_VARIANTS = Object.freeze([
 	'full',
 	'mirror',
@@ -18,22 +20,40 @@ export const SCIENCE_QUESTION_ART_DHASH_VARIANTS = Object.freeze([
 ]);
 
 export function dHashFromGrayPixels(pixels) {
-	if (!(pixels instanceof Uint8Array) || pixels.length !== 72) {
-		throw new Error('dHash requires exactly 72 grayscale pixels in a 9x8 grid.');
+	return dHashFromGrayGrid(pixels, 9, 8);
+}
+
+export function confirmationDHashFromGrayPixels(pixels) {
+	return dHashFromGrayGrid(pixels, 17, 16);
+}
+
+function dHashFromGrayGrid(pixels, columns, rows) {
+	const expectedPixels = columns * rows;
+	if (!(pixels instanceof Uint8Array) || pixels.length !== expectedPixels) {
+		throw new Error(
+			`dHash requires exactly ${expectedPixels} grayscale pixels in a ${columns}x${rows} grid.`
+		);
 	}
 	let hash = 0n;
-	for (let row = 0; row < 8; row += 1) {
-		for (let column = 0; column < 8; column += 1) {
+	for (let row = 0; row < rows; row += 1) {
+		for (let column = 0; column < columns - 1; column += 1) {
 			hash <<= 1n;
-			if (pixels[row * 9 + column] > pixels[row * 9 + column + 1]) hash |= 1n;
+			if (pixels[row * columns + column] > pixels[row * columns + column + 1]) hash |= 1n;
 		}
 	}
-	return hash.toString(16).padStart(16, '0');
+	return hash.toString(16).padStart(((columns - 1) * rows) / 4, '0');
 }
 
 export function hammingDistanceHex(left, right) {
-	if (!/^[a-f0-9]{16}$/.test(left) || !/^[a-f0-9]{16}$/.test(right)) {
-		throw new Error('dHash values must be 16 lowercase hexadecimal characters.');
+	if (
+		typeof left !== 'string' ||
+		typeof right !== 'string' ||
+		left.length !== right.length ||
+		![16, 64].includes(left.length) ||
+		!/^[a-f0-9]+$/.test(left) ||
+		!/^[a-f0-9]+$/.test(right)
+	) {
+		throw new Error('dHash values must be matching 16- or 64-character lowercase hexadecimal.');
 	}
 	let difference = BigInt(`0x${left}`) ^ BigInt(`0x${right}`);
 	let distance = 0;
@@ -59,6 +79,18 @@ export function findPerceptualCollisions(
 			if (left.artId === right.artId) continue;
 			const closest = closestFingerprintDistance(left, right);
 			if (closest.distance <= threshold) {
+				const confirmation = closestConfirmationDistance(left, right);
+				const exactDuplicate =
+					typeof left.sha256 === 'string' &&
+					left.sha256.length === 64 &&
+					left.sha256 === right.sha256;
+				if (
+					!exactDuplicate &&
+					confirmation &&
+					confirmation.distance > SCIENCE_QUESTION_ART_CONFIRMATION_DHASH_THRESHOLD
+				) {
+					continue;
+				}
 				collisions.push({
 					leftId: left.artId,
 					leftTheme: left.theme,
@@ -66,7 +98,14 @@ export function findPerceptualCollisions(
 					rightTheme: right.theme,
 					distance: closest.distance,
 					leftVariant: closest.leftVariant,
-					rightVariant: closest.rightVariant
+					rightVariant: closest.rightVariant,
+					...(confirmation
+						? {
+								confirmationDistance: confirmation.distance,
+								confirmationLeftVariant: confirmation.leftVariant,
+								confirmationRightVariant: confirmation.rightVariant
+							}
+						: {})
 				});
 			}
 		}
@@ -75,9 +114,33 @@ export function findPerceptualCollisions(
 }
 
 function closestFingerprintDistance(left, right) {
-	const leftHashes = fingerprintEntries(left);
-	const rightHashes = fingerprintEntries(right);
-	let closest = { distance: 65, leftVariant: null, rightVariant: null };
+	return closestHashDistance(fingerprintEntries(left), fingerprintEntries(right), 65);
+}
+
+function closestConfirmationDistance(left, right) {
+	if (
+		!left?.confirmationDHashes ||
+		typeof left.confirmationDHashes !== 'object' ||
+		!right?.confirmationDHashes ||
+		typeof right.confirmationDHashes !== 'object'
+	) {
+		return null;
+	}
+	return closestHashDistance(
+		SCIENCE_QUESTION_ART_DHASH_VARIANTS.map((variant) => [
+			variant,
+			left.confirmationDHashes[variant]
+		]),
+		SCIENCE_QUESTION_ART_DHASH_VARIANTS.map((variant) => [
+			variant,
+			right.confirmationDHashes[variant]
+		]),
+		257
+	);
+}
+
+function closestHashDistance(leftHashes, rightHashes, initialDistance) {
+	let closest = { distance: initialDistance, leftVariant: null, rightVariant: null };
 	for (const [leftVariant, leftHash] of leftHashes) {
 		for (const [rightVariant, rightHash] of rightHashes) {
 			const distance = hammingDistanceHex(leftHash, rightHash);
@@ -137,6 +200,38 @@ export function buildPerceptualAudit(
 				`ImageMagick returned ${pixels.length} grayscale bytes; expected ${expectedPixelCount}.`
 			);
 		}
+		const confirmationCommand = [];
+		for (const input of batch) {
+			const filePath = path.resolve(rootDir, input.localPath);
+			for (const variant of SCIENCE_QUESTION_ART_DHASH_VARIANTS) {
+				confirmationCommand.push(
+					'(',
+					filePath,
+					'-auto-orient',
+					...variantTransform(variant),
+					'-colorspace',
+					'Gray',
+					'-resize',
+					'17x16!',
+					'-depth',
+					'8',
+					')'
+				);
+			}
+		}
+		confirmationCommand.push('gray:-');
+		const confirmationPixels = execFileSync('magick', confirmationCommand, {
+			cwd: rootDir,
+			encoding: null,
+			maxBuffer: batch.length * SCIENCE_QUESTION_ART_DHASH_VARIANTS.length * 272 + 1024
+		});
+		const expectedConfirmationPixelCount =
+			batch.length * SCIENCE_QUESTION_ART_DHASH_VARIANTS.length * 272;
+		if (confirmationPixels.length !== expectedConfirmationPixelCount) {
+			throw new Error(
+				`ImageMagick returned ${confirmationPixels.length} confirmation grayscale bytes; expected ${expectedConfirmationPixelCount}.`
+			);
+		}
 		for (const [index, input] of batch.entries()) {
 			const bytes = readFileSync(path.resolve(rootDir, input.localPath));
 			const dHashes = Object.fromEntries(
@@ -147,10 +242,22 @@ export function buildPerceptualAudit(
 					return [variant, dHashFromGrayPixels(pixels.subarray(start, start + 72))];
 				})
 			);
+			const confirmationDHashes = Object.fromEntries(
+				SCIENCE_QUESTION_ART_DHASH_VARIANTS.map((variant, variantIndex) => {
+					const fingerprintIndex =
+						index * SCIENCE_QUESTION_ART_DHASH_VARIANTS.length + variantIndex;
+					const start = fingerprintIndex * 272;
+					return [
+						variant,
+						confirmationDHashFromGrayPixels(confirmationPixels.subarray(start, start + 272))
+					];
+				})
+			);
 			records.push({
 				...input,
 				sha256: sha256(bytes),
-				dHashes
+				dHashes,
+				confirmationDHashes
 			});
 		}
 	}
@@ -166,6 +273,7 @@ export function buildPerceptualAudit(
 		assetInventorySha256: canonicalHash(assetInventory),
 		algorithm: SCIENCE_QUESTION_ART_DHASH_ALGORITHM,
 		threshold,
+		confirmationThreshold: SCIENCE_QUESTION_ART_CONFIRMATION_DHASH_THRESHOLD,
 		recordCount: records.length,
 		collisionCount: collisions.length,
 		status: collisions.length ? 'failed' : 'passed',
@@ -210,6 +318,11 @@ export function validatePerceptualAudit(
 	if (audit.threshold !== SCIENCE_QUESTION_ART_DHASH_THRESHOLD) {
 		issues.push(`threshold must be ${SCIENCE_QUESTION_ART_DHASH_THRESHOLD}.`);
 	}
+	if (audit.confirmationThreshold !== SCIENCE_QUESTION_ART_CONFIRMATION_DHASH_THRESHOLD) {
+		issues.push(
+			`confirmationThreshold must be ${SCIENCE_QUESTION_ART_CONFIRMATION_DHASH_THRESHOLD}.`
+		);
+	}
 	if (manifest && audit.manifestSha256 !== canonicalHash(manifest)) {
 		issues.push('manifestSha256 differs from the current art manifest.');
 	}
@@ -242,6 +355,18 @@ export function validatePerceptualAudit(
 				)
 			) {
 				issues.push(`${record.id} has an invalid multi-transform dHash set.`);
+			}
+			const confirmationDHashes = record.confirmationDHashes;
+			if (
+				!confirmationDHashes ||
+				typeof confirmationDHashes !== 'object' ||
+				Array.isArray(confirmationDHashes) ||
+				Object.keys(confirmationDHashes).length !== SCIENCE_QUESTION_ART_DHASH_VARIANTS.length ||
+				SCIENCE_QUESTION_ART_DHASH_VARIANTS.some(
+					(variant) => !/^[a-f0-9]{64}$/.test(String(confirmationDHashes[variant] ?? ''))
+				)
+			) {
+				issues.push(`${record.id} has an invalid high-resolution confirmation dHash set.`);
 			}
 			if (!['dark', 'light'].includes(record.theme))
 				issues.push(`${record.id} has an invalid theme.`);

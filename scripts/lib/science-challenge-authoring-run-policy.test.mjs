@@ -22,14 +22,18 @@ test('accepts a successful tool-free max authoring run bound to its exact bytes'
 	assert.equal(validation.hashes.lastMessageSha256, fixture.summary.lastMessageFileSha256);
 });
 
-test('accepts omitted optional hash and count bindings', () => {
+test('rejects omitted hash and count bindings', () => {
 	const fixture = cleanFixture();
 	delete fixture.summary.eventLogSha256;
 	delete fixture.summary.finalResponseSha256;
 	delete fixture.summary.lastMessageFileSha256;
 	delete fixture.summary.events;
 	delete fixture.summary.agentMessages;
-	assert.equal(validateScienceChallengeAuthoringRunPolicy(fixture).status, 'passed');
+	const validation = validateScienceChallengeAuthoringRunPolicy(fixture);
+	assert.equal(validation.status, 'failed');
+	assert.match(validation.issues.join('\n'), /eventLogSha256 must be a SHA-256 hash/);
+	assert.match(validation.issues.join('\n'), /events does not match/);
+	assert.match(validation.issues.join('\n'), /agentMessages does not match/);
 });
 
 test('parses malformed JSONL safely and reports its source line', () => {
@@ -153,7 +157,7 @@ test('rejects mismatched and malformed summary hash bindings', () => {
 	}
 });
 
-test('cross-checks optional event and agent-message counts', () => {
+test('cross-checks event and agent-message counts', () => {
 	const fixture = cleanFixture();
 	fixture.summary.events += 1;
 	fixture.summary.agentMessages += 1;
@@ -255,10 +259,11 @@ function cleanFixture({ middleEvents } = {}) {
 	const eventLogBytes = eventBytes(events);
 	const lastMessageBytes = Buffer.from(LAST_MESSAGE);
 	return {
-		summary: {
-			status: 'passed',
-			error: null,
-			model: 'gpt-5.6-sol',
+			summary: {
+				status: 'passed',
+				error: null,
+				transport: 'codex-sdk',
+				model: 'gpt-5.6-sol',
 			thinkingLevel: 'max',
 			commandActions: 0,
 			failedCommandActions: 0,

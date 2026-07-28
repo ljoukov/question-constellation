@@ -2,7 +2,7 @@
 
 import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { createServer } from 'vite';
+import { loadChallengeCatalogSource } from './lib/challenge-catalog-source.mjs';
 
 import {
 	canonicalHash,
@@ -729,21 +729,7 @@ function buildReviewRebaseBindings(reviewRebase, candidateSetSha256) {
 }
 
 async function loadExistingCatalog() {
-	const server = await createServer({
-		root: rootDir,
-		server: { middlewareMode: true },
-		appType: 'custom',
-		logLevel: 'silent'
-	});
-	try {
-		const module = await server.ssrLoadModule('/src/lib/challenges/catalog.ts');
-		if (!Array.isArray(module.challengeCatalog)) {
-			throw new Error('Current challenge catalog did not export challengeCatalog.');
-		}
-		return module.challengeCatalog;
-	} finally {
-		await server.close();
-	}
+	return (await loadChallengeCatalogSource({ rootDir })).definitions;
 }
 
 function parseArgs(argv) {
@@ -781,13 +767,13 @@ function parseArgs(argv) {
 	}
 	return {
 		help: Boolean(values.get('help')),
-		plan: String(values.get('plan') ?? 'tmp/science-challenges/science-500-v1/plan.json'),
+		plan: String(values.get('plan') ?? 'tmp/science-challenges/candidate-release/plan.json'),
 		source: String(values.get('source') ?? 'tmp/science-challenge-sources-v1.json'),
 		evidence: String(
-			values.get('evidence') ?? 'tmp/science-challenges/science-500-v1/curriculum-evidence.json'
+			values.get('evidence') ?? 'tmp/science-challenges/candidate-release/curriculum-evidence.json'
 		),
 		generationRoot: String(
-			values.get('generation-root') ?? 'tmp/science-challenges/science-500-v1/generation'
+			values.get('generation-root') ?? 'tmp/science-challenges/candidate-release/generation'
 		),
 		curriculumRemapInput: values.has('curriculum-remap-input')
 			? String(values.get('curriculum-remap-input'))
@@ -802,7 +788,7 @@ function parseArgs(argv) {
 			? String(values.get('review-rebase-manifest'))
 			: null,
 		outputRoot: String(
-			values.get('output-root') ?? 'tmp/science-challenges/science-500-v1/verification'
+			values.get('output-root') ?? 'tmp/science-challenges/candidate-release/verification'
 		)
 	};
 }

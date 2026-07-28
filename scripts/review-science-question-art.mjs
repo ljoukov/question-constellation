@@ -3,8 +3,10 @@
 import {
 	copyFileSync,
 	existsSync,
+	lstatSync,
 	mkdtempSync,
 	mkdirSync,
+	readdirSync,
 	readFileSync,
 	rmSync,
 	writeFileSync
@@ -31,6 +33,14 @@ import {
 	buildArtReviewModelTurn,
 	buildArtReviewRequest
 } from './lib/science-challenge-review-evidence.mjs';
+import {
+	DEFAULT_ART_REVIEW_MAX_ATTEMPTS,
+	artReviewAttemptName,
+	artReviewRetryDelayMs,
+	classifyRetryableArtReviewTransportFailure,
+	nextArtReviewAttemptNumber,
+	waitForArtReviewRetry
+} from './lib/science-question-art-review-retry.mjs';
 
 const MODEL = 'gpt-5.6-sol';
 const THINKING_LEVEL = 'max';
@@ -45,6 +55,7 @@ if (args.model !== MODEL || args.thinkingLevel !== THINKING_LEVEL) {
 	throw new Error(`Release art review requires ${MODEL}/${THINKING_LEVEL}.`);
 }
 const manifestPath = path.resolve(rootDir, args.manifest);
+assertIgnoredWorkspacePath(manifestPath, 'Art manifest');
 if (!existsSync(manifestPath)) throw new Error(`Manifest does not exist: ${manifestPath}`);
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
 const manifestValidation = validateQuestionArtManifest(manifest, {
@@ -58,13 +69,35 @@ if (manifestValidation.status !== 'passed') {
 const selected = selectSpecs(manifest.specs, args.ids, args.limit);
 for (const spec of selected) {
 	for (const file of [spec.output.darkPath, spec.output.lightPath]) {
-		if (!existsSync(path.resolve(rootDir, file))) throw new Error(`Missing generated art: ${file}`);
+		const assetPath = path.resolve(rootDir, file);
+		assertIgnoredWorkspacePath(assetPath, `Generated art for ${spec.id}`);
+		if (!existsSync(assetPath)) throw new Error(`Missing generated art: ${file}`);
 	}
 }
 const outputRoot = path.resolve(rootDir, args.outputRoot);
+assertIgnoredWorkspacePath(outputRoot, 'Art review output');
+if (args.reuseReview && args.resume) {
+	throw new Error('--reuse-review and --resume are mutually exclusive.');
+}
+if (args.reuseReview && existsSync(outputRoot)) {
+	throw new Error('--reuse-review requires a new absent output root.');
+}
+if (args.reuseReview) {
+	assertIgnoredWorkspacePath(path.resolve(rootDir, args.reuseReview), 'Reusable art review');
+}
+const reuseReview = args.reuseReview
+	? readReusableArtReview(args.reuseReview, manifest, selected)
+	: null;
+const reusableBatchByMembership = new Map(
+	(reuseReview?.batches ?? []).map((batch) => [batchMembershipKey(batch.ids), batch])
+);
 mkdirSync(outputRoot, { recursive: true });
 const batches = chunk(selected, args.batchSize);
-const tasks = batches.map((specs, batchIndex) => async () => reviewBatch(specs, batchIndex));
+const tasks = batches.map((specs, batchIndex) => ({
+	batchId: batchIdForIndex(batchIndex),
+	ids: specs.map((spec) => spec.id),
+	run: async () => reviewBatch(specs, batchIndex)
+}));
 const batchResults = await runConcurrent(tasks, args.concurrency);
 const reviews = batchResults.flatMap((result) => result.reviews ?? []);
 const invalidBatches = batchResults.filter((result) => result.status !== 'passed');
@@ -94,6 +127,13 @@ const summary = {
 	missingCount: missing.length,
 	invalidBatchCount: invalidBatches.length,
 	batchCount: batchResults.length,
+	reusedBatchCount: batchResults.filter((result) => result.action === 'reused').length,
+	reuseReview: reuseReview
+		? {
+				path: args.reuseReview,
+				sha256: canonicalHash(reuseReview)
+			}
+		: null,
 	status: rejected.length || missing.length || invalidBatches.length ? 'failed' : 'passed',
 	reviews,
 	batches: batchResults.map(withoutReviews),
@@ -104,6 +144,24 @@ writeFileSync(path.join(outputRoot, 'review-summary.json'), `${stableStringify(s
 console.log(JSON.stringify(summary, null, 2));
 if (summary.status !== 'passed') process.exit(1);
 
+function assertIgnoredWorkspacePath(targetPath, label) {
+	const ignoredRoot = path.resolve(rootDir, 'tmp');
+	const relativePath = path.relative(ignoredRoot, targetPath);
+	if (!existsSync(path.join(rootDir, '.git'))) {
+		const relativeToFixtureRoot = path.relative(rootDir, targetPath);
+		if (
+			relativeToFixtureRoot &&
+			!relativeToFixtureRoot.startsWith(`..${path.sep}`) &&
+			!path.isAbsolute(relativeToFixtureRoot)
+		) {
+			return;
+		}
+	}
+	if (!relativePath || relativePath.startsWith(`..${path.sep}`) || path.isAbsolute(relativePath)) {
+		throw new Error(`${label} must be under ignored tmp/.`);
+	}
+}
+
 function withoutReviews(result) {
 	const summaryResult = { ...result };
 	delete summaryResult.reviews;
@@ -111,10 +169,9 @@ function withoutReviews(result) {
 }
 
 async function reviewBatch(specs, batchIndex) {
-	const batchId = `art-review-${String(batchIndex + 1).padStart(3, '0')}`;
+	const batchId = batchIdForIndex(batchIndex);
 	const batchDir = path.join(outputRoot, 'batches', batchId);
 	const resultPath = path.join(batchDir, 'result.json');
-	const runSummaryPath = path.join(batchDir, 'run-summary.json');
 	const reviewInput = buildReviewInput(specs);
 	const reviewRequest = buildArtReviewRequest({
 		specs,
@@ -123,12 +180,18 @@ async function reviewBatch(specs, batchIndex) {
 		thinkingLevel: args.thinkingLevel
 	});
 	const requestSha256 = canonicalHash(reviewRequest);
+	const reused = reuseReview
+		? reusePriorAcceptedBatch({
+				batchId,
+				specs,
+				reviewInput,
+				reviewRequest
+			})
+		: null;
+	if (reused) return reused;
 	if (args.resume && existsSync(resultPath)) {
 		const existing = JSON.parse(readFileSync(resultPath, 'utf8'));
-		if (
-			existsSync(runSummaryPath) &&
-			validateReviewResult(existing, specs, reviewInput, reviewRequest).status === 'passed'
-		) {
+		if (validateReviewResult(existing, specs, reviewInput, reviewRequest).status === 'passed') {
 			return buildBatchResult(
 				batchId,
 				batchDir,
@@ -145,85 +208,272 @@ async function reviewBatch(specs, batchIndex) {
 	writeFileSync(path.join(batchDir, 'review-request.json'), `${stableStringify(reviewRequest)}\n`);
 	const prompt = reviewPrompt(specs, requestSha256);
 	writeFileSync(path.join(batchDir, 'prompt.txt'), `${prompt}\n`);
-	const modelWorkDir = mkdtempSync(
-		path.join(tmpdir(), `question-constellation-science-${batchId}-`)
+	const existingAttemptNames = readdirSync(batchDir, { withFileTypes: true })
+		.filter((entry) => entry.isDirectory())
+		.map((entry) => entry.name);
+	const firstAttempt = nextArtReviewAttemptNumber(existingAttemptNames);
+	const attempts = [];
+
+	for (let localAttempt = 1; localAttempt <= args.maxAttempts; localAttempt += 1) {
+		const attempt = firstAttempt + localAttempt - 1;
+		const attemptDir = path.join(batchDir, artReviewAttemptName(attempt));
+		const runSummaryPath = path.join(attemptDir, 'run-summary.json');
+		const eventsPath = path.join(attemptDir, 'events.jsonl');
+		const lastMessagePath = path.join(attemptDir, 'last-message.json');
+		const promptPath = path.join(attemptDir, 'prompt.txt');
+		mkdirSync(attemptDir, { recursive: false });
+		writeFileSync(promptPath, `${prompt}\n`, { flag: 'wx' });
+		const modelWorkDir = mkdtempSync(
+			path.join(tmpdir(), `question-constellation-science-${batchId}-`)
+		);
+		let run;
+		try {
+			const content = stageReviewContent({
+				specs,
+				reviewInput,
+				prompt,
+				modelWorkDir
+			});
+			try {
+				run = await runCodexSdkTurn(
+					buildArtReviewModelTurn({
+						prompt,
+						structuredInput: content,
+						workDir: modelWorkDir,
+						eventsPath,
+						lastMessagePath,
+						summaryPath: runSummaryPath,
+						model: args.model,
+						thinkingLevel: args.thinkingLevel,
+						timeoutMs: args.timeoutMs,
+						outputSchema: reviewOutputSchema(specs.length, requestSha256),
+						sandboxMode: 'read-only',
+						environmentMode: 'minimal'
+					})
+				);
+			} catch (error) {
+				const transportFailure = classifyRetryableArtReviewTransportFailure(error);
+				const failure = recordReviewAttemptFailure(attemptDir, {
+					attempt,
+					status: 'failed',
+					failureKind: transportFailure?.kind ?? 'non-retryable-model-run',
+					retryable: Boolean(transportFailure),
+					error: errorMessage(error)
+				});
+				attempts.push(failure);
+				const exhausted = localAttempt >= args.maxAttempts || !transportFailure;
+				if (exhausted) {
+					return {
+						batchId,
+						status: 'failed',
+						ids: specs.map((spec) => spec.id),
+						error: failure.error,
+						failureKind: failure.failureKind,
+						attempts,
+						stopScheduling: true
+					};
+				}
+				await waitForArtReviewRetry(artReviewRetryDelayMs(localAttempt));
+				continue;
+			}
+		} finally {
+			rmSync(modelWorkDir, { recursive: true, force: true });
+		}
+
+		requireScienceChallengeModelRunPolicy({
+			summary: run,
+			eventLogBytes: readFileSync(eventsPath),
+			lastMessageBytes: readFileSync(lastMessagePath),
+			expectedModel: args.model,
+			expectedThinkingLevel: args.thinkingLevel,
+			policyLabel: `${batchId} art review run`
+		});
+		let result;
+		try {
+			result = JSON.parse(run.finalResponse);
+		} catch (error) {
+			const failure = recordReviewAttemptFailure(attemptDir, {
+				attempt,
+				status: 'failed',
+				failureKind: 'invalid-json',
+				retryable: true,
+				error: `Review response was not JSON: ${errorMessage(error)}`
+			});
+			attempts.push(failure);
+			if (localAttempt >= args.maxAttempts) {
+				return {
+					batchId,
+					status: 'failed',
+					ids: specs.map((spec) => spec.id),
+					error: failure.error,
+					failureKind: failure.failureKind,
+					attempts
+				};
+			}
+			await waitForArtReviewRetry(artReviewRetryDelayMs(localAttempt));
+			continue;
+		}
+		const currentReviewInput = buildReviewInput(specs);
+		if (canonicalHash(currentReviewInput) !== canonicalHash(reviewInput)) {
+			const failure = recordReviewAttemptFailure(attemptDir, {
+				attempt,
+				status: 'failed',
+				failureKind: 'review-input-changed',
+				retryable: false,
+				error: 'Review inputs changed while the batch was running.'
+			});
+			return {
+				batchId,
+				status: 'failed',
+				ids: specs.map((spec) => spec.id),
+				error: failure.error,
+				failureKind: failure.failureKind,
+				attempts: [...attempts, failure],
+				stopScheduling: true
+			};
+		}
+		result.provenance = {
+			inputSha256: canonicalHash(reviewInput),
+			requestSha256,
+			model: args.model,
+			thinkingLevel: args.thinkingLevel,
+			attempt
+		};
+		const validation = validateReviewResult(result, specs, reviewInput, reviewRequest);
+		writeFileSync(path.join(attemptDir, 'validation.json'), `${stableStringify(validation)}\n`, {
+			flag: 'wx'
+		});
+		writeFileSync(path.join(attemptDir, 'result.json'), `${stableStringify(result)}\n`, {
+			flag: 'wx'
+		});
+		if (validation.status !== 'passed') {
+			const failure = recordReviewAttemptFailure(attemptDir, {
+				attempt,
+				status: 'failed',
+				failureKind: 'invalid-structured-review',
+				retryable: true,
+				issues: validation.issues
+			});
+			attempts.push(failure);
+			if (localAttempt >= args.maxAttempts) {
+				return {
+					batchId,
+					status: 'failed',
+					ids: specs.map((spec) => spec.id),
+					issues: validation.issues,
+					failureKind: failure.failureKind,
+					attempts
+				};
+			}
+			await waitForArtReviewRetry(artReviewRetryDelayMs(localAttempt));
+			continue;
+		}
+		const passedAttempt = {
+			attempt,
+			status: 'passed',
+			failureKind: null,
+			retryable: false
+		};
+		attempts.push(passedAttempt);
+		writeFileSync(resultPath, `${stableStringify(result)}\n`, { flag: 'wx' });
+		writeFileSync(
+			path.join(batchDir, 'selected-attempt.json'),
+			`${stableStringify({
+				schemaVersion: 'science-question-art-review-selected-attempt/v1',
+				attempt,
+				attemptPath: path.relative(rootDir, attemptDir),
+				resultSha256: canonicalHash(result),
+				attempts
+			})}\n`,
+			{ flag: 'wx' }
+		);
+		return {
+			...buildBatchResult(batchId, batchDir, specs, reviewInput, reviewRequest, result, 'reviewed'),
+			attempts
+		};
+	}
+
+	throw new Error(`${batchId} review attempt loop ended without a result.`);
+}
+
+function reusePriorAcceptedBatch({ batchId, specs, reviewInput, reviewRequest }) {
+	const prior = reusableBatchByMembership.get(batchMembershipKey(specs.map((spec) => spec.id)));
+	if (!prior || prior.status !== 'passed') return null;
+	const batchDir = path.dirname(
+		resolveReusableEvidencePath(prior.resultPath, `${prior.batchId} result`)
 	);
-	let run;
-	try {
-		const content = stageReviewContent({
+	const inputPath = resolveReusableEvidencePath(prior.inputPath, `${prior.batchId} input`);
+	const requestPath = resolveReusableEvidencePath(prior.requestPath, `${prior.batchId} request`);
+	const resultPath = resolveReusableEvidencePath(prior.resultPath, `${prior.batchId} result`);
+	const promptPath = resolveReusableEvidencePath(prior.promptPath, `${prior.batchId} prompt`);
+	if (
+		path.dirname(inputPath) !== batchDir ||
+		path.dirname(requestPath) !== batchDir ||
+		sha256(readFileSync(inputPath)) !== prior.inputFileSha256 ||
+		sha256(readFileSync(requestPath)) !== prior.requestFileSha256 ||
+		sha256(readFileSync(promptPath)) !== prior.promptSha256
+	) {
+		throw new Error(`${prior.batchId} reusable batch input evidence changed.`);
+	}
+	const priorInput = JSON.parse(readFileSync(inputPath, 'utf8'));
+	const priorRequest = JSON.parse(readFileSync(requestPath, 'utf8'));
+	const priorResult = JSON.parse(readFileSync(resultPath, 'utf8'));
+	if (
+		canonicalHash(priorInput) !== prior.inputSha256 ||
+		canonicalHash(priorRequest) !== prior.requestSha256 ||
+		canonicalHash(priorResult) !== prior.resultSha256
+	) {
+		throw new Error(`${prior.batchId} reusable batch canonical evidence changed.`);
+	}
+	if (
+		canonicalHash(priorInput) !== canonicalHash(reviewInput) ||
+		canonicalHash(priorRequest) !== canonicalHash(reviewRequest) ||
+		readFileSync(promptPath, 'utf8') !== `${reviewPrompt(specs, canonicalHash(reviewRequest))}\n` ||
+		validateReviewResult(priorResult, specs, reviewInput, reviewRequest).status !== 'passed'
+	) {
+		return null;
+	}
+	if (
+		!Array.isArray(priorResult.reviews) ||
+		priorResult.reviews.some(
+			(review) => review.accepted !== true || review.disposition === 'fresh-regenerate'
+		)
+	) {
+		return null;
+	}
+	return {
+		...buildBatchResult(
+			batchId,
+			batchDir,
 			specs,
 			reviewInput,
-			prompt,
-			modelWorkDir
-		});
-		run = await runCodexSdkTurn(
-			buildArtReviewModelTurn({
-				prompt,
-				structuredInput: content,
-				workDir: modelWorkDir,
-				eventsPath: path.join(batchDir, 'events.jsonl'),
-				lastMessagePath: path.join(batchDir, 'last-message.json'),
-				summaryPath: runSummaryPath,
-				model: args.model,
-				thinkingLevel: args.thinkingLevel,
-				timeoutMs: args.timeoutMs,
-				outputSchema: reviewOutputSchema(specs.length, requestSha256),
-				sandboxMode: 'read-only',
-				environmentMode: 'minimal'
-			})
-		);
-	} finally {
-		rmSync(modelWorkDir, { recursive: true, force: true });
-	}
-	requireScienceChallengeModelRunPolicy({
-		summary: run,
-		eventLogBytes: readFileSync(path.join(batchDir, 'events.jsonl')),
-		lastMessageBytes: readFileSync(path.join(batchDir, 'last-message.json')),
-		expectedModel: args.model,
-		expectedThinkingLevel: args.thinkingLevel,
-		policyLabel: `${batchId} art review run`
-	});
-	let result;
-	try {
-		result = JSON.parse(run.finalResponse);
-	} catch (error) {
-		return {
-			batchId,
-			status: 'failed',
-			error: `Review response was not JSON: ${error instanceof Error ? error.message : String(error)}`
-		};
-	}
-	const currentReviewInput = buildReviewInput(specs);
-	if (canonicalHash(currentReviewInput) !== canonicalHash(reviewInput)) {
-		return {
-			batchId,
-			status: 'failed',
-			error: 'Review inputs changed while the batch was running.'
-		};
-	}
-	result.provenance = {
-		inputSha256: canonicalHash(reviewInput),
-		requestSha256,
-		model: args.model,
-		thinkingLevel: args.thinkingLevel
+			reviewRequest,
+			priorResult,
+			'reused'
+		),
+		reusedFrom: {
+			reviewPath: args.reuseReview,
+			reviewSha256: canonicalHash(reuseReview),
+			batchId: prior.batchId
+		}
 	};
-	const validation = validateReviewResult(result, specs, reviewInput, reviewRequest);
-	writeFileSync(path.join(batchDir, 'validation.json'), `${stableStringify(validation)}\n`);
-	writeFileSync(resultPath, `${stableStringify(result)}\n`);
-	if (validation.status !== 'passed') {
-		return { batchId, status: 'failed', issues: validation.issues };
-	}
-	return buildBatchResult(batchId, batchDir, specs, reviewInput, reviewRequest, result, 'reviewed');
 }
 
 function buildBatchResult(batchId, batchDir, specs, reviewInput, reviewRequest, result, action) {
-	const runSummaryPath = path.join(batchDir, 'run-summary.json');
 	const resultPath = path.join(batchDir, 'result.json');
 	const inputPath = path.join(batchDir, 'review-input.json');
 	const requestPath = path.join(batchDir, 'review-request.json');
-	const eventLogPath = path.join(batchDir, 'events.jsonl');
-	const lastMessagePath = path.join(batchDir, 'last-message.json');
-	const promptPath = path.join(batchDir, 'prompt.txt');
+	const selectedAttempt = Number.isInteger(result?.provenance?.attempt)
+		? result.provenance.attempt
+		: null;
+	const artifactDir =
+		selectedAttempt === null
+			? batchDir
+			: path.join(batchDir, artReviewAttemptName(selectedAttempt));
+	const runSummaryPath = path.join(artifactDir, 'run-summary.json');
+	const eventLogPath = path.join(artifactDir, 'events.jsonl');
+	const lastMessagePath = path.join(artifactDir, 'last-message.json');
+	const promptPath = path.join(artifactDir, 'prompt.txt');
 	const runSummary = JSON.parse(readFileSync(runSummaryPath, 'utf8'));
 	if (!existsSync(eventLogPath) || !existsSync(lastMessagePath) || !existsSync(promptPath)) {
 		throw new Error(`${batchId} run summary has invalid model provenance.`);
@@ -259,6 +509,7 @@ function buildBatchResult(batchId, batchDir, specs, reviewInput, reviewRequest, 
 		promptSha256: sha256(readFileSync(promptPath)),
 		model: runSummary.model,
 		thinkingLevel: runSummary.thinkingLevel,
+		selectedAttempt,
 		reviews: result.reviews
 	};
 }
@@ -272,29 +523,38 @@ Echo this exact value in the top-level requestSha256 field. It binds this respon
 
 AUTHORITY ORDER
 - The learner-facing question is authoritative. The brief is a fallible implementation proposal, not evidence that a conflicting image is correct.
-- First compare question with scene, visualAnchor, approvedMeaning, altText and accuracyConstraints. Set briefConsistentWithQuestion=false if the brief changes any variable, allele letter or case, genotype, chemical formula, unit, object count, direction, sample label, material or apparatus state.
-- Then inspect both images. Set visibleNotationMatchesQuestion=false if any visible notation, label, symbol, unit or count differs from the exact question. A correct Aa × Aa Punnett square fails an Rr × Rr question.
-- Never excuse an image because it follows a contradictory brief. Report both the brief defect and the visible defect.
+- First compare question with scene, visualAnchor, approvedMeaning, altText and accuracyConstraints. A metadata-only defect is a content-repair issue, not a reason to regenerate pixels. For release disposition, set briefConsistentWithQuestion=false only when the contradictory brief has produced a visible material contradiction in the pair; otherwise retain the pair, report the metadata defect as minor and describe the corrected visible content in visibleTakeaway.
+- Then inspect both images. Set visibleNotationMatchesQuestion=false if any visible notation, label, symbol, unit or count differs from the exact question. A scientifically valid diagram still fails when it substitutes different notation from the learner question.
+- Never excuse a visibly wrong image because it follows a contradictory brief. Report both defects when both are present, but never request fresh image generation for a defect that exists only in metadata.
 
 PASS STANDARD — apply every item independently to every pair
-1. Scientific accuracy: every visible object, count, connection, state, scale relationship and apparatus arrangement is scientifically plausible. No extra object implies a false method or mechanism.
+1. Scientific accuracy: every visible object, count, connection, state, explicitly asserted scale relationship and apparatus arrangement is scientifically plausible. No extra object implies a false method or mechanism.
 2. Exact relevance: the scene is unmistakably specific to this question context, not a generic topic collage or an image for a different task.
-3. Brief consistency: every brief field agrees with the exact learner-facing question.
+3. Brief consistency: the visible pair follows the exact learner-facing question rather than a conflicting brief. Metadata-only wording defects are annotated content repairs and do not fail this visual gate.
 4. Visible notation agreement: every visible variable, allele, genotype, formula, unit, count and label exactly matches the question.
 5. No answer leakage: no visible result, conclusion, correct option, solved value, worked method, causal answer, labelled solution or mnemonic makes the learner task automatic.
 6. No unwanted text: no title, caption, unintended label, equation, number, option marker, logo, watermark, pseudo-lettering or typographic debris. Exact question-required notation is allowed only when the brief explicitly requires it.
-7. Theme fidelity: light is the same composition as dark—same crop, geometry, objects, counts, states, directions and scientific meaning. Only palette, shadows, highlights and glow may change.
+7. Cross-theme meaning: dark and light are independent fresh generations from the same authority. They may use different geometry or incidental props, but both must preserve the same essential objects, counts, states, connections, directions and scientific meaning. Set themeConsistent=false only when a variant visibly changes a task-relevant object, count, state, connection, direction, question constraint or scientific meaning.
 8. Visual quality: polished tactile editorial science art, crisp at card size, intentional hierarchy, generous safe margins, no warped apparatus, fused objects, repeated limbs/components, impossible reflections or obvious generation artefacts.
 9. Mobile safety: the essential scene remains understandable in a centred 16:9 card approximately 360 px wide without zooming.
-10. Accessibility: alt text accurately and completely describes visible content without leaking the answer.
+10. Accessibility: visibleTakeaway is a concise, literal, answer-neutral description suitable to become the canonical runtime alt text. If the supplied source alt text is generic, meta, incomplete or leaky but visibleTakeaway repairs it, keep accessibleAlt=true and report the source-alt replacement as a minor accessibility annotation.
 
 SEVERITY AND DISPOSITION
 - major: reserve this for a clear, material contradiction visible at ordinary card scale that makes the pair unusable or likely to teach the wrong science—for example wrong task/answer, conflicting notation or named material, an impossible causal setup, a result that solves the question, or a missing essential object/state. disposition=fresh-regenerate, accepted=false. Supply a concrete regenerationInstruction and leave annotation empty.
-- minor: a local or plausibly benign imperfection that leaves the core task identity, scientific takeaway, notation, answer and mobile interpretation intact—for example slightly imperfect nonessential depiction, stylised colour/glow, unequal cosmetic surface finish, or an extra unlabelled ancillary pipe/fixture whose function is not part of the question. disposition=retain-with-annotation, accepted=true. Supply a concise annotation and leave regenerationInstruction empty.
+- minor: a local or plausibly benign imperfection that leaves the core task identity, scientific takeaway, notation, answer and mobile interpretation intact—for example slightly imperfect nonessential depiction, stylised colour/glow, unequal cosmetic surface finish, a dark/light rendering-medium mismatch that preserves the same task-relevant scene, or an extra unlabelled ancillary pipe/fixture whose function is not part of the question. disposition=retain-with-annotation, accepted=true. Supply a concise annotation and leave regenerationInstruction empty.
+- A major issue must be fixable by changing the pixels. A generic scene sentence, meta alt text or other metadata-only problem is never a fresh-regeneration reason. Keep an otherwise sound pair, record a minor content/accessibility annotation and make visibleTakeaway the corrected literal runtime description.
 - When a plausible non-answer-changing interpretation exists, prefer minor. Do not mark a pair major merely because an unlabelled ancillary object could be over-interpreted, a specimen finish is cosmetically unequal, or a stylised material is not literally coloured. Escalate only when the visible defect itself establishes a wrong fact or wrong task state.
-- A contextual illustration may omit a numerical observation already stated completely in the learner-facing text or show the apparatus immediately before that observation. Treat this as minor when the image remains scientifically plausible, does not assert a conflicting result, and the self-contained question supplies all evidence needed to answer. Do not require generative art to repeat exact question-given numbers merely to pass.
+- For a fully self-contained learner question, omission of nonfunctional contextual props from an otherwise plausible generic apparatus still life is minor when the pixels neither depict a different named material/scenario nor assert a conflicting connection, result or state. A brief-specific prop list is not itself a functional diagram requirement. Missing context becomes major only when the visible pair is unmistakably for another task or the omitted object is necessary to understand the question safely.
+- A single loose repeated prop that looks slightly different because of perspective, overlap or hand-made variation is minor when the question still reads correctly and the art does not use that difference as data. Escalate unequal "identical" objects only when the visible inequality deliberately creates a different experimental condition, quantitative comparison or answer cue.
+- Incidental standard glassware graduations, harmless apparatus numerals or tiny pseudo-text are minor when they neither conflict with the learner-facing values nor encode a result, label a choice, reveal an answer or change the method. Treat unwanted text as major only when it is legible and materially changes the task or scientific interpretation.
+- Do not infer calibrated scale from a decorative background grid, studio surface, spacing, perspective or ordinary side-by-side composition. Treat scale as asserted only when the image includes an actual scale bar, axis, dimension, measurement marks or other explicit comparison device. A decorative grid is background texture, not evidence that two illustrated objects are shown to scale.
+- Treat benign illustrative enlargement, miniaturisation or stylisation as minor at most when no measurement is asserted and the core scientific identity remains clear. Escalate scale only when an explicit measurement/comparison is materially wrong or the depiction makes the object into a different scientific structure.
+- A numerical ratio in the learner-facing question does not by itself turn an unmarked decorative exhibition model into a calibrated scale diagram. When the nested or relative relationship is correct but an unmarked stylised model is only approximately proportioned, retain it with a minor annotation unless the visible error is gross enough to reverse the comparison, change the order of magnitude or depict a different structure.
+- For a current-carrying conductor between magnets, trace every visible lead to its literal endpoint. A lead that touches or terminates on a magnet block does not become a valid hidden circuit through generous interpretation; it is a major wrong connection. If the power source is intentionally outside a contextual crop, two isolated leads may continue off-frame without penalty when the learner-facing question itself states that current is flowing.
+- A contextual illustration may omit a numerical observation already stated completely in the learner-facing text or show the apparatus immediately before that observation. Treat this as minor when the image remains scientifically plausible, does not assert a conflicting result, and the self-contained question supplies all evidence needed to answer. Do not require generative art to repeat exact question-given numbers merely to pass. Never ask replacement art to re-encode those values as bars, lengths, zone sizes, rankings, arrows or other quantitative marks that would reveal the conclusion.
+- For an abstract bonding, particle or explanation task, a literal answer-neutral still life of the exact named starting materials can be sufficiently relevant when the learner-facing question supplies the complete conceptual task. Do not require probabilistic raster art to draw counted electron shells, particles or the missing mechanism merely to pass. Retain a scientifically plausible material still life unless it visibly names the wrong substance, asserts a wrong state or depicts the answer.
 - clean: no issue. disposition=accept, accepted=true.
-- Never propose editing or inpainting a failed image. Every major failure is regenerated as a brand-new dark composition, then a new light sibling is derived from that accepted dark master. The rejected pair remains immutable evidence.
+- Never propose editing or inpainting a failed image. Every major failure is regenerated as two independent brand-new theme compositions from the same authoritative spec. The rejected pair remains immutable evidence and is never supplied as a reference.
 
 Set accepted=true only when all ten booleans are true, score is at least 18/20 and there are no major issues. Minor issues may remain as annotations. Every accepted=false row must contain at least one major issue. Be strict about semantic failures and conservative about regeneration: do not regenerate for minor imperfections.
 
@@ -522,25 +782,139 @@ function chunk(values, size) {
 	return chunks;
 }
 
+function batchIdForIndex(batchIndex) {
+	return `art-review-${String(batchIndex + 1).padStart(3, '0')}`;
+}
+
+function recordReviewAttemptFailure(attemptDir, failure) {
+	const failurePath = path.join(attemptDir, 'failure.json');
+	const evidence = {
+		schemaVersion: 'science-question-art-review-attempt-failure/v1',
+		recordedAt: new Date().toISOString(),
+		...failure
+	};
+	writeFileSync(failurePath, `${stableStringify(evidence)}\n`, { flag: 'wx' });
+	return {
+		...evidence,
+		failurePath: path.relative(rootDir, failurePath),
+		failureSha256: sha256(readFileSync(failurePath))
+	};
+}
+
 async function runConcurrent(tasks, concurrency) {
 	const results = new Array(tasks.length);
 	let cursor = 0;
+	let stopReason = null;
 	async function worker() {
-		while (cursor < tasks.length) {
+		while (cursor < tasks.length && stopReason === null) {
 			const index = cursor;
 			cursor += 1;
 			try {
-				results[index] = await tasks[index]();
+				results[index] = await tasks[index].run();
 			} catch (error) {
 				results[index] = {
+					batchId: tasks[index].batchId,
 					status: 'failed',
-					error: error instanceof Error ? error.message : String(error)
+					ids: tasks[index].ids,
+					error: errorMessage(error),
+					failureKind: 'review-runner-failure',
+					stopScheduling: true
+				};
+			}
+			if (results[index]?.stopScheduling) {
+				stopReason = {
+					batchId: tasks[index].batchId,
+					failureKind: results[index].failureKind ?? 'unknown',
+					error: results[index].error ?? 'Review scheduling stopped.'
 				};
 			}
 		}
 	}
 	await Promise.all(Array.from({ length: Math.min(concurrency, tasks.length) }, () => worker()));
+	for (let index = 0; index < results.length; index += 1) {
+		if (results[index] !== undefined) continue;
+		results[index] = {
+			batchId: tasks[index].batchId,
+			status: 'not-started',
+			ids: tasks[index].ids,
+			failureKind: 'review-transport-circuit-open',
+			error: `Not started after ${stopReason?.batchId ?? 'an earlier batch'} opened the review transport circuit.`,
+			stopReason
+		};
+	}
 	return results;
+}
+
+function errorMessage(error) {
+	return error instanceof Error ? error.message : String(error);
+}
+
+function readReusableArtReview(relativePath, currentManifest, selectedSpecs) {
+	const absolute = resolveReusableEvidencePath(relativePath, 'reuse review');
+	let review;
+	try {
+		review = JSON.parse(readFileSync(absolute, 'utf8'));
+	} catch (error) {
+		throw new Error(
+			`Reuse review is not valid JSON: ${error instanceof Error ? error.message : String(error)}`
+		);
+	}
+	if (
+		review?.schemaVersion !== SCIENCE_QUESTION_ART_REVIEW_SCHEMA ||
+		review.releaseId !== currentManifest.releaseId ||
+		review.manifestSha256 !== canonicalHash(currentManifest) ||
+		review.model !== MODEL ||
+		review.thinkingLevel !== THINKING_LEVEL ||
+		review.selectedCount !== currentManifest.specs.length ||
+		review.missingCount !== 0 ||
+		review.invalidBatchCount !== 0 ||
+		!Array.isArray(review.reviews) ||
+		review.reviews.length !== currentManifest.specs.length ||
+		!Array.isArray(review.batches)
+	) {
+		throw new Error(
+			'Reuse review must be a complete structurally valid full-manifest review of the same manifest.'
+		);
+	}
+	if (selectedSpecs.length !== currentManifest.specs.length) {
+		throw new Error('--reuse-review is available only for a complete full-manifest review.');
+	}
+	const memberships = review.batches.map((batch) => batchMembershipKey(batch?.ids));
+	if (new Set(memberships).size !== memberships.length) {
+		throw new Error('Reuse review contains malformed or duplicate batch memberships.');
+	}
+	return review;
+}
+
+function resolveReusableEvidencePath(relativePath, label) {
+	if (
+		typeof relativePath !== 'string' ||
+		path.isAbsolute(relativePath) ||
+		relativePath.includes('\\')
+	) {
+		throw new Error(`${label} path must be repo-relative.`);
+	}
+	const segments = relativePath.split('/');
+	if (segments.some((segment) => !segment || segment === '.' || segment === '..')) {
+		throw new Error(`${label} path contains an unsafe segment.`);
+	}
+	const absolute = path.resolve(rootDir, ...segments);
+	if (absolute === rootDir || !absolute.startsWith(`${rootDir}${path.sep}`)) {
+		throw new Error(`${label} path escapes the repository.`);
+	}
+	if (!existsSync(absolute)) throw new Error(`${label} path does not exist.`);
+	const metadata = lstatSync(absolute);
+	if (!metadata.isFile() || metadata.isSymbolicLink()) {
+		throw new Error(`${label} path must be a regular non-symlink file.`);
+	}
+	return absolute;
+}
+
+function batchMembershipKey(ids) {
+	if (!Array.isArray(ids) || ids.length === 0 || ids.some((id) => typeof id !== 'string')) {
+		throw new Error('Review batch membership must be a non-empty string array.');
+	}
+	return canonicalHash(ids);
 }
 
 function parseArgs(argv) {
@@ -560,15 +934,24 @@ function parseArgs(argv) {
 		resume: Boolean(values.get('resume')),
 		ids,
 		manifest: String(
-			values.get('manifest') ?? 'tmp/science-challenges/science-500-v1/compiled/art-manifest.json'
+			values.get('manifest') ??
+				'tmp/science-challenges/candidate-release/compiled/art-manifest.json'
 		),
 		outputRoot: String(
-			values.get('output-root') ?? 'tmp/science-challenges/science-500-v1/art-review'
+			values.get('output-root') ?? 'tmp/science-challenges/candidate-release/art-review'
 		),
+		reuseReview:
+			values.get('reuse-review') === undefined ? null : String(values.get('reuse-review')),
 		model: String(values.get('model') ?? MODEL),
 		thinkingLevel: String(values.get('thinking-level') ?? THINKING_LEVEL),
 		batchSize: integer(values.get('batch-size') ?? 4, '--batch-size', 1, 6),
 		concurrency: integer(values.get('concurrency') ?? 2, '--concurrency', 1, 4),
+		maxAttempts: integer(
+			values.get('max-attempts') ?? DEFAULT_ART_REVIEW_MAX_ATTEMPTS,
+			'--max-attempts',
+			1,
+			8
+		),
 		timeoutMs: integer(values.get('timeout-ms') ?? 7_200_000, '--timeout-ms', 1, 14_400_000),
 		requireCount: integer(values.get('require-count') ?? 1_000, '--require-count', 1, 1_000),
 		limit: nullableInteger(values.get('limit'), '--limit', 1)
@@ -597,10 +980,12 @@ function usage() {
 		'',
 		'--manifest=<art-manifest.json>',
 		'--output-root=<directory>',
+		'--reuse-review=<review-summary.json>  Reuse only unchanged all-accepted batch evidence into a new output root',
 		'--id=<art-id>            Repeat to select specific contexts',
 		'--limit=<count>',
 		'--batch-size=<1-6>       Default 4 pairs / 8 images',
 		'--concurrency=<1-4>      Default 2',
+		'--max-attempts=<1-8>     Same-prompt transport/format attempts; default 4',
 		'--timeout-ms=<number>',
 		'--require-count=<count>  Full manifest count gate; default 1000',
 		'--resume'

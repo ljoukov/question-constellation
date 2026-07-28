@@ -5,17 +5,15 @@ import path from 'node:path';
 
 import { configureChatGptCodexProxy, streamJson } from '@ljoukov/llm';
 import { canonicalHash, stableStringify } from './science-challenge-release.mjs';
-import {
-	normalizeScienceChallengeAuthoringProviderValue,
-	scienceChallengeAuthoringProviderSchema
-} from './science-challenge-authoring-provider-schema.mjs';
+import { scienceChallengeAuthoringProviderSchema } from './science-challenge-authoring-provider-schema.mjs';
 import {
 	SCIENCE_CHALLENGE_DIRECT_JSON_MODEL,
 	SCIENCE_CHALLENGE_DIRECT_JSON_PROVIDER,
 	SCIENCE_CHALLENGE_DIRECT_JSON_REQUEST_SCHEMA,
 	SCIENCE_CHALLENGE_DIRECT_JSON_RESULT_SCHEMA,
 	SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT,
-	SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT_VERSION
+	SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT_VERSION,
+	SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON
 } from './science-challenge-authoring-transport.mjs';
 
 export {
@@ -85,6 +83,8 @@ export async function runDirectScienceChallengeJsonTurn({
 		schemaVersion: SCIENCE_CHALLENGE_DIRECT_JSON_REQUEST_SCHEMA,
 		transport: SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT,
 		transportVersion: SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT_VERSION,
+		responseMode: SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON,
+		providerSchemaApplied: true,
 		operation: 'streamJson',
 		provider: SCIENCE_CHALLENGE_DIRECT_JSON_PROVIDER,
 		model,
@@ -139,13 +139,7 @@ export async function runDirectScienceChallengeJsonTurn({
 		const observedEvents = observePromiseResult(
 			(async () => {
 				for await (const providerEvent of activeCall.events) {
-					const event =
-						providerEvent?.type === 'json' && providerEvent.stage === 'final'
-							? {
-									...providerEvent,
-									value: normalizeScienceChallengeAuthoringProviderValue(providerEvent.value)
-								}
-							: providerEvent;
+					const event = providerEvent;
 					events.push(event);
 					writeFileSync(eventsPath, `${JSON.stringify(event)}\n`, { flag: 'a' });
 					if (event?.type === 'delta' && event.channel === 'response') {
@@ -174,10 +168,6 @@ export async function runDirectScienceChallengeJsonTurn({
 		if (typeof output.rawText !== 'string') {
 			throw new Error('Direct JSON authoring result omitted rawText.');
 		}
-		output = {
-			...output,
-			value: normalizeScienceChallengeAuthoringProviderValue(output.value)
-		};
 		responseText = output.rawText;
 		thoughts = String(output.result?.thoughts ?? '');
 		writeFileSync(lastMessagePath, responseText);
@@ -198,6 +188,9 @@ export async function runDirectScienceChallengeJsonTurn({
 		? {
 				schemaVersion: SCIENCE_CHALLENGE_DIRECT_JSON_RESULT_SCHEMA,
 				transport: SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT,
+				transportVersion: SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT_VERSION,
+				responseMode: SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON,
+				providerSchemaApplied: true,
 				provider: output.result?.provider ?? null,
 				model: output.result?.model ?? null,
 				modelVersion: output.result?.modelVersion ?? null,
@@ -219,6 +212,8 @@ export async function runDirectScienceChallengeJsonTurn({
 		error: failedError,
 		transport: SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT,
 		transportVersion: SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT_VERSION,
+		responseMode: SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON,
+		providerSchemaApplied: true,
 		authMode,
 		provider: output?.result?.provider ?? null,
 		model,

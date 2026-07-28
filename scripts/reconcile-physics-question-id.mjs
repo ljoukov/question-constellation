@@ -3,7 +3,7 @@
 import { isDeepStrictEqual } from 'node:util';
 
 import { loadChainIllustrationCandidates } from './lib/chain-illustration-candidates.mjs';
-import { normalizedSourceFingerprintInput } from './lib/chain-illustration-pipeline.mjs';
+import { normalizedSourceFingerprintInput } from './lib/answer-chain-source-fingerprint.mjs';
 import { d1Config, d1Rows } from './lib/d1-rest.mjs';
 import {
 	PHYSICS_QUESTION_ID_RECONCILIATION,

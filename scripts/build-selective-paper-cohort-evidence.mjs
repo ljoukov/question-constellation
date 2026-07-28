@@ -1265,13 +1265,7 @@ function batchEvidence(summaryPath, summary) {
 		status: summary.status ?? null,
 		selected: summary.selected ?? null,
 		passed: summary.passed ?? null,
-		failed: summary.failed ?? null,
-		illustrations: summary.chainIllustrations
-			? {
-					status: summary.chainIllustrations.status ?? null,
-					counts: summary.chainIllustrations.counts ?? null
-				}
-			: null
+		failed: summary.failed ?? null
 	};
 }
 

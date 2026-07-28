@@ -26,12 +26,10 @@ import {
 	scienceChallengeVerificationRepairRunId
 } from './science-challenge-verification-repair-transaction.mjs';
 import {
-	bindVerificationRepairExecutionRecovery,
 	claimVerificationRepairExecutionAttempt,
 	initializeVerificationRepairExecutionLedger,
 	scienceChallengeVerificationRepairExecutionIdentity,
-	verificationRepairExecutionLedgerRoot,
-	verificationRepairRecoveryManifestPath
+	verificationRepairExecutionLedgerRoot
 } from './science-challenge-verification-repair-lineage.mjs';
 
 const targetId = 'physics-newtons-second-law-01';
@@ -245,7 +243,7 @@ async function descendantRemapEvidenceFixture() {
 		};
 		const curriculumCatalogSha256 = canonicalHash(curriculumCatalog);
 		const plan = {
-			schemaVersion: 'science-challenge-plan/v1',
+			schemaVersion: 'science-challenge-plan/v2',
 			planId: 'science-remap-test-v1',
 			curriculumCatalogSha256,
 			rows: [
@@ -291,13 +289,13 @@ async function descendantRemapEvidenceFixture() {
 				)
 			]
 		};
-		const priorCandidate = {
+		const priorCandidate = normalizeGeneratedChallengeBatch({
 			schemaVersion: 'science-challenge-batch/v1',
 			challenges: [
 				challenge(acceptedId, 'Speed stays accepted', 'aqa-gcse-physics-test:4-5-2'),
 				challenge(targetId, 'Newton target stays otherwise exact', parentId)
 			]
-		};
+		});
 		const priorValidation = {
 			status: 'passed',
 			issues: [],
@@ -364,7 +362,7 @@ async function descendantRemapEvidenceFixture() {
 				12
 			)}-attempt-${String(attempt).padStart(2, '0')}`;
 			const attemptDir = path.join(shardDir, attemptDirectory);
-			const candidate = structuredClone(priorCandidate);
+			const candidate = providerBatch(priorCandidate);
 			if (attempt === 1 || attempt === 3) {
 				candidate.challenges[1].grounding.curriculumComponentId = leafId;
 			}
@@ -451,20 +449,6 @@ async function descendantRemapEvidenceFixture() {
 			sourceCandidatePaths.push(candidatePath);
 			sourceValidationPaths.push(validationPath);
 		}
-		const recoveryManifest = {
-			schemaVersion: 'science-challenge-verification-repair-recovery/v2',
-			objectiveId: identity.objectiveId,
-			executionId: identity.executionId,
-			identity,
-			historicalImport: true
-		};
-		writeJson(verificationRepairRecoveryManifestPath(ledgerRoot), recoveryManifest);
-		bindVerificationRepairExecutionRecovery({
-			ledgerRoot,
-			identity,
-			manifest: recoveryManifest,
-			successorRoot: outputRoot
-		});
 		const repairDir = path.join(
 			shardDir,
 			`verification-repair-${scienceChallengeVerificationRepairRunId(repairSha256)}`
@@ -681,15 +665,117 @@ function planRow(id, componentId, code, title, page, index) {
 
 function challenge(id, title, curriculumComponentId) {
 	return {
-		definition: { id, title },
+		definition: {
+			id,
+			slug: id,
+			subject: 'physics',
+			subjectArtTheme: 'forces-motion',
+			title,
+			topic: title,
+			hook: 'A force-and-motion explanation needs every causal step in the right order.',
+			arc: 'track-the-forces',
+			mechanic: 'first-wrong-step',
+			difficulty: 'standard',
+			marks: 3,
+			estimatedMinutes: 4,
+			previewQuestion: 'Which step makes this force-and-motion explanation scientifically complete?',
+			questionPresentation: null,
+			metaDescription:
+				'Practise a calibrated GCSE Physics force-and-motion challenge and repair the decisive scientific step.',
+			sourceQuestionId: id === acceptedId ? 'paper-question-1' : 'paper-question-2',
+			lastReviewed: '2026-07-23',
+			version: 1,
+			staticAnswers: {
+				a: 'The motion changes without a resultant force acting.',
+				b: 'A resultant force causes acceleration in the direction of that force.'
+			},
+			strongerAnswer: 'b',
+			weakAnswer: 'a',
+			weakAnswerKind: 'incorrect-claim',
+			showdownExplanation:
+				'The stronger answer connects the resultant force to acceleration; the weaker answer omits that cause.',
+			commandWordLesson:
+				'Explain means connect the resultant force to the resulting acceleration.',
+			diagnosisPrompt: 'Which scientific step is wrong in the weaker answer?',
+			diagnosisChoices: choices('It omits the effect of the resultant force.'),
+			repairPrompt: 'Which phrase repairs the explanation most precisely?',
+			repairChoices: choices('A resultant force causes acceleration.'),
+			freeTextKeywordGroups: [['resultant force'], ['acceleration']],
+			repairSuccess: 'The repaired answer now links the resultant force to acceleration.',
+			transferPromptLead:
+				'A trolley experiences a non-zero resultant force. Which statement follows?',
+			transferChoices: choices('The trolley accelerates in the direction of the resultant force.'),
+			transferExplanation:
+				'A non-zero resultant force produces acceleration in the direction of that force.',
+			memoryHandle: 'resultant force → acceleration'
+		},
 		grounding: {
 			curriculumComponentId,
 			specificationId: 'aqa-gcse-physics-test',
 			specificationSha256,
 			calibrationQuestionId: id === acceptedId ? 'paper-question-1' : 'paper-question-2',
 			calibrationQuestionSha256: id === acceptedId ? '1'.repeat(64) : '2'.repeat(64)
+		},
+		art: {
+			opening: artBrief(id, 'opening', 'A dynamics trolley with one visible force arrow'),
+			transfer: artBrief(id, 'transfer', 'A second trolley accelerating along a straight track')
 		}
 	};
+}
+
+function choices(correctText) {
+	return [
+		{
+			id: 'wrong-before',
+			text: 'The object must already be moving quickly.',
+			feedback: 'Speed alone does not identify the resultant force.',
+			correct: false
+		},
+		{
+			id: 'correct-link',
+			text: correctText,
+			feedback: 'This supplies the required force-and-motion link.',
+			correct: true
+		},
+		{
+			id: 'wrong-after',
+			text: 'The mass disappears once the object moves.',
+			feedback: 'Motion does not remove the object’s mass.',
+			correct: false
+		}
+	];
+}
+
+function artBrief(challengeId, context, scene) {
+	return {
+		schemaVersion: 'science-question-art/v1',
+		id: `${challengeId}-${context}`,
+		context,
+		scene,
+		visualAnchor: `${scene} as one uncluttered mechanics setup`,
+		altText: `${scene}, shown without answer-revealing labels.`,
+		approvedMeaning: 'The force-and-motion context is visible without revealing the answer.',
+		accuracyConstraints: [
+			'Keep the trolley and track physically coherent.',
+			'Use only the force arrow needed by the scene.'
+		],
+		forbiddenDetails: [
+			'Do not label the correct answer.',
+			'Do not add equations or explanatory text.'
+		]
+	};
+}
+
+function providerBatch(candidate) {
+	const batch = structuredClone(candidate);
+	for (const challenge of batch.challenges) {
+		if (challenge.definition.questionPresentation === undefined) {
+			challenge.definition.questionPresentation = null;
+		} else if (challenge.definition.questionPresentation.table === undefined) {
+			challenge.definition.questionPresentation.table = null;
+		}
+	}
+	return batch;
 }
 
 function catalogComponent(id, parentId, code, title, page) {
@@ -728,32 +814,35 @@ function successfulDirectStream(batch, attempt, partIndex) {
 		thinkingTokens: 3,
 		totalTokens: 18 + partIndex
 	};
-	return () => ({
-		events: {
-			async *[Symbol.asyncIterator]() {
-				yield { type: 'delta', channel: 'thought', text: thoughts };
-				yield { type: 'delta', channel: 'response', text: rawText };
-				yield { type: 'model', modelVersion };
-				yield { type: 'usage', usage, costUsd: 0.001, modelVersion };
-				yield { type: 'json', stage: 'final', value: batch };
-			}
-		},
-		result: Promise.resolve({
-			value: batch,
-			rawText,
-			result: {
-				provider: 'chatgpt',
-				model: 'chatgpt-gpt-5.6-sol',
-				modelVersion,
-				text: rawText,
-				thoughts,
-				blocked: false,
-				usage,
-				costUsd: 0.001
-			}
-		}),
-		abort() {}
-	});
+	return (request) => {
+		request.schema.parse(batch);
+		return {
+			events: {
+				async *[Symbol.asyncIterator]() {
+					yield { type: 'delta', channel: 'thought', text: thoughts };
+					yield { type: 'delta', channel: 'response', text: rawText };
+					yield { type: 'model', modelVersion };
+					yield { type: 'usage', usage, costUsd: 0.001, modelVersion };
+					yield { type: 'json', stage: 'final', value: batch };
+				}
+			},
+			result: Promise.resolve({
+				value: batch,
+				rawText,
+				result: {
+					provider: 'chatgpt',
+					model: 'chatgpt-gpt-5.6-sol',
+					modelVersion,
+					text: rawText,
+					thoughts,
+					blocked: false,
+					usage,
+					costUsd: 0.001
+				}
+			}),
+			abort() {}
+		};
+	};
 }
 
 function readJson(filePath) {

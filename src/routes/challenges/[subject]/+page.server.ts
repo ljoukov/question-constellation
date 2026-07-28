@@ -1,46 +1,29 @@
-import { challengeSubjects, challengesForSubject } from '$lib/challenges/catalog';
 import { emptyChallengeProgress } from '$lib/challenges/progress';
 import { emptyChallengeLeaderboard } from '$lib/challenges/leaderboard';
-import type { ChallengeSubject } from '$lib/challenges/types';
-import { publicChallengeCardDefinition } from '$lib/server/challengeCatalogPresentation';
-import {
-	ENGLAND_KS4_SCIENCE_CONTEXT_URL,
-	publicChallengeCurriculumLinks
-} from '$lib/server/challengeCurriculum';
+import { normalizeChallengeSubject } from '$lib/challenges/routing';
+import { getChallengeSubject } from '$lib/server/challengeCatalog';
 import { getChallengeLeaderboard } from '$lib/server/challengeLeaderboard';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, params, parent }) => {
-	const subjectDefinition = challengeSubjects.find(
-		(candidate) => candidate.subject === params.subject
-	);
-	if (!subjectDefinition) throw error(404, 'Challenge subject not found.');
-
-	const subject = subjectDefinition.subject as ChallengeSubject;
-	const challenges = challengesForSubject(subject);
-	const challengeCards = challenges.map(publicChallengeCardDefinition);
-	const heroChallenge =
-		challenges.find(({ slug }) => slug === subjectDefinition.heroSlug) ?? challenges[0];
-	if (!heroChallenge) throw error(500, 'Subject challenge is unavailable.');
+	const subject = normalizeChallengeSubject(params.subject);
+	if (!subject) throw error(404, 'Challenge subject not found.');
+	const [catalog, layoutData, leaderboard] = await Promise.all([
+		getChallengeSubject(subject),
+		locals.user ? parent() : Promise.resolve(null),
+		getChallengeLeaderboard({
+			scope: subject,
+			currentUserId: locals.user?.uid
+		}).catch(() => emptyChallengeLeaderboard())
+	]);
+	if (!catalog) throw error(404, 'Challenge subject not found.');
 	const challengeProgress = locals.user
-		? ((await parent()).homeSnapshot?.challengeProgress ?? emptyChallengeProgress())
+		? (layoutData?.homeSnapshot?.challengeProgress ?? emptyChallengeProgress())
 		: emptyChallengeProgress();
-	const leaderboard = await getChallengeLeaderboard({
-		challengeIds: challenges.map((challenge) => challenge.id),
-		currentUserId: locals.user?.uid
-	}).catch(() => emptyChallengeLeaderboard());
 
 	return {
-		subject: {
-			subject: subjectDefinition.subject,
-			label: subjectDefinition.label,
-			description: subjectDefinition.description
-		},
-		defaultHeroId: heroChallenge.id,
-		challenges: challengeCards,
-		curriculumLinks: publicChallengeCurriculumLinks(challenges),
-		ks4ScienceUrl: ENGLAND_KS4_SCIENCE_CONTEXT_URL,
+		...catalog,
 		challengeProgress,
 		leaderboard,
 		user: locals.user

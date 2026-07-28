@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-	CHALLENGE_PROGRESS_GUEST_STORAGE_KEY,
-	LEGACY_CHALLENGE_PROGRESS_STORAGE_KEY,
+	CHALLENGE_PROGRESS_STORAGE_KEY,
 	calculateChallengeScore,
 	challengeProgressStorageKey,
 	challengeProgressTotals,
@@ -54,67 +53,9 @@ describe('challenge progress', () => {
 		expect(parseChallengeProgress(JSON.stringify({ version: 3, challenges: {} }))).toEqual(
 			emptyChallengeProgress()
 		);
-	});
-
-	it('awards only the completion base score when migrating a completed v1 entry', () => {
-		const migrated = parseChallengeProgress(
-			JSON.stringify({
-				version: 1,
-				challenges: {
-					'bio-enzyme': {
-						startedAt: '2026-07-17T10:00:00.000Z',
-						completedAt: '2026-07-17T10:02:00.000Z',
-						plays: 2,
-						lastStage: 'complete'
-					}
-				}
-			})
+		expect(parseChallengeProgress(JSON.stringify({ version: 1, challenges: {} }))).toEqual(
+			emptyChallengeProgress()
 		);
-
-		expect(migrated).toEqual({
-			version: 2,
-			challenges: {
-				'bio-enzyme': {
-					startedAt: '2026-07-17T10:00:00.000Z',
-					updatedAt: '2026-07-17T10:02:00.000Z',
-					completedAt: '2026-07-17T10:02:00.000Z',
-					plays: 2,
-					lastStage: 'complete',
-					bestScore: 400,
-					bestTimeMs: null,
-					lastScore: 400,
-					lastTimeMs: null
-				}
-			}
-		});
-	});
-
-	it('backfills the completion base score for an already-migrated v2 completion', () => {
-		const migrated = parseChallengeProgress(
-			JSON.stringify({
-				version: 2,
-				challenges: {
-					'bio-enzyme': {
-						startedAt: '2026-07-17T10:00:00.000Z',
-						updatedAt: '2026-07-17T10:02:00.000Z',
-						completedAt: '2026-07-17T10:02:00.000Z',
-						plays: 2,
-						lastStage: 'complete',
-						bestScore: null,
-						bestTimeMs: null,
-						lastScore: null,
-						lastTimeMs: null
-					}
-				}
-			})
-		);
-
-		expect(migrated.challenges['bio-enzyme']).toMatchObject({
-			bestScore: 400,
-			bestTimeMs: null,
-			lastScore: 400,
-			lastTimeMs: null
-		});
 	});
 
 	it('preserves an explicit canonical null latest result when a personal best exists', () => {
@@ -148,7 +89,8 @@ describe('challenge progress', () => {
 			entry({ plays: 1_000_001 }),
 			entry({ startedAt: '2026-07-17T10:03:00.000Z' }),
 			entry({ completedAt: '2026-07-17T10:03:00.000Z' }),
-			entry({ completedAt: null, lastStage: 'complete' })
+			entry({ completedAt: null, lastStage: 'complete' }),
+			entry({ bestScore: null, lastScore: null })
 		];
 
 		for (const [index, invalidEntry] of invalidEntries.entries()) {
@@ -162,23 +104,10 @@ describe('challenge progress', () => {
 		}
 	});
 
-	it('migrates the legacy guest key while keeping account caches separate', () => {
-		const storage = memoryStorage({
-			[LEGACY_CHALLENGE_PROGRESS_STORAGE_KEY]: JSON.stringify({
-				version: 1,
-				challenges: {
-					legacy: {
-						startedAt: '2026-07-17T10:00:00.000Z',
-						completedAt: null,
-						plays: 1,
-						lastStage: 'repair'
-					}
-				}
-			})
-		});
-
-		expect(readChallengeProgress(storage).challenges.legacy).toBeDefined();
-		expect(storage.values.has(CHALLENGE_PROGRESS_GUEST_STORAGE_KEY)).toBe(true);
+	it('keeps guest and account caches separate', () => {
+		const storage = memoryStorage();
+		writeChallengeProgress(progress('guest-only', entry()), storage);
+		expect(readChallengeProgress(storage).challenges['guest-only']).toBeDefined();
 		expect(readChallengeProgress(storage, 'user-a')).toEqual(emptyChallengeProgress());
 
 		const accountProgress = progress('account-only', entry());
@@ -188,17 +117,15 @@ describe('challenge progress', () => {
 		expect(challengeProgressStorageKey('user-a')).not.toBe(challengeProgressStorageKey('user-b'));
 	});
 
-	it('clears only guest v2 and legacy v1 state after import', () => {
+	it('clears only guest state after import', () => {
 		const storage = memoryStorage({
-			[CHALLENGE_PROGRESS_GUEST_STORAGE_KEY]: JSON.stringify(progress('guest', entry())),
-			[LEGACY_CHALLENGE_PROGRESS_STORAGE_KEY]: '{}',
+			[CHALLENGE_PROGRESS_STORAGE_KEY]: JSON.stringify(progress('guest', entry())),
 			[challengeProgressStorageKey('user-a')]: JSON.stringify(progress('account', entry()))
 		});
 
 		clearGuestChallengeProgress(storage);
 
-		expect(storage.values.has(CHALLENGE_PROGRESS_GUEST_STORAGE_KEY)).toBe(false);
-		expect(storage.values.has(LEGACY_CHALLENGE_PROGRESS_STORAGE_KEY)).toBe(false);
+		expect(storage.values.has(CHALLENGE_PROGRESS_STORAGE_KEY)).toBe(false);
 		expect(storage.values.has(challengeProgressStorageKey('user-a'))).toBe(true);
 	});
 

@@ -5,7 +5,7 @@ import {
 	publishScienceChallengeReviewRebaseEvidence
 } from './lib/science-challenge-review-rebase-evidence.mjs';
 import { canonicalHash } from './lib/science-challenge-release.mjs';
-import { createServer } from 'vite';
+import { loadChallengeCatalogSource } from './lib/challenge-catalog-source.mjs';
 
 const args = parseArgs(process.argv.slice(2));
 if (args.help) {
@@ -23,7 +23,7 @@ const options = {
 	parentVerificationPath: args.parentVerification,
 	parentRepairPath: args.parentRepair,
 	selectionIndexPath: args.selections,
-	existingDefinitions: await loadExistingCatalog()
+	existingDefinitions: await loadExistingCatalog(args.catalogSource)
 };
 const result = args.dryRun
 	? prepareScienceChallengeReviewRebaseEvidence(options)
@@ -88,6 +88,7 @@ function parseArgs(argv) {
 		if (
 			![
 				'output-root',
+				'catalog-source',
 				'spec',
 				'base-plan',
 				'source',
@@ -122,6 +123,7 @@ function parseArgs(argv) {
 		help: false,
 		dryRun: Boolean(values.get('dry-run')),
 		outputRoot: values.get('output-root'),
+		catalogSource: values.has('catalog-source') ? values.get('catalog-source') : null,
 		spec: values.get('spec'),
 		basePlan: values.get('base-plan'),
 		source: values.get('source'),
@@ -137,6 +139,7 @@ function usage() {
 		'Usage: node scripts/build-science-challenge-review-rebase.mjs [options]',
 		'',
 		'--output-root=<absent repo-relative directory>',
+		'--catalog-source=<ignored JSON>  Optional active D1 catalogue export; otherwise read D1',
 		'--spec=<repo-relative review-rebase spec JSON>',
 		'--base-plan=<repo-relative base plan JSON>',
 		'--source=<repo-relative source snapshot JSON>',
@@ -149,20 +152,11 @@ function usage() {
 	].join('\n');
 }
 
-async function loadExistingCatalog() {
-	const server = await createServer({
-		root: process.cwd(),
-		server: { middlewareMode: true },
-		appType: 'custom',
-		logLevel: 'silent'
-	});
-	try {
-		const module = await server.ssrLoadModule('/src/lib/challenges/catalog.ts');
-		if (!Array.isArray(module.challengeCatalog)) {
-			throw new Error('Current challenge catalog did not export challengeCatalog.');
-		}
-		return module.challengeCatalog;
-	} finally {
-		await server.close();
-	}
+async function loadExistingCatalog(sourcePath) {
+	return (
+		await loadChallengeCatalogSource({
+			rootDir: process.cwd(),
+			sourcePath
+		})
+	).definitions;
 }

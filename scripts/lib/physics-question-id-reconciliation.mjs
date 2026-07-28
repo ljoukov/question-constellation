@@ -3,7 +3,7 @@ import { gzipSync, gunzipSync } from 'node:zlib';
 import {
 	normalizedSourceFingerprintInput,
 	sourceFingerprintFromInput
-} from './chain-illustration-pipeline.mjs';
+} from './answer-chain-source-fingerprint.mjs';
 
 export const PHYSICS_QUESTION_ID_RECONCILIATION = Object.freeze({
 	placeholderQuestionId: 'aqa-8464p1h-qp-jun22-01.4',

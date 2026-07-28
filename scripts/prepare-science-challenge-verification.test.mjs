@@ -13,7 +13,6 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { createServer } from 'vite';
 
 import {
 	canonicalHash,
@@ -45,6 +44,7 @@ import {
 	buildScienceChallengeReviewRebaseSuccessorEmptyRecoveryBinding,
 	requireContentVerificationEvidence
 } from './lib/science-challenge-review-evidence.mjs';
+import { CHALLENGE_CATALOG_SOURCE_SCHEMA } from './lib/challenge-catalog-bundle.mjs';
 import { validateScienceChallengeAssignmentPeerEvidence } from './lib/science-challenge-verification-peers.mjs';
 
 const cliPath = fileURLToPath(
@@ -480,9 +480,16 @@ test('authenticated empty-recovery successor survives prepare, aggregate, raw re
 				'--direct-part-size=2',
 				'--max-attempts=4',
 				'--dry-run'
-			],
-			{ cwd: repositoryRoot, encoding: 'utf8' }
-		);
+				],
+				{
+					cwd: repositoryRoot,
+					encoding: 'utf8',
+					env: {
+						...process.env,
+						CHALLENGE_CATALOG_SOURCE: fixture.catalogSourcePath
+					}
+				}
+			);
 		assert.equal(generator.status, 0, generator.stderr);
 		assert.match(generator.stdout, /"status": "planned"/);
 
@@ -793,16 +800,11 @@ function createFixture({ fullCohort = false } = {}) {
 		calibrationQuestionSha256: sourceQuestions[index].contentSha256
 	}));
 	const plan = {
-		schemaVersion: 'science-challenge-plan/v1',
+		schemaVersion: 'science-challenge-plan/v2',
 		planId: 'science-peer-fixture-v1',
 		createdOn: '2026-07-23',
-		existingRoundCount: 2,
-		generatedRoundCount: rows.length,
-		generatedQuestionContextCount: rows.length * 2,
-		targetFinalCatalogueRounds: 2 + rows.length,
-		targetFinalQuestionContextCount: (2 + rows.length) * 2,
-		uniqueIllustrationPairCount: (2 + rows.length) * 2,
-		uniqueFinalIllustrationAssetCount: (2 + rows.length) * 4,
+		baseCatalogContentSha256: '0'.repeat(64),
+		baseCatalogRecordCount: 2,
 		rows
 	};
 	const source = { questions: sourceQuestions };
@@ -1522,7 +1524,25 @@ async function buildAuthenticatedEmptyRecoverySuccessorFixture() {
 	const sourcePath = path.join(inputRoot, 'source.json');
 	const evidencePath = path.join(inputRoot, 'curriculum-evidence.json');
 	const curriculumCatalogPath = path.join(inputRoot, 'curriculum-catalog.json');
-	const existingDefinitions = await loadExistingCatalogForTest();
+	const existingDefinitions = syntheticExistingDefinitionsForTest();
+	const catalogSourcePath = path.join(inputRoot, 'challenge-catalog-source.json');
+	const catalogSourceUnsigned = {
+		schemaVersion: CHALLENGE_CATALOG_SOURCE_SCHEMA,
+		release: {
+			id: 'existing-fixture-catalog',
+			contentSha256: canonicalHash(existingDefinitions),
+			challengeCount: existingDefinitions.length
+		},
+		records: existingDefinitions.map((definition) => ({ definition })),
+		subjects: [],
+		arcs: [],
+		socialImage: null
+	};
+	const catalogSource = {
+		...catalogSourceUnsigned,
+		contentSha256: canonicalHash(catalogSourceUnsigned)
+	};
+	writeJson(catalogSourcePath, catalogSource);
 	const curriculumCatalog = {
 		schemaVersion: 'science-prepare-empty-successor-curriculum/v1',
 		specifications: []
@@ -1565,16 +1585,11 @@ async function buildAuthenticatedEmptyRecoverySuccessorFixture() {
 		};
 	});
 	const basePlan = {
-		schemaVersion: 'science-challenge-plan/v1',
+		schemaVersion: 'science-challenge-plan/v2',
 		planId: 'science-empty-successor-fixture-v1',
 		createdOn: '2026-07-24',
-		existingRoundCount: existingDefinitions.length,
-		generatedRoundCount: rows.length,
-		generatedQuestionContextCount: rows.length * 2,
-		targetFinalCatalogueRounds: existingDefinitions.length + rows.length,
-		targetFinalQuestionContextCount: (existingDefinitions.length + rows.length) * 2,
-		uniqueIllustrationPairCount: (existingDefinitions.length + rows.length) * 2,
-		uniqueFinalIllustrationAssetCount: (existingDefinitions.length + rows.length) * 4,
+		baseCatalogContentSha256: catalogSource.contentSha256,
+		baseCatalogRecordCount: existingDefinitions.length,
 		curriculumCatalogPath: relativeToRepository(curriculumCatalogPath),
 		curriculumCatalogSha256: canonicalHash(curriculumCatalog),
 		rows
@@ -1908,6 +1923,7 @@ async function buildAuthenticatedEmptyRecoverySuccessorFixture() {
 		planPath,
 		sourcePath,
 		evidencePath,
+		catalogSourcePath,
 		basePlan,
 		effectivePlan,
 		source,
@@ -1996,20 +2012,24 @@ function aggregatePreparedSuccessorFixture(fixture, index) {
 	return summary;
 }
 
-async function loadExistingCatalogForTest() {
-	const server = await createServer({
-		root: repositoryRoot,
-		server: { middlewareMode: true },
-		appType: 'custom',
-		logLevel: 'silent'
+function syntheticExistingDefinitionsForTest() {
+	return Array.from({ length: 92 }, (_, index) => {
+		const ordinal = String(index + 1).padStart(3, '0');
+		return validReviewRebaseCandidate(
+			{
+				id: `existing-fixture-${ordinal}`,
+				arc: 'connect-cause-to-effect',
+				mechanic: 'missing-link',
+				difficulty: 'standard',
+				calibrationQuestionId: `existing-source-${ordinal}`,
+				calibrationQuestionSha256: 'a'.repeat(64),
+				curriculumComponentId: `existing-component-${ordinal}`,
+				specificationId: 'existing-fixture-specification',
+				specificationSha256: 'b'.repeat(64)
+			},
+			index + 1000
+		).definition;
 	});
-	try {
-		const module = await server.ssrLoadModule('/src/lib/challenges/catalog.ts');
-		assert.ok(Array.isArray(module.challengeCatalog));
-		return module.challengeCatalog;
-	} finally {
-		await server.close();
-	}
 }
 
 function validReviewRebaseCandidate(row, planRowIndex) {
@@ -2058,9 +2078,9 @@ function validReviewRebaseCandidate(row, planRowIndex) {
 			weakAnswerKind: 'incomplete',
 			showdownExplanation: `The stronger response for fixture ${ordinal} makes the required causal link explicit.`,
 			commandWordLesson: `Explain means connect the stated observation to a scientifically relevant cause.`,
-			diagnosisPrompt: `Which diagnosis identifies the missing link in fixture ${ordinal}?`,
+			diagnosisPrompt: `Which diagnosis identifies the missing idea in fixture ${ordinal}?`,
 			diagnosisChoices: choices('diagnosis', planRowIndex % 3),
-			repairPrompt: `Which repair adds only the missing link in fixture ${ordinal}?`,
+			repairPrompt: `Which improvement adds only the missing idea in fixture ${ordinal}?`,
 			repairChoices: choices('repair', (planRowIndex + 1) % 3),
 			repairSuccess: `The repaired response now states the missing causal connection precisely.`,
 			transferPromptLead: `Transfer case ${tokenSet} asks pupils to justify a different observation with the reusable causal method.`,
@@ -2196,8 +2216,17 @@ function runCli(
 				? [`--review-rebase-manifest=${path.relative(fixture.rootDir, reviewRebaseManifestPath)}`]
 				: [])
 		],
-		{ cwd: fixture.rootDir, encoding: 'utf8' }
-	);
+			{
+				cwd: fixture.rootDir,
+				encoding: 'utf8',
+				env: {
+					...process.env,
+					...(fixture.catalogSourcePath
+						? { CHALLENGE_CATALOG_SOURCE: fixture.catalogSourcePath }
+						: {})
+				}
+			}
+		);
 }
 
 function fullReviewRow(id) {

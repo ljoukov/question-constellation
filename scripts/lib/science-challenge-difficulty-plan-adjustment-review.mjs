@@ -23,8 +23,6 @@ export const SCIENCE_CHALLENGE_DIFFICULTY_PLAN_ADJUSTMENT_DECISION_PROPERTY =
 
 const HASH = /^[a-f0-9]{64}$/u;
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
-const LEGACY_TARGET_DIFF_STATEMENT =
-	'Only definition.difficulty changes on the complete terminal attempt-04 target row.';
 const COMPOSED_TARGET_DIFF_STATEMENT =
 	'The typed plan projection changes only definition.difficulty; terminal content remains byte-identical.';
 const PROPOSAL_FIELDS = Object.freeze([
@@ -164,7 +162,7 @@ export function buildScienceChallengeDifficultyPlanAdjustmentProposalEvidence(va
 		to: value.to,
 		sourceAttempt: value.sourceAttempt,
 		sourcePolicy: value.sourcePolicy,
-		targetRowDiffStatement: value.targetRowDiffStatement ?? LEGACY_TARGET_DIFF_STATEMENT,
+		targetRowDiffStatement: COMPOSED_TARGET_DIFF_STATEMENT,
 		originalSingleIssueGate: structuredClone(value.originalSingleIssueGate)
 	};
 	const validation = validateScienceChallengeDifficultyPlanAdjustmentProposalEvidence(
@@ -196,11 +194,7 @@ export function validateScienceChallengeDifficultyPlanAdjustmentProposalEvidence
 	) {
 		issues.push('Proposal evidence identity differs from its proposal.');
 	}
-	if (
-		![LEGACY_TARGET_DIFF_STATEMENT, COMPOSED_TARGET_DIFF_STATEMENT].includes(
-			value.targetRowDiffStatement
-		)
-	) {
+	if (value.targetRowDiffStatement !== COMPOSED_TARGET_DIFF_STATEMENT) {
 		issues.push('Proposal evidence target-row diff statement is invalid.');
 	}
 	const issue = value.originalSingleIssueGate;
@@ -595,10 +589,7 @@ export function buildScienceChallengeDifficultyPlanAdjustmentVerifierInputFromAr
 						...adjustment,
 						sourceAttempt: manifest.sourceAttempt.attempt,
 						sourcePolicy: manifest.sourceAttempt.selectionPolicy,
-						targetRowDiffStatement:
-							manifest.schemaVersion === SCIENCE_CHALLENGE_DIFFICULTY_PLAN_ADJUSTMENT_SET_SCHEMA
-								? COMPOSED_TARGET_DIFF_STATEMENT
-								: LEGACY_TARGET_DIFF_STATEMENT,
+						targetRowDiffStatement: COMPOSED_TARGET_DIFF_STATEMENT,
 						originalSingleIssueGate: issue
 					},
 					proposal

@@ -229,8 +229,8 @@ for Cloudflare's automatic deployment.
   `04.1` / `ocr-j352-02-jun24-04-1`, while the verifier still expects `04.0`.
 - Complete and accept the 26 standard card batches / 438 cards, then the 13 Literature shards / 171
   cards; import the curriculum, mappings and accepted card manifests.
-- Rebuild fresh answer-chain illustrations after migration 0027 invalidates the prior published
-  set, then approve exact complete paper sittings under the fingerprint policy.
+- Approve exact complete paper sittings under the fingerprint policy. Answer-chain illustration
+  generation is no longer part of the paper-import workflow.
 - Run the English Literature teaching matrix: at least 10 question shapes, five realistic learner
   inputs and four wording replays, grounded in raw mark-scheme rows.
 - Complete phone, iPad and laptop browser review in light and dark, the full-paper D1 checks,

@@ -18,9 +18,11 @@ import {
 	SCIENCE_CHALLENGE_NORMALIZATION_VERSION,
 	SCIENCE_CHALLENGE_PROMPT_VERSION,
 	canonicalHash,
+	normalizeGeneratedChallengeBatch,
 	sha256,
 	stableStringify
 } from './science-challenge-release.mjs';
+import { providerScienceChallengeFixture } from './science-challenge-test-fixtures.mjs';
 import { buildScienceChallengeVerificationRepairAuthority } from './science-challenge-verification-repair-transaction.mjs';
 
 test('resume accepts exact multipart evidence and rejects a missing part file', async () => {
@@ -296,7 +298,9 @@ async function multipartResumeFixture() {
 	const parts = canonicalParts.map((part, index) => ({ ...part, prompt: partPrompts[index] }));
 	const partCandidates = canonicalParts.map((part) => ({
 		schemaVersion: 'science-challenge-batch/v1',
-		challenges: part.rowIds.map((id) => ({ definition: { id } }))
+		challenges: part.rowIds.map((id, index) =>
+			providerScienceChallengeFixture(id, part.start + index)
+		)
 	}));
 	let callIndex = 0;
 	const runPartImpl = (options) => {
@@ -319,7 +323,8 @@ async function multipartResumeFixture() {
 		runPartImpl
 	});
 	const summary = JSON.parse(readFileSync(path.join(attemptDir, 'run-summary.json'), 'utf8'));
-	const candidate = JSON.parse(readFileSync(path.join(attemptDir, 'last-message.json'), 'utf8'));
+	const rawCandidate = JSON.parse(readFileSync(path.join(attemptDir, 'last-message.json'), 'utf8'));
+	const candidate = normalizeGeneratedChallengeBatch(rawCandidate);
 	const promptBytes = Buffer.from(`${orchestrationPrompt}\n`);
 	const validation = {
 		status: 'passed',
@@ -327,7 +332,7 @@ async function multipartResumeFixture() {
 		inputSha256,
 		verificationRepairSha256: null,
 		priorCandidateSha256: null,
-		rawCandidateSha256: canonicalHash(candidate),
+		rawCandidateSha256: canonicalHash(rawCandidate),
 		candidateSha256: canonicalHash(candidate),
 		normalizationVersion: SCIENCE_CHALLENGE_NORMALIZATION_VERSION,
 		promptVersion: SCIENCE_CHALLENGE_PROMPT_VERSION,
@@ -335,6 +340,8 @@ async function multipartResumeFixture() {
 		runSummarySha256: canonicalHash(summary),
 		transport: summary.transport,
 		transportVersion: summary.transportVersion,
+		responseMode: summary.responseMode,
+		providerSchemaApplied: summary.providerSchemaApplied,
 		provider: summary.provider,
 		model: summary.model,
 		modelVersion: summary.modelVersion,

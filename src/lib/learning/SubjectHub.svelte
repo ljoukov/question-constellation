@@ -9,7 +9,6 @@
 		type ChallengeProgressUpdatedDetail
 	} from '$lib/challenges/progressEvents';
 	import { challengePath } from '$lib/challenges/routing';
-	import { subjectArtForChallenge } from '$lib/challenges/subjectVisuals';
 	import ThemeAwareChallengeArt from '$lib/challenges/ui/ThemeAwareChallengeArt.svelte';
 	import type { RecallRuntimeSubject } from '$lib/recall/aqaScienceRecall';
 	import RecallDeckCustomizer from '$lib/recall/RecallDeckCustomizer.svelte';
@@ -99,7 +98,7 @@
 		if (action.kind === 'resume') return 'Resume answer';
 		if (action.id.startsWith('quick:')) return 'Answer question';
 		if (action.kind === 'recall') return 'Start recall';
-		if (action.kind === 'close_gap') return 'Close this gap';
+		if (action.kind === 'close_gap') return 'Answer question';
 		if (action.kind === 'apply_chain') return 'Start question';
 		return 'Choose a question';
 	}
@@ -123,9 +122,7 @@
 	const challengeCollectionHref = $derived(
 		challengeRecommendation ? `/challenges/${challengeRecommendation.subject}` : '/challenges'
 	);
-	const challengeArt = $derived(
-		challengeRecommendation ? subjectArtForChallenge(challengeRecommendation) : null
-	);
+	const challengeArt = $derived(challengeRecommendation?.cardArt ?? null);
 
 	onMount(() => {
 		liveChallengeProgress = hydrateSignedInChallengeProgress(
@@ -394,6 +391,15 @@
 </div>
 
 <style>
+	.qc-learning-action-grid {
+		align-items: stretch;
+	}
+
+	.qc-learning-action-grid > .qc-dashboard-panel {
+		grid-template-rows: auto minmax(0, 1fr) auto;
+		height: 100%;
+	}
+
 	.qc-subject-challenge-card {
 		display: grid;
 		gap: 0.75rem;

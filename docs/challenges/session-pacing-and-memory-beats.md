@@ -65,14 +65,13 @@ calm beat for that orbit. The learner never has to decide which intensity is edu
 appropriate, and every completed beat earns the same score.
 
 Chain echo no longer derives its expected answer from an arbitrarily long `memoryHandle` fragment.
-Every catalogue challenge has a reviewed prompt in
-`src/lib/challenges/data/short-recall-prompts.v1.json`: one stem, one one- or two-word canonical
-answer, and a small explicit alias list. The importer pre-generates common transpositions, repeated
-or omitted letters, and neighbouring-QWERTY substitutions, then removes variants that collide with
-another reviewed accepted answer. Runtime matching is closed-set whole-answer matching; it does not
-use substrings, generic stemming, or a model. The same versioned rows are published to
-`QUESTION_DB.challenge_short_recall_prompts`, while the checked-in file remains a safe runtime
-fallback and an easy review list.
+Every canonical D1 challenge record has one reviewed prompt: one stem, one one- or two-word canonical
+answer, and a small explicit alias list. The release materializer pre-generates common
+transpositions, repeated or omitted letters, and neighbouring-QWERTY substitutions, then removes
+variants that collide with another reviewed accepted answer. Runtime matching is closed-set
+whole-answer matching; it does not use substrings, generic stemming, or a model. The complete prompt
+is copied into that challenge's denormalized detail-route payload, so the page needs no second query
+and has no checked-in or code-side fallback.
 
 The next challenge is also deterministic. In Mixed science, the planner rotates Biology → Chemistry →
 Physics, then filters by completion, prior unfinished work, last-round demand, and a different answer

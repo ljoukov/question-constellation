@@ -25,6 +25,8 @@ const VERIFIERS = [
 	'/root/science_verify_002',
 	'/root/science_verify_003'
 ];
+const ASSIGNMENT_COUNT = 7;
+const VERIFIER_ASSIGNMENT_COUNTS = [3, 2, 2];
 
 test('emits deterministic provenance-bound packets without reading assignment evidence', () => {
 	const first = createFixture();
@@ -36,7 +38,7 @@ test('emits deterministic provenance-bound packets without reading assignment ev
 			const report = JSON.parse(result.stdout);
 			assert.equal(report.status, 'passed');
 			assert.equal(report.packetCount, 3);
-			assert.equal(report.waveCount, 51);
+			assert.equal(report.waveCount, ASSIGNMENT_COUNT);
 			assert.equal(report.dispatchLedgerSha256, canonicalHash(fixture.ledger));
 			assert.match(report.usage, /one payload per verifier/);
 			assert.ok(existsSync(fixture.outputRoot));
@@ -52,12 +54,13 @@ test('emits deterministic provenance-bound packets without reading assignment ev
 					packet.lastAssignmentId
 				]),
 				[
-					[VERIFIERS[0], 17, 'science-001', 'science-017'],
-					[VERIFIERS[1], 17, 'science-018', 'science-034'],
-					[VERIFIERS[2], 17, 'science-035', 'science-051']
+					[VERIFIERS[0], 3, 'science-001', 'science-003'],
+					[VERIFIERS[1], 2, 'science-004', 'science-005'],
+					[VERIFIERS[2], 2, 'science-006', 'science-007']
 				]
 			);
 
+			let assignmentIndex = 0;
 			for (let verifierIndex = 0; verifierIndex < 3; verifierIndex += 1) {
 				const packetPath = path.join(
 					fixture.outputRoot,
@@ -66,10 +69,9 @@ test('emits deterministic provenance-bound packets without reading assignment ev
 				);
 				const packet = readJson(packetPath);
 				assert.equal(packet.taskName, VERIFIERS[verifierIndex]);
-				assert.equal(packet.assignmentCount, 17);
-				assert.equal(packet.waves.length, 17);
+				assert.equal(packet.assignmentCount, VERIFIER_ASSIGNMENT_COUNTS[verifierIndex]);
+				assert.equal(packet.waves.length, VERIFIER_ASSIGNMENT_COUNTS[verifierIndex]);
 				for (const [waveIndex, wave] of packet.waves.entries()) {
-					const assignmentIndex = verifierIndex * 17 + waveIndex;
 					const assignment = fixture.index.assignments[assignmentIndex];
 					assert.deepEqual(
 						[wave.waveNumber, wave.assignmentId, wave.assignmentPath, wave.assignmentSha256],
@@ -89,6 +91,7 @@ test('emits deterministic provenance-bound packets without reading assignment ev
 					assert.match(payload.message, new RegExp(canonicalHash(fixture.ledger)));
 					assert.match(payload.message, /Review exactly one assignment/);
 					assert.equal(canonicalHash(payload), wave.followupPayloadSha256);
+					assignmentIndex += 1;
 				}
 			}
 
@@ -160,7 +163,13 @@ test('OS-temp packet output carries immutable curriculum remap proposal evidence
 		const payload = readJson(path.join(fixture.outputRoot, 'verifier-01', 'wave-01.json'));
 		assert.match(payload.message, new RegExp(proposal.proposalSha256));
 		assert.match(payload.message, new RegExp(proposal.baseReviewSha256));
-		assert.match(payload.message, /ordinary 408-row content review remains mandatory/i);
+		assert.match(
+			payload.message,
+			new RegExp(
+				`complete ${fixture.index.candidateCount}-candidate plan-bound content review remains mandatory`,
+				'i'
+			)
+		);
 	} finally {
 		rmSync(fixture.rootDir, { recursive: true, force: true });
 	}
@@ -289,7 +298,7 @@ function createFixture() {
 	const indexPath = path.join(verificationRoot, 'assignment-index.json');
 	const ledgerPath = path.join(verificationRoot, 'dispatch-ledger.json');
 	const outputRoot = path.join(verificationRoot, 'verifier-packets');
-	const assignments = Array.from({ length: 51 }, (_unused, index) => {
+	const assignments = Array.from({ length: ASSIGNMENT_COUNT }, (_unused, index) => {
 		const ordinal = String(index + 1).padStart(3, '0');
 		return {
 			assignmentId: `science-${ordinal}`,
@@ -308,6 +317,7 @@ function createFixture() {
 		sourceSnapshotSha256: 'b'.repeat(64),
 		curriculumEvidenceSha256: 'c'.repeat(64),
 		candidateSetSha256: 'd'.repeat(64),
+		candidateCount: assignments.reduce((sum, assignment) => sum + assignment.ids.length, 0),
 		assignments
 	};
 	const ledger = {
@@ -320,7 +330,7 @@ function createFixture() {
 			assignmentPath: assignment.path,
 			assignmentSha256: assignment.sha256,
 			orchestrator: 'codex-collaboration',
-			taskName: VERIFIERS[Math.floor(assignmentIndex / 17)],
+			taskName: verifierForAssignment(assignmentIndex),
 			forkTurns: 'none',
 			model: 'gpt-5.6-sol',
 			reasoningEffort: 'max'
@@ -329,6 +339,15 @@ function createFixture() {
 	writeJson(indexPath, index);
 	writeJson(ledgerPath, ledger);
 	return { rootDir, verificationRoot, indexPath, ledgerPath, outputRoot, index, ledger };
+}
+
+function verifierForAssignment(assignmentIndex) {
+	let upperBound = 0;
+	for (const [verifierIndex, count] of VERIFIER_ASSIGNMENT_COUNTS.entries()) {
+		upperBound += count;
+		if (assignmentIndex < upperBound) return VERIFIERS[verifierIndex];
+	}
+	throw new Error(`No verifier allocation for assignment index ${assignmentIndex}.`);
 }
 
 function runCli(

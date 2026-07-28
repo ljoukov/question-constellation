@@ -98,7 +98,7 @@ test('a fully bound challenge and release pass deterministic validation', () => 
 	});
 });
 
-test('plan validation binds hard counts, unique calibrators, curriculum, and source hashes', () => {
+test('plan validation binds the current catalogue, unique calibrators, curriculum, and source hashes', () => {
 	const row = makePlanRow();
 	const plan = makePlan([row]);
 	const context = {
@@ -107,11 +107,11 @@ test('plan validation binds hard counts, unique calibrators, curriculum, and sou
 	};
 	assert.equal(validateChallengePlan(plan, context).status, 'passed');
 
-	const wrongCount = structuredClone(plan);
-	wrongCount.targetFinalQuestionContextCount = 999;
+	const retiredCount = structuredClone(plan);
+	retiredCount.targetFinalQuestionContextCount = 999;
 	assert.match(
-		validateChallengePlan(wrongCount, context).issues.join('\n'),
-		/targetFinalQuestionContextCount/
+		validateChallengePlan(retiredCount, context).issues.join('\n'),
+		/not part of the current plan schema/
 	);
 
 	const wrongSource = structuredClone(plan);
@@ -215,6 +215,32 @@ test('learner-facing copy keeps mark allocations structural at every nesting dep
 	assert.match(
 		validateGeneratedChallenge(nested).issues.join('\n'),
 		/definition\.transferChoices\[0\]\.feedback includes an inline mark allocation/
+	);
+});
+
+test('learner-facing copy rejects internal product jargon while allowing the internal mechanic', () => {
+	for (const jargon of [
+		'answer chain',
+		'missing link',
+		'repair chain',
+		'close the gap',
+		'practise this step',
+		'constellation'
+	]) {
+		const entry = makeEntry();
+		entry.definition.hook = `This public prompt accidentally exposes the internal ${jargon} terminology.`;
+		assert.match(
+			validateGeneratedChallenge(entry).issues.join('\n'),
+			/definition\.hook includes internal product jargon/,
+			jargon
+		);
+	}
+
+	const clean = makeEntry();
+	assert.equal(clean.definition.mechanic, 'missing-link');
+	assert.doesNotMatch(
+		validateGeneratedChallenge(clean).issues.join('\n'),
+		/definition\.mechanic includes internal product jargon/
 	);
 });
 
@@ -478,7 +504,7 @@ test('art manifest validation enforces the 1:1 context map and two unique output
 	assert.match(result.issues.join('\n'), /output.lightPath is invalid|duplicates output path/);
 });
 
-test('art manifest validation supports one light/dark pair per challenge for accepted-subset releases', () => {
+test('art manifest validation requires one light/dark pair per challenge in any complete release', () => {
 	const manifest = makeArtManifest(makeEntry());
 	manifest.cohort = { pairPolicy: 'one-pair-per-challenge' };
 	manifest.specs = manifest.specs.filter((spec) => spec.context === 'opening');
@@ -911,7 +937,7 @@ test('content lineage accepts only one complete verifier-directed descendant rem
 	rebindReleaseLineage(competing);
 	assert.match(
 		validateRelease(competing, { expectedCount: 1 }).issues.join('\n'),
-		/cannot combine continuation, plan-salvage, or descendant-remap provenance/
+		/cannot combine multiple exceptional recovery provenances/
 	);
 
 	const falseDecisionBinding = structuredClone(release);
@@ -1010,90 +1036,14 @@ test('candidate difficulty adjustment lineage carries no pre-review decision', (
 	);
 });
 
-test('content lineage accepts only structurally complete attempt-4 multipart continuation evidence', () => {
+test('content lineage rejects the removed multipart continuation field', () => {
 	const release = makeRelease([makeEntry()]);
-	const shard = release.lineage.content[0];
-	shard.candidateSha256 = 'd'.repeat(64);
-	shard.validationSha256 = 'e'.repeat(64);
-	shard.runSummaries = [];
-	const partPaths = (root) => ({
-		prompt: `${root}/prompt.txt`,
-		request: `${root}/request.json`,
-		events: `${root}/events.jsonl`,
-		lastMessage: `${root}/last-message.json`,
-		thoughts: `${root}/thoughts.txt`,
-		resultMetadata: `${root}/result-metadata.json`,
-		runSummary: `${root}/run-summary.json`
-	});
-	shard.continuation = {
-		schemaVersion: 'science-challenge-exhausted-multipart-continuation/v1',
-		manifestPath: 'tmp/science-fixture/multipart-continuation/manifest.json',
-		manifestSha256: '1'.repeat(64),
-		planPath: 'tmp/science-fixture/multipart-continuation/plan.json',
-		planSha256: '2'.repeat(64),
-		candidatePath: 'tmp/science-fixture/multipart-continuation/candidate.json',
-		candidateSha256: shard.candidateSha256,
-		validationPath: 'tmp/science-fixture/multipart-continuation/validation.json',
-		validationSha256: shard.validationSha256,
-		execution: {
-			objectivePath: 'tmp/science-fixture/objective.json',
-			objectiveSha256: '3'.repeat(64),
-			claims: [
-				{
-					partId: 'part-03',
-					path: 'tmp/science-fixture/claims/part-03/claim.json',
-					sha256: '4'.repeat(64),
-					byteSha256: '5'.repeat(64),
-					invocationPath: 'tmp/science-fixture/claims/part-03/invocation-started.json',
-					invocationSha256: '9'.repeat(64),
-					invocationByteSha256: 'a'.repeat(64)
-				}
-			]
-		},
-		sourceAttempt: {
-			attempt: 4,
-			status: 'failed',
-			sha256: '6'.repeat(64),
-			partsSha256: '7'.repeat(64),
-			attemptDir: 'tmp/science-fixture/attempt-04',
-			files: {
-				prompt: 'tmp/science-fixture/prompt-attempt-4.txt',
-				runSummary: 'tmp/science-fixture/attempt-04/run-summary.json',
-				eventLog: 'tmp/science-fixture/attempt-04/events.jsonl',
-				lastMessage: 'tmp/science-fixture/attempt-04/last-message.json',
-				validation: 'tmp/science-fixture/attempt-04/validation.json'
-			},
-			parts: [{ partId: 'part-01' }],
-			partFiles: [
-				{
-					partId: 'part-01',
-					paths: partPaths('tmp/science-fixture/attempt-04/parts/part-01')
-				}
-			]
-		},
-		continuationParts: [
-			{
-				partId: 'part-03',
-				claimPath: 'tmp/science-fixture/claims/part-03/claim.json',
-				claimSha256: '4'.repeat(64),
-				evidenceSha256: '8'.repeat(64),
-				paths: partPaths('tmp/science-fixture/multipart-continuation/parts/part-03')
-			}
-		]
-	};
+	release.lineage.content[0].continuation = {};
 	rebindReleaseLineage(release);
-	assert.equal(
-		validateRelease(release, { expectedCount: 1 }).status,
-		'passed',
-		validateRelease(release, { expectedCount: 1 }).issues.join('\n')
+	assert.match(
+		validateRelease(release, { expectedCount: 1 }).issues.join('\n'),
+		/lineage\.content\[0\]\.continuation is not part of the release lineage schema/
 	);
-
-	const tampered = structuredClone(release);
-	tampered.lineage.content[0].continuation.execution.claims = [];
-	rebindReleaseLineage(tampered);
-	const issues = validateRelease(tampered, { expectedCount: 1 }).issues.join('\n');
-	assert.match(issues, /invalid exhausted multipart continuation provenance/);
-	assert.match(issues, /no run bound to its accepted candidate/);
 });
 
 test('content lineage accepts only structurally complete exhausted multipart salvage evidence', () => {
@@ -1266,40 +1216,13 @@ test('content lineage accepts only structurally complete exhausted multipart sal
 		validateRelease(failedMerge, { expectedCount: 1 }).issues.join('\n')
 	);
 
-	const nullableDefault = structuredClone(release);
-	const nullableDefaultSalvage = nullableDefault.lineage.content[0].salvage;
-	nullableDefaultSalvage.salvagePathway = 'raw-question-presentation-null-default';
-	nullableDefaultSalvage.execution.identity.responseMode = 'prompt-json';
-	nullableDefaultSalvage.sourceAttempt.responseMode = 'prompt-json';
-	nullableDefaultSalvage.sourceAttempt.providerSchemaApplied = false;
-	nullableDefaultSalvage.sourceAttempt.candidatePath = null;
-	nullableDefaultSalvage.sourceAttempt.candidateSha256 = null;
-	nullableDefaultSalvage.sourceAttempt.candidateFileSha256 = null;
-	for (const part of nullableDefaultSalvage.sourceAttempt.parts) {
-		part.responseMode = 'prompt-json';
-		part.transportVersion = 'science-challenge-llm-direct-prompt-json/v1';
-		part.providerSchemaApplied = false;
-	}
-	nullableDefaultSalvage.sourceAttempt.parts.at(-1).status = 'failed';
-	nullableDefaultSalvage.corrections = [
-		{
-			kind: 'definition.questionPresentation',
-			path: 'challenges[7].definition.questionPresentation',
-			partId: 'part-02',
-			rowIndex: 4,
-			absoluteRowIndex: 7,
-			from: 'omitted',
-			to: null,
-			sourceChallengeSha256: 'd'.repeat(64),
-			recoveredRawChallengeSha256: 'e'.repeat(64)
-		}
-	];
-	rebindMultipartSalvageSourceSelection(nullableDefaultSalvage);
-	rebindReleaseLineage(nullableDefault);
-	assert.equal(
-		validateRelease(nullableDefault, { expectedCount: 1 }).status,
-		'passed',
-		validateRelease(nullableDefault, { expectedCount: 1 }).issues.join('\n')
+	const removedPathway = structuredClone(release);
+	removedPathway.lineage.content[0].salvage.salvagePathway =
+		'raw-question-presentation-null-default';
+	rebindReleaseLineage(removedPathway);
+	assert.match(
+		validateRelease(removedPathway, { expectedCount: 1 }).issues.join('\n'),
+		/invalid exhausted multipart plan salvage provenance/
 	);
 
 	const explicitSelection = structuredClone(release);
@@ -1309,7 +1232,6 @@ test('content lineage accepts only structurally complete exhausted multipart sal
 	const competingSource = {
 		...selectedSource,
 		attempt: 3,
-		salvagePathway: 'raw-question-presentation-null-default',
 		runSummarySha256: '0'.repeat(64),
 		sourceValidationSha256: '1'.repeat(64),
 		sourceCandidateSha256: null,
@@ -1346,15 +1268,6 @@ test('content lineage accepts only structurally complete exhausted multipart sal
 		'passed',
 		validateRelease(explicitSelection, { expectedCount: 1 }).issues.join('\n')
 	);
-
-	const ambiguous = structuredClone(release);
-	ambiguous.lineage.content[0].continuation = {
-		schemaVersion: 'science-challenge-exhausted-multipart-continuation/v1'
-	};
-	rebindReleaseLineage(ambiguous);
-	const ambiguousIssues = validateRelease(ambiguous, { expectedCount: 1 }).issues.join('\n');
-	assert.match(ambiguousIssues, /cannot combine continuation and plan-salvage provenance/);
-	assert.match(ambiguousIssues, /no run bound to its accepted candidate/);
 
 	for (const mutate of [
 		(value) => {
@@ -1397,6 +1310,8 @@ test('content lineage accepts direct JSON evidence and rejects incomplete or mis
 	const run = release.lineage.content[0].runSummaries[0];
 	Object.assign(run, {
 		transport: 'llm-direct',
+		responseMode: 'structured-json',
+		providerSchemaApplied: true,
 		transportVersion: 'science-challenge-llm-direct-json/v1',
 		provider: 'chatgpt',
 		model: 'chatgpt-gpt-5.6-sol',
@@ -1437,6 +1352,7 @@ test('content lineage accepts prompt JSON only for its exact response mode and t
 	Object.assign(run, {
 		transport: 'llm-direct',
 		responseMode: 'prompt-json',
+		providerSchemaApplied: false,
 		transportVersion: 'science-challenge-llm-direct-prompt-json/v1',
 		provider: 'chatgpt',
 		model: 'chatgpt-gpt-5.6-sol',
@@ -1490,6 +1406,8 @@ test('content lineage accepts only complete ordered multipart direct evidence', 
 	const modelVersion = 'chatgpt-gpt-5.6-sol-2026-07-23';
 	Object.assign(run, {
 		transport: 'llm-direct',
+		responseMode: 'structured-json',
+		providerSchemaApplied: true,
 		transportVersion: 'science-challenge-llm-direct-json-multipart/v1',
 		provider: 'chatgpt',
 		model: 'chatgpt-gpt-5.6-sol',
@@ -1554,11 +1472,13 @@ test('prompt JSON multipart lineage requires an exact root and child mode/versio
 	].map((part) => ({
 		...part,
 		responseMode: 'prompt-json',
-		transportVersion: 'science-challenge-llm-direct-prompt-json/v1'
+		transportVersion: 'science-challenge-llm-direct-prompt-json/v1',
+		providerSchemaApplied: false
 	}));
 	Object.assign(run, {
 		transport: 'llm-direct',
 		responseMode: 'prompt-json',
+		providerSchemaApplied: false,
 		transportVersion: 'science-challenge-llm-direct-prompt-json-multipart/v1',
 		provider: 'chatgpt',
 		model: 'chatgpt-gpt-5.6-sol',
@@ -1638,7 +1558,7 @@ test('prompt JSON multipart lineage requires an exact root and child mode/versio
 
 test('accepted art lineage requires prompts, masters and normalized output evidence', () => {
 	const release = makeRelease([makeEntry()], 'accepted');
-	release.lineage.art = Array.from({ length: 1_000 }, (_, index) => makeArtLineageItem(index));
+	release.lineage.art = Array.from({ length: 2 }, (_, index) => makeArtLineageItem(index));
 	release.release.lineageSha256 = canonicalHash(release.lineage);
 	release.release.artGenerationLineageSha256 = canonicalHash(release.lineage.art);
 	assert.equal(validateRelease(release, { expectedCount: 1 }).status, 'passed');
@@ -1779,13 +1699,8 @@ function makePlan(rows) {
 		schemaVersion: SCIENCE_CHALLENGE_PLAN_SCHEMA,
 		planId: 'science-fixture-v1',
 		createdOn: '2026-07-21',
-		targetFinalCatalogueRounds: 2,
-		existingRoundCount: 1,
-		generatedRoundCount: rows.length,
-		generatedQuestionContextCount: rows.length * 2,
-		targetFinalQuestionContextCount: 4,
-		uniqueIllustrationPairCount: 4,
-		uniqueFinalIllustrationAssetCount: 8,
+		baseCatalogContentSha256: 'f'.repeat(64),
+		baseCatalogRecordCount: 1,
 		rows
 	};
 }
@@ -1829,7 +1744,7 @@ function makeEntry(index = 1) {
 			estimatedMinutes: 4,
 			previewQuestion: `Explain why water enters ${suffix} when the surrounding soil solution is dilute.`,
 			metaDescription:
-				'Practise a calibrated GCSE Biology challenge about cell transport, compare pupil reasoning, repair one missing link, and apply it again.',
+				'Practise a calibrated GCSE Biology challenge about cell transport, compare pupil reasoning, improve one weak answer, and apply it again.',
 			sourceQuestionId: 'paper-question-001',
 			lastReviewed: '2026-07-21',
 			version: 1,
@@ -2003,6 +1918,9 @@ function makeMultipartLineagePart(index, rowIds, modelVersion) {
 		runSummaryPath: `${root}/run-summary.json`,
 		runSummarySha256: hash(9),
 		status: 'passed',
+		responseMode: 'structured-json',
+		transportVersion: 'science-challenge-llm-direct-json/v1',
+		providerSchemaApplied: true,
 		provider: 'chatgpt',
 		model: 'chatgpt-gpt-5.6-sol',
 		modelVersion,
@@ -2136,11 +2054,12 @@ function bindReviewRebaseLineage(release, { includeSource = false } = {}) {
 
 function makeRelease(challenges, status = 'candidate') {
 	const coverage = {
-		schemaVersion: 'science-challenge-coverage/v1',
+		schemaVersion: 'science-challenge-coverage/v2',
+		existingRounds: 1,
 		generatedRounds: challenges.length,
 		generatedQuestionContexts: challenges.length * 2,
-		finalRounds: 500,
-		finalQuestionContexts: 1_000,
+		finalRounds: challenges.length + 1,
+		finalQuestionContexts: (challenges.length + 1) * 2,
 		dimensions: Object.fromEntries(
 			[
 				'subject',
@@ -2163,8 +2082,9 @@ function makeRelease(challenges, status = 'candidate') {
 				validationPath: 'tmp/science-fixture/validation.json',
 				validationSha256: '6'.repeat(64),
 				runSummaries: [
-					{
-						kind: 'generation',
+						{
+							kind: 'generation',
+							transport: 'codex-sdk',
 						attempt: 1,
 						path: 'tmp/science-fixture/attempt-01/run-summary.json',
 						sha256: '7'.repeat(64),

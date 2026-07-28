@@ -2,6 +2,13 @@ import type { ChallengeDefinition, ChallengeSubject } from './types';
 
 export type ChallengePathScope = 'mixed' | ChallengeSubject;
 
+export function normalizeChallengeSubject(value: string): ChallengeSubject | null {
+	const normalized = value.trim().toLowerCase();
+	return normalized === 'biology' || normalized === 'chemistry' || normalized === 'physics'
+		? normalized
+		: null;
+}
+
 export function challengeSubjectLabel(subject: ChallengeSubject): string {
 	return {
 		biology: 'Biology',

@@ -12,6 +12,7 @@ import { validateScienceChallengeDirectMultipartRunPolicy } from './science-chal
 import { runDirectScienceChallengeJsonTurn } from './science-challenge-direct-json-runner.mjs';
 import { runDirectScienceChallengeMultipartTurn } from './science-challenge-direct-multipart-runner.mjs';
 import { canonicalHash, challengeBatchOutputSchema } from './science-challenge-release.mjs';
+import { providerScienceChallengeFixture } from './science-challenge-test-fixtures.mjs';
 import {
 	SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON,
 	SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON
@@ -265,9 +266,12 @@ async function runFixture({
 			partIndex += 1;
 			const batch = {
 				schemaVersion: 'science-challenge-batch/v1',
-				challenges: promptedParts[currentPartIndex].rowIds.map((id) => ({
-					definition: { id }
-				}))
+				challenges: promptedParts[currentPartIndex].rowIds.map((id, index) =>
+					providerScienceChallengeFixture(
+						id,
+						promptedParts[currentPartIndex].start + index
+					)
+				)
 			};
 			return runDirectScienceChallengeJsonTurn({
 				...args,

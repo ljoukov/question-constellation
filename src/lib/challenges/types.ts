@@ -100,6 +100,8 @@ type ChallengeDefinitionCore = {
 	transferChoices: ChallengeChoice[];
 	transferExplanation: string;
 	memoryHandle: string;
+	/** Optional reviewed completion copy supplied by the D1 catalogue record. */
+	completionTitle?: string;
 };
 
 export type ChallengeDefinition = ChallengeDefinitionCore & ChallengeSubjectArtAssignment;

@@ -15,7 +15,7 @@ import {
 } from './science-challenge-authoring-transport.mjs';
 
 export const SCIENCE_CHALLENGE_RELEASE_SCHEMA = 'science-challenge-release/v1';
-export const SCIENCE_CHALLENGE_PLAN_SCHEMA = 'science-challenge-plan/v1';
+export const SCIENCE_CHALLENGE_PLAN_SCHEMA = 'science-challenge-plan/v2';
 export const SCIENCE_CHALLENGE_BATCH_SCHEMA = 'science-challenge-batch/v1';
 export const SCIENCE_QUESTION_ART_SCHEMA = 'science-question-art/v1';
 export const SCIENCE_QUESTION_ART_MANIFEST_SCHEMA = 'science-question-art-manifest/v1';
@@ -475,15 +475,22 @@ export function validateChallengePlan(
 	if (!/^\d{4}-\d{2}-\d{2}$/.test(String(plan.createdOn ?? ''))) {
 		issues.push('createdOn must be YYYY-MM-DD.');
 	}
-	for (const [field, expected] of [
-		['generatedRoundCount', plan.rows.length],
-		['generatedQuestionContextCount', plan.rows.length * 2],
-		['targetFinalCatalogueRounds', Number(plan.existingRoundCount) + plan.rows.length],
-		['targetFinalQuestionContextCount', Number(plan.targetFinalCatalogueRounds) * 2],
-		['uniqueIllustrationPairCount', Number(plan.targetFinalQuestionContextCount)],
-		['uniqueFinalIllustrationAssetCount', Number(plan.uniqueIllustrationPairCount) * 2]
+	if (!sha256String(plan.baseCatalogContentSha256)) {
+		issues.push('baseCatalogContentSha256 must bind the exact catalogue source.');
+	}
+	if (!Number.isInteger(plan.baseCatalogRecordCount) || plan.baseCatalogRecordCount < 0) {
+		issues.push('baseCatalogRecordCount must be a non-negative integer.');
+	}
+	for (const field of [
+		'targetFinalCatalogueRounds',
+		'existingRoundCount',
+		'generatedRoundCount',
+		'generatedQuestionContextCount',
+		'targetFinalQuestionContextCount',
+		'uniqueIllustrationPairCount',
+		'uniqueFinalIllustrationAssetCount'
 	]) {
-		if (plan[field] !== expected) issues.push(`${field} must be ${expected}.`);
+		if (field in plan) issues.push(`${field} is not part of the current plan schema.`);
 	}
 	const ids = new Set();
 	const sourceQuestionIds = new Set();
@@ -699,6 +706,9 @@ export function validateGeneratedChallenge(entry, { planRow, sourceQuestion, cur
 	for (const { path, value } of stringLeaves(definition, 'definition')) {
 		if (hasInlineMarkAllocation(value)) {
 			issues.push(`${path} includes an inline mark allocation; use definition.marks only.`);
+		}
+		if (path !== 'definition.mechanic' && hasLearnerFacingProductJargon(value)) {
+			issues.push(`${path} includes internal product jargon.`);
 		}
 		if (referencesMissingVisual(value)) {
 			issues.push(`${path} refers to unseen visual evidence.`);
@@ -950,18 +960,22 @@ export function validateRelease(release, options = {}) {
 }
 
 function validateReleaseCoverage(coverage, release, issues, expectedCount) {
-	if (!isRecord(coverage) || coverage.schemaVersion !== 'science-challenge-coverage/v1') {
-		issues.push('coverage must use science-challenge-coverage/v1.');
+	if (!isRecord(coverage) || coverage.schemaVersion !== 'science-challenge-coverage/v2') {
+		issues.push('coverage must use science-challenge-coverage/v2.');
 		return;
 	}
 	const generatedRounds = release.challenges?.length ?? expectedCount;
+	const existingRounds = coverage.existingRounds;
 	for (const [field, expected] of [
 		['generatedRounds', generatedRounds],
 		['generatedQuestionContexts', generatedRounds * 2],
-		['finalRounds', 500],
-		['finalQuestionContexts', 1_000]
+		['finalRounds', existingRounds + generatedRounds],
+		['finalQuestionContexts', (existingRounds + generatedRounds) * 2]
 	]) {
 		if (coverage[field] !== expected) issues.push(`coverage.${field} must be ${expected}.`);
+	}
+	if (!Number.isInteger(existingRounds) || existingRounds < 0) {
+		issues.push('coverage.existingRounds must be a non-negative integer.');
 	}
 	const expectedDimensions = [
 		'subject',
@@ -1022,12 +1036,9 @@ function validateReleaseLineage(lineage, release, issues) {
 			}
 			if (shardIds.has(shard.shardId)) issues.push(`${prefix} duplicates a shard id.`);
 			shardIds.add(shard.shardId);
-			const multipartContinuationBound = validateMultipartContinuationLineage(
-				shard.continuation,
-				shard,
-				prefix,
-				issues
-			);
+			if (Object.hasOwn(shard, 'continuation')) {
+				issues.push(`${prefix}.continuation is not part of the release lineage schema.`);
+			}
 			const multipartSalvageBound = validateMultipartPlanSalvageLineage(
 				shard.salvage,
 				shard,
@@ -1054,7 +1065,6 @@ function validateReleaseLineage(lineage, release, issues) {
 				issues
 			);
 			const exceptionalLineageCount =
-				Number(shard.continuation !== undefined && shard.continuation !== null) +
 				Number(shard.salvage !== undefined && shard.salvage !== null) +
 				Number(shard.descendantRemap !== undefined && shard.descendantRemap !== null) +
 				Number(
@@ -1062,11 +1072,7 @@ function validateReleaseLineage(lineage, release, issues) {
 				);
 			const competingExceptionalLineage = exceptionalLineageCount > 1;
 			if (competingExceptionalLineage) {
-				issues.push(
-					shard.descendantRemap === undefined || shard.descendantRemap === null
-						? `${prefix} cannot combine continuation and plan-salvage provenance.`
-						: `${prefix} cannot combine continuation, plan-salvage, or descendant-remap provenance.`
-				);
+				issues.push(`${prefix} cannot combine multiple exceptional recovery provenances.`);
 			}
 			const competingReviewRebaseSource =
 				reviewRebaseSourceValidation.present &&
@@ -1079,9 +1085,8 @@ function validateReleaseLineage(lineage, release, issues) {
 			const exceptionalCandidateBound =
 				!competingExceptionalLineage &&
 				!competingReviewRebaseSource &&
-				(Number(multipartContinuationBound) +
-					Number(multipartSalvageBound) +
-					Number(descendantRemapBound) +
+				(Number(multipartSalvageBound) +
+						Number(descendantRemapBound) +
 					Number(difficultyPlanAdjustmentBound) ===
 					1 ||
 					reviewRebaseSourceValidation.valid);
@@ -1091,14 +1096,14 @@ function validateReleaseLineage(lineage, release, issues) {
 			for (const run of shard.runSummaries) {
 				const repairRun = run?.kind === 'independent-verification-repair';
 				const ordinaryRun = ['generation', 'deterministic-repair'].includes(run?.kind);
-				const transport = run?.transport ?? SCIENCE_CHALLENGE_CODEX_SDK_TRANSPORT;
+				const transport = run?.transport;
 				const responseMode = run?.responseMode;
 				const noMultipartFields =
 					(run?.modelVersions === undefined || run.modelVersions === null) &&
 					(run?.directPartSize === undefined || run.directPartSize === null) &&
 					(run?.rowIds === undefined || run.rowIds === null) &&
 					(run?.parts === undefined || run.parts === null);
-				const legacySdkRun =
+				const codexSdkRun =
 					transport === SCIENCE_CHALLENGE_CODEX_SDK_TRANSPORT &&
 					(responseMode === undefined || responseMode === null) &&
 					run?.model === SCIENCE_CHALLENGE_CODEX_SDK_MODEL &&
@@ -1111,23 +1116,10 @@ function validateReleaseLineage(lineage, release, issues) {
 					(run?.resultMetadataPath === undefined || run.resultMetadataPath === null) &&
 					(run?.resultMetadataSha256 === undefined || run.resultMetadataSha256 === null) &&
 					noMultipartFields;
-				const legacyDirectJsonRun =
-					transport === SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT &&
-					(responseMode === undefined || responseMode === null) &&
-					run?.transportVersion === SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT_VERSION &&
-					run?.provider === SCIENCE_CHALLENGE_DIRECT_JSON_PROVIDER &&
-					run?.model === SCIENCE_CHALLENGE_DIRECT_JSON_MODEL &&
-					nonEmpty(run?.modelVersion) &&
-					nonEmpty(run?.requestPath) &&
-					sha256String(run?.requestSha256) &&
-					nonEmpty(run?.thoughtsPath) &&
-					sha256String(run?.thoughtsSha256) &&
-					nonEmpty(run?.resultMetadataPath) &&
-					sha256String(run?.resultMetadataSha256) &&
-					noMultipartFields;
 				const directStructuredJsonRun =
 					transport === SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT &&
 					responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON &&
+					run?.providerSchemaApplied === true &&
 					run?.transportVersion === SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT_VERSION &&
 					run?.provider === SCIENCE_CHALLENGE_DIRECT_JSON_PROVIDER &&
 					run?.model === SCIENCE_CHALLENGE_DIRECT_JSON_MODEL &&
@@ -1142,6 +1134,7 @@ function validateReleaseLineage(lineage, release, issues) {
 				const directPromptJsonRun =
 					transport === SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT &&
 					responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON &&
+					run?.providerSchemaApplied === false &&
 					run?.transportVersion === SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_TRANSPORT_VERSION &&
 					run?.provider === SCIENCE_CHALLENGE_DIRECT_JSON_PROVIDER &&
 					run?.model === SCIENCE_CHALLENGE_DIRECT_JSON_MODEL &&
@@ -1153,23 +1146,10 @@ function validateReleaseLineage(lineage, release, issues) {
 					nonEmpty(run?.resultMetadataPath) &&
 					sha256String(run?.resultMetadataSha256) &&
 					noMultipartFields;
-				const legacyDirectMultipartRun =
-					transport === SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT &&
-					(responseMode === undefined || responseMode === null) &&
-					run?.transportVersion === SCIENCE_CHALLENGE_DIRECT_MULTIPART_TRANSPORT_VERSION &&
-					run?.provider === SCIENCE_CHALLENGE_DIRECT_JSON_PROVIDER &&
-					run?.model === SCIENCE_CHALLENGE_DIRECT_JSON_MODEL &&
-					run?.modelVersion === null &&
-					(run?.requestPath === undefined || run.requestPath === null) &&
-					(run?.requestSha256 === undefined || run.requestSha256 === null) &&
-					(run?.thoughtsPath === undefined || run.thoughtsPath === null) &&
-					(run?.thoughtsSha256 === undefined || run.thoughtsSha256 === null) &&
-					(run?.resultMetadataPath === undefined || run.resultMetadataPath === null) &&
-					(run?.resultMetadataSha256 === undefined || run.resultMetadataSha256 === null) &&
-					validMultipartLineageShape(run);
 				const directStructuredMultipartRun =
 					transport === SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT &&
 					responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON &&
+					run?.providerSchemaApplied === true &&
 					run?.transportVersion === SCIENCE_CHALLENGE_DIRECT_MULTIPART_TRANSPORT_VERSION &&
 					run?.provider === SCIENCE_CHALLENGE_DIRECT_JSON_PROVIDER &&
 					run?.model === SCIENCE_CHALLENGE_DIRECT_JSON_MODEL &&
@@ -1184,6 +1164,7 @@ function validateReleaseLineage(lineage, release, issues) {
 				const directPromptMultipartRun =
 					transport === SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT &&
 					responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON &&
+					run?.providerSchemaApplied === false &&
 					run?.transportVersion ===
 						SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_MULTIPART_TRANSPORT_VERSION &&
 					run?.provider === SCIENCE_CHALLENGE_DIRECT_JSON_PROVIDER &&
@@ -1197,15 +1178,14 @@ function validateReleaseLineage(lineage, release, issues) {
 					(run?.resultMetadataSha256 === undefined || run.resultMetadataSha256 === null) &&
 					validMultipartLineageShape(run);
 				const directMultipartRun =
-					legacyDirectMultipartRun || directStructuredMultipartRun || directPromptMultipartRun;
+					directStructuredMultipartRun || directPromptMultipartRun;
 				const validThinkingLevel =
 					run?.thinkingLevel === 'max' ||
 					((directPromptJsonRun || directPromptMultipartRun) && run?.thinkingLevel === 'high');
 				if (
 					!isRecord(run) ||
 					(!repairRun && !ordinaryRun) ||
-					(!legacySdkRun &&
-						!legacyDirectJsonRun &&
+					(!codexSdkRun &&
 						!directStructuredJsonRun &&
 						!directPromptJsonRun &&
 						!directMultipartRun) ||
@@ -1259,8 +1239,11 @@ function validateReleaseLineage(lineage, release, issues) {
 	if (!Array.isArray(lineage.art)) {
 		issues.push('lineage.art must be an array.');
 	} else if (release.release?.status === 'accepted') {
-		if (lineage.art.length !== 1_000) {
-			issues.push('Accepted lineage.art must contain exactly 1,000 contexts.');
+		const expectedArtContexts = (release.challenges?.length ?? 0) * 2;
+		if (lineage.art.length !== expectedArtContexts) {
+			issues.push(
+				`Accepted lineage.art must contain exactly ${expectedArtContexts} generated contexts.`
+			);
 		} else {
 			const ids = new Set();
 			for (const [index, item] of lineage.art.entries()) {
@@ -1337,18 +1320,8 @@ function validateReleaseLineage(lineage, release, issues) {
 			}
 		}
 	}
-	if (
-		lineage.recovery !== null &&
-		lineage.recovery !== undefined &&
-		(!isRecord(lineage.recovery) ||
-			lineage.recovery.schemaVersion !== 'science-challenge-verification-repair-recovery/v2' ||
-			!sha256String(lineage.recovery.objectiveId) ||
-			!sha256String(lineage.recovery.executionId) ||
-			!nonEmpty(lineage.recovery.path) ||
-			!sha256String(lineage.recovery.sha256) ||
-			!sha256String(lineage.recovery.executionLedgerSha256))
-	) {
-		issues.push('lineage.recovery is invalid.');
+	if (lineage.recovery !== undefined) {
+		issues.push('lineage.recovery is not part of the release lineage schema.');
 	}
 	const shardRemaps = lineage.content
 		.map((shard) => shard.descendantRemap)
@@ -1799,94 +1772,11 @@ function validateDifficultyPlanAdjustmentLineage(adjustment, shard, prefix, issu
 	return true;
 }
 
-function validateMultipartContinuationLineage(continuation, shard, prefix, issues) {
-	if (continuation === undefined || continuation === null) return false;
-	const claims = continuation?.execution?.claims;
-	const sourceAttempt = continuation?.sourceAttempt;
-	const continuationParts = continuation?.continuationParts;
-	const pathFields = sourceAttempt?.files;
-	const requiredSourceFiles = ['prompt', 'runSummary', 'eventLog', 'lastMessage', 'validation'];
-	const requiredPartFiles = [
-		'prompt',
-		'request',
-		'events',
-		'lastMessage',
-		'thoughts',
-		'resultMetadata',
-		'runSummary'
-	];
-	const valid =
-		isRecord(continuation) &&
-		continuation.schemaVersion === 'science-challenge-exhausted-multipart-continuation/v1' &&
-		nonEmpty(continuation.manifestPath) &&
-		sha256String(continuation.manifestSha256) &&
-		nonEmpty(continuation.planPath) &&
-		sha256String(continuation.planSha256) &&
-		nonEmpty(continuation.candidatePath) &&
-		continuation.candidateSha256 === shard.candidateSha256 &&
-		nonEmpty(continuation.validationPath) &&
-		continuation.validationSha256 === shard.validationSha256 &&
-		isRecord(continuation.execution) &&
-		nonEmpty(continuation.execution.objectivePath) &&
-		sha256String(continuation.execution.objectiveSha256) &&
-		Array.isArray(claims) &&
-		claims.length > 0 &&
-		isRecord(sourceAttempt) &&
-		sourceAttempt.attempt === 4 &&
-		sourceAttempt.status === 'failed' &&
-		sha256String(sourceAttempt.sha256) &&
-		sha256String(sourceAttempt.partsSha256) &&
-		nonEmpty(sourceAttempt.attemptDir) &&
-		isRecord(pathFields) &&
-		requiredSourceFiles.every((field) => nonEmpty(pathFields[field])) &&
-		Array.isArray(sourceAttempt.parts) &&
-		sourceAttempt.parts.length > 0 &&
-		Array.isArray(sourceAttempt.partFiles) &&
-		sourceAttempt.partFiles.length === sourceAttempt.parts.length &&
-		Array.isArray(continuationParts) &&
-		continuationParts.length === claims.length &&
-		continuationParts.length > 0 &&
-		claims.every(
-			(claim, index) =>
-				isRecord(claim) &&
-				claim.partId === continuationParts[index]?.partId &&
-				nonEmpty(claim.path) &&
-				sha256String(claim.sha256) &&
-				sha256String(claim.byteSha256) &&
-				nonEmpty(claim.invocationPath) &&
-				sha256String(claim.invocationSha256) &&
-				sha256String(claim.invocationByteSha256)
-		) &&
-		continuationParts.every(
-			(part) =>
-				isRecord(part) &&
-				/^part-\d{2}$/.test(part.partId) &&
-				nonEmpty(part.claimPath) &&
-				sha256String(part.claimSha256) &&
-				sha256String(part.evidenceSha256) &&
-				isRecord(part.paths) &&
-				requiredPartFiles.every((field) => nonEmpty(part.paths[field]))
-		) &&
-		sourceAttempt.partFiles.every(
-			(partFile, index) =>
-				isRecord(partFile) &&
-				partFile.partId === sourceAttempt.parts[index]?.partId &&
-				isRecord(partFile.paths) &&
-				requiredPartFiles.every((field) => nonEmpty(partFile.paths[field]))
-		);
-	if (!valid) {
-		issues.push(`${prefix} contains invalid exhausted multipart continuation provenance.`);
-		return false;
-	}
-	return true;
-}
-
 function validateMultipartPlanSalvageLineage(salvage, shard, prefix, issues) {
 	if (salvage === undefined || salvage === null) return false;
 	const pathways = new Set([
 		'failed-merge-id-and-difficulty',
-		'merged-candidate-plan-difficulty',
-		'raw-question-presentation-null-default'
+		'merged-candidate-plan-difficulty'
 	]);
 	const pathway = salvage?.salvagePathway;
 	const execution = salvage?.execution;
@@ -1929,10 +1819,9 @@ function validateMultipartPlanSalvageLineage(salvage, shard, prefix, issues) {
 		sha256String(identity.verificationSha256) &&
 		sha256String(identity.priorCandidateSetSha256) &&
 		sha256String(identity.objectiveId) &&
-		identity.model === SCIENCE_CHALLENGE_DIRECT_JSON_MODEL &&
-		identity.transport === SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT &&
-		identity.responseMode ===
-			(sourceAttempt?.responseMode ?? SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON) &&
+			identity.model === SCIENCE_CHALLENGE_DIRECT_JSON_MODEL &&
+			identity.transport === SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT &&
+			identity.responseMode === sourceAttempt?.responseMode &&
 		['max', 'high'].includes(identity.thinkingLevel) &&
 		Number.isInteger(identity.directPartSize) &&
 		identity.directPartSize >= 1 &&
@@ -2007,8 +1896,7 @@ function validMultipartSalvageSourceSelection({
 	const sources = selection?.eligibleSources;
 	const allowedPathways = new Set([
 		'failed-merge-id-and-difficulty',
-		'merged-candidate-plan-difficulty',
-		'raw-question-presentation-null-default'
+		'merged-candidate-plan-difficulty'
 	]);
 	if (
 		!isRecord(selection) ||
@@ -2126,18 +2014,16 @@ function exactObjectKeys(value, expectedKeys) {
 function validMultipartSalvageSourceParts(sourceAttempt, pathway) {
 	const parts = sourceAttempt?.parts;
 	if (!Array.isArray(parts) || parts.length < 2) return false;
-	const responseMode = sourceAttempt.responseMode ?? null;
+	const responseMode = sourceAttempt.responseMode;
 	if (
-		responseMode !== null &&
 		responseMode !== SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON &&
 		responseMode !== SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON
 	) {
 		return false;
 	}
 	if (
-		sourceAttempt.providerSchemaApplied !== undefined &&
-		sourceAttempt.providerSchemaApplied !== null &&
-		typeof sourceAttempt.providerSchemaApplied !== 'boolean'
+		sourceAttempt.providerSchemaApplied !==
+		(responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON)
 	) {
 		return false;
 	}
@@ -2149,10 +2035,7 @@ function validMultipartSalvageSourceParts(sourceAttempt, pathway) {
 	const observedRows = new Set();
 	for (const [index, part] of parts.entries()) {
 		const partId = `part-${String(index + 1).padStart(2, '0')}`;
-		const expectedStatus =
-			pathway === 'raw-question-presentation-null-default' && index === parts.length - 1
-				? 'failed'
-				: 'passed';
+		const expectedStatus = 'passed';
 		if (
 			!isRecord(part) ||
 			part.partId !== partId ||
@@ -2278,15 +2161,13 @@ function lineageDirectory(value) {
 }
 
 function validateMultipartLineageRun(run, prefix, issues) {
-	const legacyStructuredRun =
-		(run?.responseMode === undefined || run.responseMode === null) &&
-		run?.transportVersion === SCIENCE_CHALLENGE_DIRECT_MULTIPART_TRANSPORT_VERSION;
-	const expectedPartResponseMode = legacyStructuredRun ? null : run.responseMode;
-	const expectedPartTransportVersion = legacyStructuredRun
-		? null
-		: run.responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON
+	const expectedPartResponseMode = run.responseMode;
+	const expectedPartTransportVersion =
+		run.responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON
 			? SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_TRANSPORT_VERSION
 			: SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT_VERSION;
+	const expectedProviderSchemaApplied =
+		run.responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON;
 	let cursor = 0;
 	const observedRowIds = [];
 	const observedModelVersions = [];
@@ -2322,11 +2203,9 @@ function validateMultipartLineageRun(run, prefix, issues) {
 			);
 		const exactModel =
 			isRecord(part) &&
-			(legacyStructuredRun
-				? (part.responseMode === undefined || part.responseMode === null) &&
-					(part.transportVersion === undefined || part.transportVersion === null)
-				: part.responseMode === expectedPartResponseMode &&
-					part.transportVersion === expectedPartTransportVersion) &&
+			part.responseMode === expectedPartResponseMode &&
+			part.providerSchemaApplied === expectedProviderSchemaApplied &&
+			part.transportVersion === expectedPartTransportVersion &&
 			part.status === 'passed' &&
 			part.provider === SCIENCE_CHALLENGE_DIRECT_JSON_PROVIDER &&
 			part.model === SCIENCE_CHALLENGE_DIRECT_JSON_MODEL &&
@@ -3424,6 +3303,17 @@ function referencesMissingVisual(value) {
 
 function hasInlineMarkAllocation(value) {
 	return /\b(?:[1-6]|one|two|three|four|five|six)\s+marks?\b/i.test(String(value ?? ''));
+}
+
+function hasLearnerFacingProductJargon(value) {
+	return [
+		/\banswer[\s-]+chains?\b/i,
+		/\bmissing[\s-]+links?\b/i,
+		/\brepair[\s-]+chains?\b/i,
+		/\bclose\s+the\s+gap\b/i,
+		/\bpractise\s+this\s+step\b/i,
+		/\bconstellations?\b/i
+	].some((pattern) => pattern.test(String(value ?? '')));
 }
 
 function asksLearnerToDraw(value) {

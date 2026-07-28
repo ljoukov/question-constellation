@@ -1,5 +1,6 @@
 import type { AnswerChain, ChainStep } from '$lib/server/questionData';
 import type { ChallengeDefinition } from './types';
+import type { ChallengeCardArt } from './visuals';
 
 const HANDLE_SEPARATOR = /\s*(?:→|⟶)\s*/;
 
@@ -21,7 +22,9 @@ export type PublicChallengePreviewDefinition = Pick<
 	| 'hook'
 	| 'marks'
 	| 'previewQuestion'
->;
+> & {
+	cardArt: ChallengeCardArt | null;
+};
 
 export type PublicNextChallengeDefinition = Pick<
 	ChallengeDefinition,
@@ -85,7 +88,8 @@ export function publicChallengeDefinition(
 
 /** Allowlist the fields needed by public catalogue cards. */
 export function publicChallengePreviewDefinition(
-	challenge: ChallengeDefinition
+	challenge: ChallengeDefinition,
+	cardArt: ChallengeCardArt | null = null
 ): PublicChallengePreviewDefinition {
 	return {
 		id: challenge.id,
@@ -96,7 +100,8 @@ export function publicChallengePreviewDefinition(
 		topic: challenge.topic,
 		hook: challenge.hook,
 		marks: challenge.marks,
-		previewQuestion: challenge.previewQuestion
+		previewQuestion: challenge.previewQuestion,
+		cardArt
 	};
 }
 

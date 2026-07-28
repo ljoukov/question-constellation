@@ -1,4 +1,4 @@
-export type BlogCategory = 'Comparison' | 'Revision research' | 'Exam technique';
+export type BlogCategory = 'Revision research' | 'Exam technique';
 
 export type BlogFaq = {
 	question: string;
@@ -21,7 +21,6 @@ export type BlogArticleMeta = {
 	updatedAt?: string;
 	readMinutes: number;
 	tags: string[];
-	comparisonTool?: string;
 	quickTake: string;
 	faqs?: BlogFaq[];
 	sources?: BlogSource[];

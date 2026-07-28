@@ -9,7 +9,6 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { d1Rows, loadD1Env } from './lib/d1-rest.mjs';
-import { loadChainIllustrationCandidates } from './lib/chain-illustration-candidates.mjs';
 import {
 	STUDY_CARD_IMPORT_OWNER,
 	hashStudyCardArtifact,
@@ -161,7 +160,6 @@ function verifyLocalReleaseSet(releaseRoot, issues, { verifyLocalSources = false
 		preparedLock: 'docs/release-evidence/study-card-prepared-completion/prepared-run-lock.json',
 		preparedState: 'docs/release-evidence/study-card-prepared-completion/queue-state.json',
 		paperCohort: 'docs/release-evidence/selective-paper-cohort.json',
-		illustrationManifest: 'docs/release-evidence/chain-illustration-release-manifest.json',
 		paperCohortLock: 'data/release/selective-paper-cohort-lock.json'
 	};
 	const baseline = readJsonOr(files.baseline, releaseRoot, issues, {});
@@ -171,7 +169,6 @@ function verifyLocalReleaseSet(releaseRoot, issues, { verifyLocalSources = false
 	const sourcePreflight = readJsonOr(files.literatureSourcePreflight, releaseRoot, issues, {});
 	const lock = readJsonOr(files.preparedLock, releaseRoot, issues, {});
 	const paperCohort = readJsonOr(files.paperCohort, releaseRoot, issues, {});
-	const illustrationManifest = readJsonOr(files.illustrationManifest, releaseRoot, issues, {});
 	const paperCohortLock = readJsonOr(files.paperCohortLock, releaseRoot, issues, {});
 	const state = existsSync(path.join(releaseRoot, files.preparedState))
 		? readJsonOr(files.preparedState, releaseRoot, issues, {})
@@ -229,7 +226,6 @@ function verifyLocalReleaseSet(releaseRoot, issues, { verifyLocalSources = false
 	verifyLocalPaperCohortEvidence(paperCohort, paperCohortLock, releaseRoot, issues, {
 		verifyLocalSources
 	});
-	verifyLocalIllustrationManifest(illustrationManifest, releaseRoot, issues);
 	if (!state) {
 		issues.push(`Completion state is absent: ${files.preparedState}.`);
 	} else {
@@ -420,8 +416,7 @@ function verifyLocalReleaseSet(releaseRoot, issues, { verifyLocalSources = false
 		cards,
 		catalog,
 		paperCohort,
-		paperCohortLock,
-		illustrationManifest
+		paperCohortLock
 	};
 }
 
@@ -948,228 +943,6 @@ function sameArtifactDigest(left, right) {
 	return left?.sha256 === right?.sha256 && left?.canonicalJsonSha256 === right?.canonicalJsonSha256;
 }
 
-function verifyLocalIllustrationManifest(manifest, releaseRoot, issues) {
-	const pairs = Array.isArray(manifest.pairs) ? manifest.pairs : [];
-	const ids = pairs.map((pair) => pair.id);
-	const chainIds = pairs.map((pair) => pair.answerChainId);
-	const r2Keys = pairs.flatMap((pair) => [pair.dark?.r2Key, pair.light?.r2Key]);
-	const summaryPath = manifest.sourceSummary?.path
-		? path.join(releaseRoot, manifest.sourceSummary.path)
-		: null;
-	const summary =
-		summaryPath && existsSync(summaryPath)
-			? readJsonOr(manifest.sourceSummary.path, releaseRoot, issues, {})
-			: null;
-	if (
-		manifest.schemaVersion !== 'chain-illustration-release-manifest-v1' ||
-		manifest.status !== 'passed' ||
-		!summaryPath ||
-		!existsSync(summaryPath) ||
-		!hexSha256(manifest.sourceSummary?.sha256) ||
-		(summaryPath && existsSync(summaryPath)
-			? sha256(readFileSync(summaryPath)) !== manifest.sourceSummary.sha256
-			: true) ||
-		Number(manifest.selection?.selected) < 1 ||
-		Number(manifest.selection?.selected) > 20 ||
-		Number(manifest.selection?.maxChains) > 20 ||
-		Number(manifest.selection?.published) !== pairs.length ||
-		Number(manifest.selection?.semanticRejected) + pairs.length !==
-			Number(manifest.selection?.selected) ||
-		pairs.length < 1 ||
-		new Set(ids).size !== pairs.length ||
-		new Set(chainIds).size !== pairs.length ||
-		new Set(r2Keys).size !== pairs.length * 2
-	) {
-		issues.push('Tracked chain-illustration manifest is missing or not an exact one-pass release.');
-	}
-	if (
-		!summary ||
-		summary.schemaVersion !== 'chain-illustration-run-summary-v1' ||
-		summary.status !== 'passed' ||
-		summary.plan?.publish !== true ||
-		summary.plan?.requirePairs !== true ||
-		summary.plan?.plannerModel !== 'gpt-5.6-sol' ||
-		summary.plan?.plannerThinkingLevel !== 'max' ||
-		summary.plan?.judgeModel !== 'gpt-5.6-sol' ||
-		summary.plan?.judgeThinkingLevel !== 'max' ||
-		summary.plan?.imageModel !== 'chatgpt-gpt-image-2' ||
-		Number(summary.plan?.maxChains) > 20 ||
-		!validModelRunEvidence(summary.planner, 'gpt-5.6-sol', 'max') ||
-		!exactIllustrationSummaryJobs(summary, pairs, manifest.selection)
-	) {
-		issues.push('Tracked illustration run does not prove its planner, judges and hard checks.');
-	}
-	for (const pair of pairs) {
-		if (
-			!pair.id ||
-			!pair.answerChainId ||
-			!pair.sourceQuestionId ||
-			!hexSha256(pair.sourceFingerprint) ||
-			!pair.dark?.r2Key ||
-			!pair.dark?.publicPath ||
-			!hexSha256(pair.dark?.assetSha256) ||
-			!Number.isInteger(Number(pair.dark?.width)) ||
-			!Number.isInteger(Number(pair.dark?.height)) ||
-			Number(pair.dark?.width) <= Number(pair.dark?.height) ||
-			!pair.light?.r2Key ||
-			!pair.light?.publicPath ||
-			!hexSha256(pair.light?.assetSha256) ||
-			Number(pair.light?.width) !== Number(pair.dark?.width) ||
-			Number(pair.light?.height) !== Number(pair.dark?.height) ||
-			pair.light?.derivedFromAssetSha256 !== pair.dark?.assetSha256
-		) {
-			issues.push(`${pair.id || 'unknown illustration'} has incomplete exact pair evidence.`);
-		}
-	}
-}
-
-function exactIllustrationSummaryJobs(summary, pairs, selection) {
-	const jobs = Array.isArray(summary?.jobs) ? summary.jobs : [];
-	const selected = Array.isArray(summary?.plan?.selected) ? summary.plan.selected : [];
-	const published = jobs.filter((job) => job.status === 'published');
-	const rejected = jobs.filter((job) => job.status === 'rejected-by-semantic-gate');
-	const publishedIds = published.map((job) => job.illustrationId);
-	const selectedIds = selected.map((candidate) => candidate.id);
-	const jobChainIds = jobs.map((job) => job.chainId);
-	if (
-		selected.length !== Number(selection?.selected) ||
-		jobs.length !== selected.length ||
-		new Set(selectedIds).size !== selected.length ||
-		new Set(jobChainIds).size !== jobs.length ||
-		stableStringify([...selectedIds].sort()) !== stableStringify([...jobChainIds].sort()) ||
-		rejected.length !== Number(selection?.semanticRejected) ||
-		jobs.some(
-			(job) =>
-				!['published', 'rejected-by-semantic-gate'].includes(job.status) ||
-				(job.status === 'rejected-by-semantic-gate' && !String(job.rationale ?? '').trim())
-		) ||
-		published.length !== pairs.length ||
-		new Set(publishedIds).size !== published.length ||
-		pairs.some((pair) => !publishedIds.includes(pair.id))
-	) {
-		return false;
-	}
-	const modelThreadIds = [
-		summary.planner?.threadId,
-		...published.flatMap((job) => [job.judgeRuns?.dark?.threadId, job.judgeRuns?.light?.threadId])
-	];
-	if (
-		modelThreadIds.some((threadId) => !String(threadId ?? '').trim()) ||
-		new Set(modelThreadIds).size !== modelThreadIds.length
-	) {
-		return false;
-	}
-	const expectedById = new Map(pairs.map((pair) => [pair.id, pair]));
-	const selectedByChain = new Map(selected.map((candidate) => [candidate.id, candidate]));
-	return published.every((job) => {
-		const pair = expectedById.get(job.illustrationId);
-		const candidate = selectedByChain.get(job.chainId);
-		return (
-			pair &&
-			candidate?.sourceFingerprint === job.sourceFingerprint &&
-			job.chainId === pair.answerChainId &&
-			job.sourceQuestionId === pair.sourceQuestionId &&
-			job.sourceFingerprint === pair.sourceFingerprint &&
-			job.variants?.dark?.r2Key === pair.dark.r2Key &&
-			job.variants?.dark?.publicPath === pair.dark.publicPath &&
-			job.variants?.dark?.assetSha256 === pair.dark.assetSha256 &&
-			Number(job.variants?.dark?.width) === Number(pair.dark.width) &&
-			Number(job.variants?.dark?.height) === Number(pair.dark.height) &&
-			job.variants?.light?.r2Key === pair.light.r2Key &&
-			job.variants?.light?.publicPath === pair.light.publicPath &&
-			job.variants?.light?.assetSha256 === pair.light.assetSha256 &&
-			Number(job.variants?.light?.width) === Number(pair.light.width) &&
-			Number(job.variants?.light?.height) === Number(pair.light.height) &&
-			job.variants?.light?.derivedFromAssetSha256 === pair.light.derivedFromAssetSha256 &&
-			job.hardChecks?.dark?.status === 'passed' &&
-			Number(job.hardChecks?.dark?.width) === Number(job.variants?.dark?.width) &&
-			Number(job.hardChecks?.dark?.height) === Number(job.variants?.dark?.height) &&
-			job.hardChecks?.light?.status === 'passed' &&
-			Number(job.hardChecks?.light?.width) === Number(job.variants?.light?.width) &&
-			Number(job.hardChecks?.light?.height) === Number(job.variants?.light?.height) &&
-			job.judge?.dark?.pass === true &&
-			job.judge?.light?.pass === true &&
-			validModelRunEvidence(job.judgeRuns?.dark, 'gpt-5.6-sol', 'max') &&
-			validModelRunEvidence(job.judgeRuns?.light, 'gpt-5.6-sol', 'max')
-		);
-	});
-}
-
-function validModelRunEvidence(run, model, thinkingLevel) {
-	const startedAt = Date.parse(run?.startedAt ?? '');
-	const finishedAt = Date.parse(run?.finishedAt ?? '');
-	return (
-		run?.status === 'passed' &&
-		run?.model === model &&
-		run?.thinkingLevel === thinkingLevel &&
-		Boolean(String(run?.threadId ?? '').trim()) &&
-		Number.isFinite(startedAt) &&
-		Number.isFinite(finishedAt) &&
-		finishedAt >= startedAt
-	);
-}
-
-function verifyIllustrationRows(manifest, rows, currentCandidates, issues) {
-	const expectedPairs = Array.isArray(manifest.pairs) ? manifest.pairs : [];
-	const byId = new Map(rows.map((row) => [row.id, row]));
-	const currentByChain = new Map(
-		[
-			...(currentCandidates?.eligible ?? []),
-			...(currentCandidates?.rejected ?? []),
-			...(currentCandidates?.skippedFresh ?? [])
-		].map((candidate) => [candidate.id, candidate])
-	);
-	const publishedPrimaries = rows.filter(
-		(row) =>
-			row.status === 'published' &&
-			Number(row.needs_human_review) === 0 &&
-			Number(row.is_primary) === 1
-	);
-	const expectedIds = expectedPairs.map((pair) => pair.id).sort();
-	const actualIds = publishedPrimaries.map((row) => row.id).sort();
-	if (stableStringify(actualIds) !== stableStringify(expectedIds)) {
-		issues.push('Published primary illustrations are not exactly the fresh release-manifest set.');
-	}
-	for (const row of publishedPrimaries) {
-		const current = currentByChain.get(row.answer_chain_id);
-		if (
-			!current ||
-			current.mechanicalGate?.status !== 'passed' ||
-			current.sourceFingerprint !== row.source_fingerprint
-		) {
-			issues.push(`${row.id} is published against stale answer-chain evidence.`);
-		}
-	}
-	const matched = [];
-	for (const pair of expectedPairs) {
-		const row = byId.get(pair.id);
-		if (
-			!row ||
-			row.answer_chain_id !== pair.answerChainId ||
-			row.source_question_id !== pair.sourceQuestionId ||
-			row.source_fingerprint !== pair.sourceFingerprint ||
-			row.r2_key !== pair.dark.r2Key ||
-			row.public_path !== pair.dark.publicPath ||
-			row.asset_sha256 !== pair.dark.assetSha256 ||
-			row.light_r2_key !== pair.light.r2Key ||
-			row.light_public_path !== pair.light.publicPath ||
-			row.light_asset_sha256 !== pair.light.assetSha256 ||
-			Number(row.width) !== Number(pair.dark.width) ||
-			Number(row.height) !== Number(pair.dark.height) ||
-			Number(pair.light.width) !== Number(pair.dark.width) ||
-			Number(pair.light.height) !== Number(pair.dark.height) ||
-			Number(row.is_primary) !== 1 ||
-			row.status !== 'published' ||
-			Number(row.needs_human_review) !== 0
-		) {
-			issues.push(`${pair.id} differs from the exact published illustration manifest.`);
-			continue;
-		}
-		matched.push(row);
-	}
-	return matched;
-}
-
 function verifyPartialAcceptedEvidence(baseline, bundles, releaseRoot, issues) {
 	const releaseId =
 		'aqa-combined-science-trilogy-8464-physics-partial-accepted-rollout-recovered-v1';
@@ -1658,36 +1431,13 @@ async function verifyQuestionD1(releaseRoot, local, { issues, requireLegacyClean
 
 	const paper = await verifyPaperCohortD1(local.paperCohort, issues);
 	const legacy = await verifyLegacyEnglishReplacement(requireLegacyCleanup, issues);
-	const illustrationRows = await d1Rows(
-		`SELECT id, answer_chain_id, source_question_id, source_fingerprint,
-		        r2_key, public_path, asset_sha256,
-		        light_r2_key, light_public_path, light_asset_sha256,
-		        width, height, is_primary, status, needs_human_review
-		   FROM answer_chain_illustrations
-			  ORDER BY id`
-	);
-	const currentIllustrationCandidates = await loadChainIllustrationCandidates({
-		rootDir: releaseRoot,
-		includeExisting: true,
-		limit: 0
-	});
-	const releaseIllustrations = verifyIllustrationRows(
-		local.illustrationManifest,
-		illustrationRows,
-		currentIllustrationCandidates,
-		issues
-	);
-	const r2Objects = dedupeObjects([
-		...paper.assets.map((row) => ({
+	const r2Objects = dedupeObjects(
+		paper.assets.map((row) => ({
 			key: row.r2_key,
 			kind: 'question-asset',
 			sha256: row.sha256
-		})),
-		...releaseIllustrations.flatMap((row) => [
-			{ key: row.r2_key, kind: 'illustration-dark', sha256: row.asset_sha256 },
-			{ key: row.light_r2_key, kind: 'illustration-light', sha256: row.light_asset_sha256 }
-		])
-	]);
+		}))
+	);
 	return {
 		report: {
 			migrations: { local: migrationFiles.length, applied: remoteMigrations.length },
@@ -1702,13 +1452,6 @@ async function verifyQuestionD1(releaseRoot, local, { issues, requireLegacyClean
 			},
 			paperCohort: paper.report,
 			legacyEnglishReplacement: legacy,
-			primaryIllustrationPairs: illustrationRows.filter(
-				(row) =>
-					Number(row.is_primary) === 1 &&
-					row.status === 'published' &&
-					Number(row.needs_human_review) === 0
-			).length,
-			releaseIllustrationPairs: releaseIllustrations.length,
 			r2ObjectsPlanned: r2Objects.length
 		},
 		r2Objects
@@ -2353,8 +2096,8 @@ together can return the final status "passed".
 
 Options:
   --remote                  also verify QUESTION_DB and PERSONAL_DB read-only
-  --verify-r2               stream every required cohort asset and published
-	                            illustration pair from R2; requires --remote
+  --verify-r2               stream every required cohort asset from R2;
+                            requires --remote
   --verify-local-source-inputs
                             hash all ignored official paper/source PDFs on an
                             operator machine that holds the source corpus

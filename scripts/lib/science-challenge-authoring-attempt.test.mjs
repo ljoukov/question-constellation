@@ -106,18 +106,18 @@ test('resume evidence requires the exact attempt prompt and verifies persisted p
 			/attempt validation does not bind the attempt prompt bytes/
 		);
 
-		const legacyFixture = cleanFixture();
-		delete legacyFixture.validation.promptSha256;
-		delete legacyFixture.validation.promptVersion;
-		legacyFixture.acceptedValidation = legacyFixture.validation;
-		writeAttempt(attemptDir, legacyFixture);
-		assert.equal(
+		const incompleteFixture = cleanFixture();
+		delete incompleteFixture.validation.promptSha256;
+		delete incompleteFixture.validation.promptVersion;
+		incompleteFixture.acceptedValidation = incompleteFixture.validation;
+		writeAttempt(attemptDir, incompleteFixture);
+		assert.match(
 			findBoundToolFreeScienceChallengeAuthoringAttempt({
 				shardDir: root,
-				acceptedCandidate: legacyFixture.acceptedCandidate,
-				acceptedValidation: legacyFixture.acceptedValidation
-			}).status,
-			'passed'
+				acceptedCandidate: incompleteFixture.acceptedCandidate,
+				acceptedValidation: incompleteFixture.acceptedValidation
+			}).issues.join('\n'),
+			/stale or missing authoring prompt version|promptSha256 must be/
 		);
 
 		const substituted = cleanFixture();
@@ -467,7 +467,9 @@ function cleanFixture({ command = false } = {}) {
 		normalizationVersion: SCIENCE_CHALLENGE_NORMALIZATION_VERSION,
 		candidateSha256: canonicalHash(candidate),
 		promptVersion: SCIENCE_CHALLENGE_PROMPT_VERSION,
-		promptSha256: sha256(promptBytes)
+		promptSha256: sha256(promptBytes),
+		transport: 'codex-sdk',
+		thinkingLevel: 'max'
 	};
 	const events = [
 		{ type: 'thread.started', thread_id: 'thread-1' },
@@ -495,6 +497,7 @@ function cleanFixture({ command = false } = {}) {
 	const summary = {
 		status: 'passed',
 		error: null,
+		transport: 'codex-sdk',
 		model: 'gpt-5.6-sol',
 		thinkingLevel: 'max',
 		commandActions: command ? 1 : 0,

@@ -26,6 +26,10 @@ import {
 import { requireArtReviewEvidence } from './lib/science-challenge-review-evidence.mjs';
 import { validatePerceptualAudit } from './lib/science-question-art-perceptual.mjs';
 import {
+	SCIENCE_QUESTION_ART_REVIEW_ADJUDICATION_SCHEMA,
+	buildAdjudicatedArtReview
+} from './lib/science-question-art-review-adjudication.mjs';
+import {
 	ArtGenerationSafetyStop,
 	DEFAULT_MIN_FREE_SPACE_GIB,
 	artGenerationExitCode,
@@ -85,11 +89,14 @@ if (args.imageModel !== IMAGE_MODEL) {
 }
 
 const manifestPath = path.resolve(rootDir, args.manifest);
+assertIgnoredWorkspacePath(manifestPath, 'Art manifest');
 if (!existsSync(manifestPath)) throw new Error(`Art manifest does not exist: ${manifestPath}`);
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
 validateManifest(manifest, args.requireCount);
 const manifestSha256 = canonicalHash(manifest);
 const workRoot = path.resolve(rootDir, args.workRoot);
+assertIgnoredWorkspacePath(workRoot, 'Art work root');
+validateManifestOutputDestinations(manifest);
 const requestedRepairKind = args.repairReview
 	? 'independent-review'
 	: args.repairPerceptualAudit
@@ -135,7 +142,6 @@ if (!args.dryRun) {
 			releaseId: manifest.releaseId,
 			manifestSha256
 		});
-		validateManifestOutputDestinations(manifest);
 		prepareOwnedArtWorkRoot({
 			workRoot,
 			workspaceRoot: rootDir,
@@ -245,7 +251,7 @@ if (args.dryRun) {
 				concurrency: args.concurrency,
 				minFreeSpaceGiB: args.minFreeSpaceGiB,
 				finalDimensions: `${FINAL_WIDTH}x${FINAL_HEIGHT}`,
-				calls: { generate: selected.length, edit: selected.length },
+				calls: { generate: selected.length * 2 },
 				repairEvidence: repairEvidence
 					? {
 							kind: repairEvidenceKind,
@@ -544,21 +550,21 @@ async function generatePair(spec) {
 		try {
 			const darkMaster = path.join(attemptDir, 'dark-master.webp');
 			const lightMaster = path.join(attemptDir, 'light-master.webp');
-			const darkPrompt = buildDarkPrompt(spec, attempts.at(-1), repair);
+			const darkPrompt = buildVariantPrompt(spec, repair, 'dark');
 			diskGuard.check({ phase: 'before starting an attempt', artId: spec.id });
 			writeTextAtomically(darkPromptPath, `${darkPrompt}\n`);
 			diskGuard.check({ phase: 'before dark generation', artId: spec.id });
-			await generateDark(spec, darkPrompt, darkMaster);
+			await generateVariant(spec.id, 'dark', darkPrompt, darkMaster);
 			diskGuard.check({ phase: 'after dark generation', artId: spec.id });
 			const darkMasterCheck = await imageCheck(darkMaster, MASTER_WIDTH, MASTER_HEIGHT, spec.id);
 			if (darkMasterCheck.status !== 'passed') {
 				throw new Error(`Dark master check failed: ${darkMasterCheck.issues.join(' ')}`);
 			}
-			const lightPrompt = buildLightPrompt(spec);
+			const lightPrompt = buildVariantPrompt(spec, repair, 'light');
 			writeTextAtomically(lightPromptPath, `${lightPrompt}\n`);
-			diskGuard.check({ phase: 'before light edit', artId: spec.id });
-			await generateLight(spec.id, lightPrompt, darkMaster, lightMaster);
-			diskGuard.check({ phase: 'after light edit', artId: spec.id });
+			diskGuard.check({ phase: 'before light generation', artId: spec.id });
+			await generateVariant(spec.id, 'light', lightPrompt, lightMaster);
+			diskGuard.check({ phase: 'after light generation', artId: spec.id });
 			const lightMasterCheck = await imageCheck(lightMaster, MASTER_WIDTH, MASTER_HEIGHT, spec.id);
 			if (lightMasterCheck.status !== 'passed') {
 				throw new Error(`Light master check failed: ${lightMasterCheck.issues.join(' ')}`);
@@ -708,8 +714,7 @@ async function generatePair(spec) {
 			attempts.push(failure);
 			const serviceStop = imageServiceInfrastructureSafetyStop(error, {
 				phase: 'while requesting image generation or theme conversion',
-				artId: spec.id,
-				nextAction: nextAction.instruction
+				artId: spec.id
 			});
 			const safetyError =
 				diskGuard.failure ??
@@ -1349,15 +1354,11 @@ function uniqueArtifactEvidence(artifacts) {
 	];
 }
 
-async function generateDark(spec, prompt, outputPath) {
-	const reference = referenceFor(spec.subject, 'dark');
+async function generateVariant(artId, theme, prompt, outputPath) {
 	const images = await withTimeout((signal) =>
 		generateImages({
 			model: args.imageModel,
-			stylePrompt: baseStylePrompt('dark'),
-			styleImages: reference
-				? [{ data: readFileSync(reference), mimeType: 'image/webp' }]
-				: undefined,
+			stylePrompt: baseStylePrompt(theme),
 			imagePrompts: [prompt],
 			imageResolution: `${REQUEST_WIDTH}x${REQUEST_HEIGHT}`,
 			imageQuality: 'high',
@@ -1367,44 +1368,40 @@ async function generateDark(spec, prompt, outputPath) {
 			signal
 		})
 	);
-	if (images.length !== 1) throw new Error(`Dark generation returned ${images.length} images.`);
+	if (images.length !== 1) {
+		throw new Error(`${titleCase(theme)} generation returned ${images.length} images.`);
+	}
 	diskGuard.check({
-		phase: 'before writing the returned dark master',
-		artId: spec.id,
-		headroomBytes: BigInt(images[0].data.byteLength)
-	});
-	writeFileSync(outputPath, images[0].data);
-	diskGuard.check({ phase: 'after writing the returned dark master', artId: spec.id });
-}
-
-async function generateLight(artId, prompt, darkPath, outputPath) {
-	const images = await withTimeout((signal) =>
-		generateImages({
-			model: args.imageModel,
-			stylePrompt: baseStylePrompt('light'),
-			styleImages: [{ data: readFileSync(darkPath), mimeType: 'image/webp' }],
-			imagePrompts: [prompt],
-			imageResolution: `${REQUEST_WIDTH}x${REQUEST_HEIGHT}`,
-			imageQuality: 'high',
-			outputFormat: 'webp',
-			action: 'edit',
-			numImages: 1,
-			signal
-		})
-	);
-	if (images.length !== 1) throw new Error(`Light edit returned ${images.length} images.`);
-	diskGuard.check({
-		phase: 'before writing the returned light master',
+		phase: `before writing the returned ${theme} master`,
 		artId,
 		headroomBytes: BigInt(images[0].data.byteLength)
 	});
 	writeFileSync(outputPath, images[0].data);
-	diskGuard.check({ phase: 'after writing the returned light master', artId });
+	diskGuard.check({ phase: `after writing the returned ${theme} master`, artId });
 }
 
-function buildDarkPrompt(spec, priorFailure, repair) {
+function buildVariantPrompt(spec, repair, theme) {
+	if (theme !== 'dark' && theme !== 'light') {
+		throw new Error(`Unsupported art theme ${String(theme)}.`);
+	}
 	const questionSpecificAccuracyGuards = buildQuestionSpecificArtAccuracyGuards(spec);
-	return `Create one brand-new DARK-MODE 16:9 GCSE ${titleCase(spec.subject)} editorial illustration for this exact question context.
+	const repairGuidance = repair
+		? repair.issues
+				.filter((issue) => issue.severity === 'major')
+				.map((issue) =>
+					questionSpecificAccuracyGuards.length
+						? `- VISIBLE DEFECT TO ELIMINATE: ${issue.description}`
+						: `- VISIBLE DEFECT TO ELIMINATE: ${issue.description}\n  SUGGESTED CORRECTION: ${issue.regenerationInstruction}`
+				)
+				.join('\n')
+		: '';
+	const themeDirection =
+		theme === 'dark'
+			? 'Use a deep ink-navy background, warm cream and desaturated green accents, restrained soft glow and precise editorial studio lighting.'
+			: 'Use a warm ivory paper-like background, ink-navy structure, restrained green accents, natural soft shadows and crisp high contrast.';
+	return `Create one brand-new ${theme.toUpperCase()}-MODE 16:9 GCSE ${titleCase(spec.subject)} editorial illustration for this exact question context.
+
+This is an independent fresh generation. No earlier image is attached or authoritative. Do not imitate, convert, edit, inpaint or preserve the geometry of any earlier variant. ${themeDirection}
 
 AUTHORITATIVE LEARNER-FACING QUESTION (never typeset it unless exact notation is explicitly required below): ${spec.question}
 SCENE: ${spec.scene}
@@ -1417,69 +1414,45 @@ SCIENTIFIC ACCURACY CONSTRAINTS
 ${[...spec.accuracyConstraints, ...questionSpecificAccuracyGuards]
 	.map((item) => `- ${item}`)
 	.join('\n')}
+- Trace every visible wire, tube, beam, hose, collection path and mechanical connection to its literal endpoint. Do not rely on an implied hidden connection to rescue an open circuit, leaking gas path, blocked detector path or impossible apparatus.
+- If an inverted gas-collection tube is shown, its open mouth must be visibly submerged and aligned directly above the gas source or electrode; never draw a sealed rounded end where the collection opening must be.
+- Obey exact task-state words. "Sealed" means visibly closed; one named sample/plate/object means exactly one; objects described as identical must visibly match in size, shape and material and be arranged clearly enough to compare; a gas particle model must remain widely dispersed rather than close-packed; separate procedures or locations must not be fused into one simultaneous or physically tethered setup.
+- If the question says a gas sample is contained or retained, use a scientifically plausible vessel state and orientation for that named gas. Never leave a less-dense-than-air sample such as possible hydrogen in an open, mouth-up tube merely because a conflicting brief requests it.
+- Preserve every question-defining colour and material in both themes: black lava remains visibly black or dark charcoal, a named indicator/flame/object colour remains recognisable, and transparent/opaque states do not swap.
+- Do not translate question-given measurements, percentages or rankings into countable blocks, bars, lengths, scales, marker rows or proportional spacing. Generated art is not a quantitative diagram; keep the supplied values in learner-facing text and use a neutral contextual scene.
+- If the learner is asked to supply differences, controls, a method, a sequence, a probability, a mechanism or an explanation, stop before the missing answer-bearing step. Show only the neutral starting context already given in the question.
+- Include every person, team, patient, driver, operator or other essential actor explicitly named by the question. Keep sources, specimens, sensors, detectors, meters and targets on the physically correct sides of any barrier, body part or tested material.
 
 FORBIDDEN DETAILS
 ${spec.forbiddenDetails.map((item) => `- ${item}`).join('\n')}
 - No answer, result, worked method, conclusion, equation, numerical value, choice marker, label, caption, title, paragraph, logo, watermark or exam-board branding.
 - No decorative object that implies a different experiment or mechanism.
 
-Make the composition unmistakably specific to this scenario and distinct from every generic topic collage. Keep all important objects inside a generous mobile-safe central area. One coherent scene, clean hierarchy, tactile physical models/apparatus, accurate counts and connections, editorial studio lighting. The attached image, if present, is style reference only: do not copy its objects or layout.${
-		priorFailure
-			? `\n\nA prior attempt failed: ${priorFailure.error}. Generate a fresh composition that fixes it.`
-			: ''
-	}${
+Make the composition unmistakably specific to this scenario and distinct from every generic topic collage. Keep all important objects inside a generous mobile-safe central area. One coherent scene, clean hierarchy, tactile physical models/apparatus, accurate counts and connections, editorial studio lighting.${
 		repair
-			? `\n\nA RELEASE QUALITY GATE REJECTED THE PREVIOUS PAIR\n${repair.issues
-					.filter((issue) => issue.severity === 'major')
-					.map((issue) => `- ${issue.regenerationInstruction}`)
-					.join(
-						'\n'
-					)}\nGenerate a genuinely fresh composition from the authoritative question and corrected brief. The rejected image is not an edit target or composition reference. Do not preserve its geometry, layout or mistakes merely because the light sibling must later match the new dark image.`
+			? `\n\nA RELEASE QUALITY GATE REJECTED THE PREVIOUS PAIR\n${repairGuidance}\nGenerate a genuinely fresh composition from the authoritative question and corrected brief. When question-specific guards are present above, they are the complete replacement recipe; the rejected review's suggested correction is intentionally omitted so it cannot reintroduce brittle or conflicting geometry. The rejected images are not edit targets or composition references. Do not preserve their geometry, layout or mistakes.`
 			: ''
-	}`;
+	}
+
+FINAL PRE-RENDER CHECK
+The learner-facing question and every scientific guard above override a conflicting scene line or defect-focused regeneration instruction. Treat a regeneration instruction as a diagnosis of what failed, not permission to render brittle counted notation, answer leakage or an apparatus state forbidden above.`;
 }
 
 function buildQuestionSpecificArtAccuracyGuards(spec) {
-	const questionAndScene = `${spec.question}\n${spec.scene}\n${spec.visualAnchor}`;
-	const guards = [];
+	const guards = spec.generationGuards ?? [];
 	if (
-		/current-carrying wire/iu.test(questionAndScene) &&
-		/permanent magnets?/iu.test(questionAndScene) &&
-		/force/iu.test(questionAndScene)
+		!Array.isArray(guards) ||
+		guards.some((guard) => typeof guard !== 'string' || !guard.trim())
 	) {
-		guards.push(
-			'For this force-producing motor-effect setup, choose one literal front-on 90-degree layout and keep it internally consistent: either (A) magnets on separate insulating stands at LEFT and RIGHT with opposite poles facing across a horizontal air gap and one VERTICAL powered conductor in the centre, or (B) magnets ABOVE and BELOW the air gap with opposite poles facing vertically and one HORIZONTAL powered conductor through the centre. Never pair left/right magnets with a horizontal gap conductor, and never pair above/below magnets with a vertical gap conductor. Make the two FACING pole caps visibly different from one another using distinct colours or surface treatments, so they cannot read as like poles; do not use N/S lettering. Connect one circuit lead to each end of that exact gap conductor, forming one unmistakable closed series path through a battery. No wire, clip, terminal or electrical lead may touch either magnet. Do not draw a conductor bridging directly from N to S, any dead-end branch or any alternative current path.'
-		);
+		throw new Error(`${spec.id} has invalid D1-backed generation guards.`);
 	}
-	if (
-		/sodium/iu.test(questionAndScene) &&
-		/chlorine/iu.test(questionAndScene) &&
-		/ionic/iu.test(questionAndScene)
-	) {
-		guards.push(
-			'If atom-shell models are shown, use exactly two separate neutral three-shell models in a flat front-facing view and make every electron individually countable. On EACH inner shell place exactly 2 beads at 3 and 9 o’clock. On EACH middle shell place exactly 8 beads at 12, 1:30, 3, 4:30, 6, 7:30, 9 and 10:30 o’clock—one bead at each position and NO ninth middle-shell bead. Sodium outer shell: exactly 1 bead at 12 o’clock. Chlorine outer shell: EXACTLY 7 beads at approximately 12, 1:30, 4:30, 6, 7:30, 9 and 10:30 o’clock, with 3 o’clock conspicuously EMPTY; do not add an eighth outer bead. Put electron beads only on the three rings; use no hidden, overlapping or partly occluded beads, extra electron-like dots, decorative particles or bead-filled nuclei. Count every bead before rendering. No arrows, charges, ions, transfer or product.'
-		);
-	}
-	if (/molten lead bromide/iu.test(questionAndScene) && /electrolys/iu.test(questionAndScene)) {
-		guards.push(
-			'Because the question states that molten lead bromide IS BEING ELECTROLYSED, show the onset of active electrolysis: both clean electrodes immersed in the heated molten material and connected to one DC source by EXACTLY TWO electrical wires total. Show wire 1 continuously and fully visibly from the left electrode top to one source terminal, and wire 2 continuously and fully visibly from the right electrode top to the other source terminal. Both wire ends must be plugged in. No third cable, spare terminal, loose plug, dangling end, wire leaving the frame, hidden return path or disconnected electrode is allowed. Keep polarity unlabelled and show no deposit, bubbles, gas, product, arrow, charge sign or completed result.'
-		);
-	}
-	return guards;
-}
-
-function buildLightPrompt(spec) {
-	return `Edit the attached accepted dark illustration into its LIGHT-MODE sibling for the same question.
-
-Preserve the exact canvas, crop, geometry, objects, counts, states, directions, connections and scientific meaning. Change only background and surface tone, contrast, shadows, highlights and glow. Use a warm off-white paper-like background, dark navy linework, restrained green accents and soft natural shadows. Do not add, remove, move, relabel, restage or rewrite anything. Do not introduce text, an answer, a result, a worked method, a number, a logo or a watermark.
-
-The required scenario remains: ${spec.scene}`;
+	return [...guards];
 }
 
 function baseStylePrompt(theme) {
 	return theme === 'dark'
 		? 'Polished tactile editorial science still life for a premium GCSE learning app. Deep ink-navy background, warm cream and desaturated green accents, subtle grid texture, crisp accurate objects, restrained soft glow, museum-model materiality, generous negative space, no rounded UI cards, no visible prose.'
-		: 'Strict light-theme edit of the supplied dark science illustration. Warm ivory background, ink-navy structure, restrained green accent, subtle paper grid, natural soft shadows, precise scientific objects, no visible prose.';
+		: 'Polished tactile editorial science still life for a premium GCSE learning app. Warm ivory background, ink-navy structure, restrained green accent, subtle paper texture, natural soft shadows, precise scientific objects, generous negative space, no rounded UI cards, no visible prose.';
 }
 
 async function normalizeWebp(input, output, artId, theme) {
@@ -1585,20 +1558,6 @@ function artifactRecord(filePath) {
 	};
 }
 
-function referenceFor(subject, theme) {
-	const names = {
-		biology: 'biology-cells-practical',
-		chemistry: 'chemistry-reactions-energy',
-		physics: 'physics-forces-motion'
-	};
-	const candidate = path.join(
-		rootDir,
-		'static/product/challenges/subjects',
-		`${names[subject]}-${theme}-v1.webp`
-	);
-	return existsSync(candidate) ? candidate : null;
-}
-
 function validateManifest(manifest, requireCount) {
 	const validation = validateQuestionArtManifest(manifest, {
 		expectedCount: requireCount ?? undefined
@@ -1610,11 +1569,39 @@ function validateManifest(manifest, requireCount) {
 
 function readAndValidateRepairReview(relativePath, artManifest) {
 	const reviewPath = path.resolve(rootDir, relativePath);
+	assertIgnoredWorkspacePath(reviewPath, 'Art review');
 	if (!existsSync(reviewPath)) throw new Error(`Art review does not exist: ${reviewPath}`);
-	const review = JSON.parse(readFileSync(reviewPath, 'utf8'));
+	const input = JSON.parse(readFileSync(reviewPath, 'utf8'));
+	let sourceReview = input;
+	let review = input;
+	if (input.schemaVersion === SCIENCE_QUESTION_ART_REVIEW_ADJUDICATION_SCHEMA) {
+		if (
+			typeof input.sourceReviewPath !== 'string' ||
+			path.isAbsolute(input.sourceReviewPath) ||
+			input.sourceReviewPath.includes('\\')
+		) {
+			throw new Error('Art review adjudication sourceReviewPath must be repo-relative.');
+		}
+		const sourceReviewPath = path.resolve(rootDir, input.sourceReviewPath);
+		assertIgnoredWorkspacePath(sourceReviewPath, 'Adjudication source review');
+		if (
+			sourceReviewPath === rootDir ||
+			!sourceReviewPath.startsWith(`${rootDir}${path.sep}`) ||
+			!existsSync(sourceReviewPath) ||
+			!lstatSync(sourceReviewPath).isFile() ||
+			lstatSync(sourceReviewPath).isSymbolicLink()
+		) {
+			throw new Error('Art review adjudication sourceReviewPath is not a safe regular file.');
+		}
+		sourceReview = JSON.parse(readFileSync(sourceReviewPath, 'utf8'));
+		review = buildAdjudicatedArtReview({
+			sourceReview,
+			adjudication: input
+		});
+	}
 	const issues = [];
 	const rawEvidence = requireArtReviewEvidence({
-		review,
+		review: sourceReview,
 		reviewPath,
 		manifest: artManifest,
 		rootDir,
@@ -1695,6 +1682,7 @@ function readAndValidateRepairReview(relativePath, artManifest) {
 
 function readAndValidatePerceptualRepair(relativePath, artManifest) {
 	const auditPath = path.resolve(rootDir, relativePath);
+	assertIgnoredWorkspacePath(auditPath, 'Perceptual audit');
 	if (!existsSync(auditPath)) throw new Error(`Perceptual audit does not exist: ${auditPath}`);
 	const audit = JSON.parse(readFileSync(auditPath, 'utf8'));
 	const currentInventory = [];
@@ -1821,7 +1809,7 @@ function generationSafetyNextAction(repairKind, parsedArgs) {
 		return {
 			kind: 'resume',
 			instruction:
-				'Free the required disk reserve, then rerun this ordinary generation lineage with --resume.',
+				'Resolve the recorded safety prerequisite, then rerun this ordinary generation lineage with --resume.',
 			actions: [
 				command('generate:science-question-art', [...ordinaryGenerationArguments, '--resume'])
 			]
@@ -1899,6 +1887,7 @@ function validateManifestOutputDestinations(artManifest) {
 	for (const spec of artManifest.specs) {
 		for (const theme of ['dark', 'light']) {
 			const destination = path.resolve(rootDir, spec.output[`${theme}Path`]);
+			assertIgnoredWorkspacePath(destination, `Output for ${spec.id}`);
 			if (destination === rootDir || !destination.startsWith(`${rootDir}${path.sep}`)) {
 				throw outputPathStop(spec.id, destination, 'is outside the workspace');
 			}
@@ -1923,6 +1912,24 @@ function validateManifestOutputDestinations(artManifest) {
 				}
 			}
 		}
+	}
+}
+
+function assertIgnoredWorkspacePath(targetPath, label) {
+	const ignoredRoot = path.resolve(rootDir, 'tmp');
+	const relativePath = path.relative(ignoredRoot, targetPath);
+	if (!existsSync(path.join(rootDir, '.git'))) {
+		const relativeToFixtureRoot = path.relative(rootDir, targetPath);
+		if (
+			relativeToFixtureRoot &&
+			!relativeToFixtureRoot.startsWith(`..${path.sep}`) &&
+			!path.isAbsolute(relativeToFixtureRoot)
+		) {
+			return;
+		}
+	}
+	if (!relativePath || relativePath.startsWith(`..${path.sep}`) || path.isAbsolute(relativePath)) {
+		throw new Error(`${label} must be under ignored tmp/.`);
 	}
 }
 
@@ -2285,10 +2292,11 @@ function parseArgs(argv) {
 		dryRun: Boolean(values.get('dry-run')),
 		ids,
 		manifest: String(
-			values.get('manifest') ?? 'tmp/science-challenges/science-500-v1/compiled/art-manifest.json'
+			values.get('manifest') ??
+				'tmp/science-challenges/candidate-release/compiled/art-manifest.json'
 		),
 		workRoot: String(
-			values.get('work-root') ?? 'tmp/science-challenges/science-500-v1/art-generation'
+			values.get('work-root') ?? 'tmp/science-challenges/candidate-release/art-generation'
 		),
 		repairReview: values.has('repair-review') ? String(values.get('repair-review')) : null,
 		repairPerceptualAudit: values.has('repair-perceptual-audit')

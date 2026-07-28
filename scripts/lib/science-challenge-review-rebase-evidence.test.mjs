@@ -230,7 +230,7 @@ test('fails closed for path escapes, stale parent assignments, catalog drift, an
 				existingDefinitions: [{ id: 'unexpected-existing-row' }]
 			});
 			assert.equal(prepared.status, 'failed');
-			assert.match(prepared.issues.join('\n'), /exact existing catalog/u);
+			assert.match(prepared.issues.join('\n'), /catalogue record count bound into the base plan/u);
 		} finally {
 			fixture.cleanup();
 		}
@@ -267,9 +267,10 @@ function filesystemFixture() {
 		components: [{ componentId: 'biology-cell-structure' }]
 	};
 	const basePlan = {
-		schemaVersion: 'science-challenge-plan/v1',
+		schemaVersion: 'science-challenge-plan/v2',
 		planId: 'fixture-plan',
-		existingRoundCount: 0,
+		baseCatalogContentSha256: '0'.repeat(64),
+		baseCatalogRecordCount: 0,
 		rows: [
 			planRow(acceptedId, 'starter', sourceSnapshot.questions[0]),
 			planRow(rejectedId, 'stretch', sourceSnapshot.questions[1])

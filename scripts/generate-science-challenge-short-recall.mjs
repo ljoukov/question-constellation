@@ -9,17 +9,11 @@ import { configureScienceChallengeDirectJsonTransport } from './lib/science-chal
 import { runScienceChallengeShortRecallAuthoring } from './lib/science-challenge-short-recall-pipeline.mjs';
 import {
 	SCIENCE_CHALLENGE_SHORT_RECALL_AUTHORING_THINKING,
-	SCIENCE_CHALLENGE_SHORT_RECALL_BATCH_COUNT,
 	SCIENCE_CHALLENGE_SHORT_RECALL_BATCH_SIZE,
-	SCIENCE_CHALLENGE_SHORT_RECALL_EXPECTED_COUNT,
 	SCIENCE_CHALLENGE_SHORT_RECALL_MAX_ATTEMPTS,
 	SCIENCE_CHALLENGE_SHORT_RECALL_MODEL,
 	readAuthenticatedScienceChallengeShortRecallCandidateSet
 } from './lib/science-challenge-short-recall.mjs';
-
-const DEFAULT_CANDIDATE_SET =
-	'tmp/science-challenges/science-179-v1/accepted-subset-evidence/accepted-subset.json';
-const DEFAULT_OUTPUT_ROOT = 'tmp/science-challenges/science-179-v1/short-recall/authoring-v1';
 
 export async function runGenerateScienceChallengeShortRecallCli({
 	argv = process.argv.slice(2),
@@ -135,12 +129,18 @@ export function parseGenerateScienceChallengeShortRecallArgs(argv) {
 	}
 	const concurrency = integer(values.get('concurrency') ?? 6, '--concurrency', 1, 6);
 	if (concurrency !== 6) throw new Error('--concurrency must be exactly 6.');
+	const help = Boolean(values.get('help'));
+	if (!help) {
+		for (const name of ['candidate-set', 'output-root']) {
+			if (!values.has(name)) throw new Error(`--${name} is required.`);
+		}
+	}
 	return {
-		help: Boolean(values.get('help')),
+		help,
 		resume: Boolean(values.get('resume')),
 		dryRun: Boolean(values.get('dry-run')),
-		candidateSet: String(values.get('candidate-set') ?? DEFAULT_CANDIDATE_SET),
-		outputRoot: String(values.get('output-root') ?? DEFAULT_OUTPUT_ROOT),
+		candidateSet: String(values.get('candidate-set') ?? ''),
+		outputRoot: String(values.get('output-root') ?? ''),
 		priorBundle: values.has('prior-bundle') ? String(values.get('prior-bundle')) : null,
 		repairReview: values.has('repair-review') ? String(values.get('repair-review')) : null,
 		repairAuthoringEvidence: values.has('repair-authoring-evidence')
@@ -208,17 +208,17 @@ function usage() {
 	return [
 		'Usage: node scripts/generate-science-challenge-short-recall.mjs [options]',
 		'',
-		`--candidate-set=<json>       Authenticated ${SCIENCE_CHALLENGE_SHORT_RECALL_EXPECTED_COUNT}-candidate accepted subset (default ${DEFAULT_CANDIDATE_SET})`,
-		`--output-root=<directory>    Fresh immutable run root (default ${DEFAULT_OUTPUT_ROOT})`,
+		'--candidate-set=<json>       Required hash-bound challenge-catalog-candidate-set/v1',
+		'--output-root=<directory>    Required fresh immutable run root under ignored tmp/',
 		'--concurrency=6              Fixed release concurrency',
 		'--timeout-ms=<1-14400000>    Per model turn; default 7200000',
 		'--resume                     Reuse exact passed attempts; never raises the four-attempt ceiling',
-		`--dry-run                    Validate and print the ${SCIENCE_CHALLENGE_SHORT_RECALL_BATCH_COUNT}-batch plan without writes or model calls`,
+		'--dry-run                    Validate the derived complete batch plan without writes or model calls',
 		'--prior-bundle=<json>        Prior full prompt array for targeted repair',
 		'--repair-review=<json>       Full rejected review evidence; required with --prior-bundle',
 		'--repair-authoring-evidence=<json>  Exact authoring evidence bound by --repair-review',
 		`--max-attempts=4             Fixed immutable ceiling`,
-		`--batch-size=8               Full batches of 8; only the final release batch is shorter`,
+		`--batch-size=8               Full batches of 8; only the final candidate batch is shorter`,
 		`--model=${SCIENCE_CHALLENGE_SHORT_RECALL_MODEL}`,
 		`--thinking-level=${SCIENCE_CHALLENGE_SHORT_RECALL_AUTHORING_THINKING}`,
 		'--help, -h'

@@ -103,10 +103,6 @@ const DEFAULT_ROUTES = [
 		name: 'public-question',
 		pathname: '/questions/ocr-j352-01-jun24-04-1b'
 	},
-	{
-		name: 'answer-chain',
-		pathname: '/questions/ocr-j352-01-jun24-04-1b/answer-chain'
-	},
 	{ name: 'physics-subject', pathname: '/subjects/physics' }
 ];
 
@@ -132,7 +128,7 @@ Options:
   --timeout-ms=20000
   --english-route=english-practice
   --english-answer="typed response"
-  --english-check              Explicitly click Check step and await feedback.
+  --english-check              Explicitly click Check answer and await feedback.
   --allow-anonymous            Do not require the signed-in account control.
   --fail-on-issues             Exit non-zero on page errors or document overflow.
   --no-screenshots
@@ -655,7 +651,7 @@ async function interactWithEnglishPractice(cdp, runOptions) {
 	const fill = await evaluate(
 		cdp,
 		(answer) => {
-			const workspace = document.querySelector('[aria-label="Step-by-step answer practice"]');
+			const workspace = document.querySelector('[aria-label="Practice workspace"]');
 			const editor = workspace?.querySelector(
 				'textarea, [contenteditable="true"], input[type="text"]'
 			);
@@ -695,7 +691,7 @@ async function interactWithEnglishPractice(cdp, runOptions) {
 	const click = await evaluate(cdp, () => {
 		const buttons = [...document.querySelectorAll('button')];
 		const button = buttons.find((item) =>
-			/^(check step|check again)$/i.test(item.textContent?.trim() ?? '')
+			/^check answer$/i.test(item.textContent?.trim() ?? '')
 		);
 		if (!button) return { status: 'not-found' };
 		if (button.disabled) return { status: 'disabled', label: button.textContent?.trim() ?? '' };
@@ -703,15 +699,15 @@ async function interactWithEnglishPractice(cdp, runOptions) {
 		return { status: 'clicked', label: button.textContent?.trim() ?? '' };
 	});
 	if (click.status !== 'clicked') {
-		throw new Error(`English interaction could not submit the step (${click.status}).`);
+		throw new Error(`English interaction could not submit the answer (${click.status}).`);
 	}
 
 	await waitUntil(
 		async () =>
 			evaluate(cdp, () => {
-				const feedback = document.querySelector('[aria-label="Feedback"]');
+				const feedback = document.querySelector('.qc-practice-result-header');
 				const busy = [...document.querySelectorAll('button')].some((button) =>
-					/checking|reading|feedback/i.test(button.textContent ?? '')
+					/checking/i.test(button.textContent ?? '')
 				);
 				return Boolean(feedback) && !busy;
 			}),
@@ -719,10 +715,10 @@ async function interactWithEnglishPractice(cdp, runOptions) {
 		100
 	);
 	const feedback = await evaluate(cdp, () => {
-		const panel = document.querySelector('[aria-label="Feedback"]');
+		const panel = document.querySelector('.qc-practice-result-header');
 		return {
 			status: panel ? 'received' : 'missing',
-			heading: panel?.querySelector('h3')?.textContent?.trim() ?? null,
+			heading: panel?.querySelector('h2')?.textContent?.trim() ?? null,
 			textSample: panel?.textContent?.replace(/\s+/g, ' ').trim().slice(0, 320) ?? null
 		};
 	});
@@ -770,10 +766,7 @@ async function collectDomSummary(cdp) {
 					.filter(Boolean)
 					.slice(0, 30)
 			},
-			activeStep:
-				document.querySelector('[aria-current="step"]')?.textContent?.replace(/\s+/g, ' ').trim() ??
-				null,
-			feedbackVisible: Boolean(document.querySelector('[aria-label="Feedback"]')),
+			answerResultVisible: Boolean(document.querySelector('.qc-practice-result-header')),
 			signedIn: Boolean(document.querySelector('[aria-label="Account menu"]')),
 			bodyTextLength: document.body?.innerText.length ?? 0
 		};
@@ -1028,7 +1021,7 @@ async function waitForDocumentReady(cdp, timeoutMs) {
 				cdp,
 				() =>
 					document.readyState === 'complete' &&
-					!document.querySelector('[aria-busy="true"], .qc-step-hydrating')
+					!document.querySelector('[aria-busy="true"]')
 			),
 		timeoutMs,
 		100

@@ -380,12 +380,6 @@ const codexAnswerChainsSource = readText(path.join(rootDir, 'scripts/run-codex-a
 const chainIllustrationCandidateSource = readText(
 	path.join(rootDir, 'scripts/lib/chain-illustration-candidates.mjs')
 );
-const chainIllustrationPipelineSource = readText(
-	path.join(rootDir, 'scripts/lib/chain-illustration-pipeline.mjs')
-);
-const chainIllustrationGeneratorSource = readText(
-	path.join(rootDir, 'scripts/generate-chain-illustrations.mjs')
-);
 const codexSolvabilityJudgeSource = readText(
 	path.join(rootDir, 'scripts/run-codex-solvability-judge.mjs')
 );
@@ -1132,38 +1126,6 @@ requireIncludes(
 	'Chain illustration candidate gate'
 );
 requireIncludes(
-	chainIllustrationGeneratorSource,
-	[
-		"action: 'generate'",
-		"action: 'edit'",
-		'styleImages:',
-		"path.join(jobDir, 'dark.webp')",
-		"path.join(jobDir, 'light.webp')",
-		'no-passing-pair',
-		'derivedFromAssetSha256',
-		'await writeStdoutJson'
-	],
-	'Chain illustration dark/light generator'
-);
-requireExcludes(
-	chainIllustrationGeneratorSource,
-	["['A', 'B']", 'judge.winner', 'winnerPath'],
-	'Chain illustration dark/light generator'
-);
-requireIncludes(
-	chainIllustrationPipelineSource,
-	[
-		'chain-illustration-job/v2',
-		'light-mode sibling',
-		'strict theme conversion',
-		'cross-theme consistency audit',
-		'compositionMatch',
-		'scientificMeaningMatch'
-	],
-	'Chain illustration dark/light prompts'
-);
-
-requireIncludes(
 	codexProductionImportSource,
 	[
 		'scripts/run-codex-pdf-extraction.mjs',
@@ -1529,8 +1491,6 @@ for (const scriptName of [
 	'codex:answer-chains',
 	'codex:solvability-judge',
 	'codex:production-import',
-	'generate:chain-illustrations',
-	'publish:chain-illustrations',
 	'repair:extracted-data',
 	'repair:answer-chain-specificity',
 	'repair:extraction-response-assets',
@@ -1602,11 +1562,8 @@ for (const scriptPath of [
 	'scripts/run-codex-solvability-judge.mjs',
 	'scripts/run-codex-production-import-pipeline.mjs',
 	'scripts/run-codex-production-import-batch.mjs',
-	'scripts/generate-chain-illustrations.mjs',
-	'scripts/publish-chain-illustrations.mjs',
+	'scripts/lib/answer-chain-source-fingerprint.mjs',
 	'scripts/lib/chain-illustration-candidates.mjs',
-	'scripts/lib/chain-illustration-pipeline.mjs',
-	'scripts/lib/chain-illustration-publisher.mjs',
 	'scripts/prepare-import-ready-extraction.mjs',
 	'scripts/repair-extracted-question-data.mjs',
 	'scripts/repair-extraction-response-assets.mjs',
@@ -9982,13 +9939,12 @@ writeFileSync(
 		2
 	)
 );
-const codexIllustrationSingleDryRun = JSON.parse(
+const codexImportSingleDryRun = JSON.parse(
 	runNodeScript('scripts/run-codex-production-import-pipeline.mjs', [
 		`--question-paper=${path.join(productionBatchDataRoot, 'question-papers', 'QP.PDF')}`,
 		`--mark-scheme=${path.join(productionBatchDataRoot, 'mark-schemes', 'MS.PDF')}`,
 		'--source-document-id=aqa-test-qp-jun26',
 		'--import',
-		'--chain-illustration-max-chains=7',
 		'--dry-run'
 	])
 );
@@ -10049,159 +10005,41 @@ if (
 		codexRerunPassedPhaseDryRun
 	);
 }
-const codexSingleCommands = codexIllustrationSingleDryRun.commands ?? [];
-const codexSingleImageIndex = codexSingleCommands.findIndex(
-	(command) => command[0] === 'scripts/generate-chain-illustrations.mjs'
-);
-const codexSingleImportIndex = codexSingleCommands.findIndex(
-	(command) =>
-		command[0] === 'scripts/prepare-import-ready-extraction.mjs' && command.includes('--import')
-);
-const codexSingleImageCommand = codexSingleCommands[codexSingleImageIndex] ?? [];
-const codexSingleChainCommand =
-	codexSingleCommands.find((command) => command[0] === 'scripts/run-codex-answer-chains.mjs') ?? [];
+const codexSingleCommands = codexImportSingleDryRun.commands ?? [];
 if (
-	codexIllustrationSingleDryRun.plan?.importMode !== 'write' ||
-	codexIllustrationSingleDryRun.plan?.generateChainIllustrations !== true ||
-	codexSingleImageIndex !== codexSingleCommands.length - 1 ||
-	codexSingleImageIndex <= codexSingleImportIndex ||
-	!codexSingleImageCommand.includes('--source-document-id=aqa-test-qp-jun26') ||
-	!codexSingleImageCommand.includes('--max-chains=7') ||
-	!codexSingleImageCommand.includes('--publish') ||
-	!codexSingleImageCommand.includes('--image-model=chatgpt-gpt-image-2') ||
-	codexSingleChainCommand.some((value) =>
-		['generate-chain-illustrations', '--publish', '--image-model'].some((needle) =>
-			value.includes(needle)
-		)
+	codexImportSingleDryRun.plan?.importMode !== 'write' ||
+	codexSingleCommands.some((command) =>
+		command.some((value) => String(value).includes('chain-illustration'))
 	)
 ) {
-	fail('Codex single-paper importer did not keep illustration generation post-publication.', {
-		codexIllustrationSingleDryRun,
+	fail('Codex single-paper import still plans the removed illustration phase.', {
+		codexImportSingleDryRun,
 		codexSingleCommands
 	});
 }
-const codexIllustrationSingleCompatibilityDryRun = JSON.parse(
-	runNodeScript('scripts/run-codex-production-import-pipeline.mjs', [
-		`--question-paper=${path.join(productionBatchDataRoot, 'question-papers', 'QP.PDF')}`,
-		`--mark-scheme=${path.join(productionBatchDataRoot, 'mark-schemes', 'MS.PDF')}`,
-		'--source-document-id=aqa-test-qp-jun26',
-		'--import',
-		'--generate-chain-illustrations',
-		'--dry-run'
-	])
-);
-if (codexIllustrationSingleCompatibilityDryRun.plan?.generateChainIllustrations !== true) {
-	fail(
-		'Codex single-paper importer no longer accepts the illustration compatibility flag.',
-		codexIllustrationSingleCompatibilityDryRun
-	);
-}
-const codexIllustrationSingleSkippedDryRun = JSON.parse(
-	runNodeScript('scripts/run-codex-production-import-pipeline.mjs', [
-		`--question-paper=${path.join(productionBatchDataRoot, 'question-papers', 'QP.PDF')}`,
-		`--mark-scheme=${path.join(productionBatchDataRoot, 'mark-schemes', 'MS.PDF')}`,
-		'--source-document-id=aqa-test-qp-jun26',
-		'--import',
-		'--skip-chain-illustrations',
-		'--dry-run'
-	])
-);
-if (
-	codexIllustrationSingleSkippedDryRun.plan?.skipChainIllustrations !== true ||
-	codexIllustrationSingleSkippedDryRun.plan?.generateChainIllustrations !== false ||
-	(codexIllustrationSingleSkippedDryRun.commands ?? []).some(
-		(command) => command[0] === 'scripts/generate-chain-illustrations.mjs'
-	)
-) {
-	fail(
-		'Codex single-paper importer did not honor --skip-chain-illustrations.',
-		codexIllustrationSingleSkippedDryRun
-	);
-}
-const missingIllustrationImportFailure = runNodeScriptExpectFailure(
-	'scripts/run-codex-production-import-pipeline.mjs',
-	[
-		`--question-paper=${path.join(productionBatchDataRoot, 'question-papers', 'QP.PDF')}`,
-		`--mark-scheme=${path.join(productionBatchDataRoot, 'mark-schemes', 'MS.PDF')}`,
-		'--source-document-id=aqa-test-qp-jun26',
-		'--generate-chain-illustrations',
-		'--dry-run'
-	]
-);
-if (!missingIllustrationImportFailure.includes('requires a real D1 import')) {
-	fail('Illustration generation did not require a D1 import.', missingIllustrationImportFailure);
-}
-const bypassedIllustrationImportFailure = runNodeScriptExpectFailure(
-	'scripts/run-codex-production-import-pipeline.mjs',
-	[
-		`--question-paper=${path.join(productionBatchDataRoot, 'question-papers', 'QP.PDF')}`,
-		`--mark-scheme=${path.join(productionBatchDataRoot, 'mark-schemes', 'MS.PDF')}`,
-		'--source-document-id=aqa-test-qp-jun26',
-		'--import',
-		'--no-import-check',
-		'--generate-chain-illustrations',
-		'--dry-run'
-	]
-);
-if (!bypassedIllustrationImportFailure.includes('requires a real D1 import')) {
-	fail(
-		'Illustration generation allowed --no-import-check to bypass publication.',
-		bypassedIllustrationImportFailure
-	);
-}
-const codexIllustrationBatchDryRun = JSON.parse(
+const codexImportBatchDryRun = JSON.parse(
 	runNodeScript('scripts/run-codex-production-import-batch.mjs', [
 		`--manifest=${productionBatchManifestPath}`,
 		`--data-root=${productionBatchDataRoot}`,
 		'--all',
 		'--import',
-		'--chain-illustration-max-chains=11',
 		'--dry-run'
 	])
 );
-const codexBatchPaperCommands =
-	codexIllustrationBatchDryRun.planned?.map((paper) => paper.command) ?? [];
-const codexBatchImageCommand = codexIllustrationBatchDryRun.chainIllustrations?.command ?? [];
+const codexBatchPaperCommands = codexImportBatchDryRun.planned?.map((paper) => paper.command) ?? [];
 if (
 	codexBatchPaperCommands.length !== 1 ||
 	codexBatchPaperCommands.some(
 		(command) =>
 			!command.includes('--import') ||
-			!command.includes('--skip-chain-illustrations') ||
-			command.some((value) => value.includes('generate-chain-illustrations'))
+			command.some((value) => String(value).includes('chain-illustration'))
 	) ||
-	!codexBatchImageCommand.includes('scripts/generate-chain-illustrations.mjs') ||
-	!codexBatchImageCommand.includes('--max-chains=11') ||
-	!codexBatchImageCommand.includes('--publish') ||
-	codexBatchImageCommand.filter((value) => value === '--source-document-id=aqa-test-qp-jun26')
-		.length !== 1
+	Object.hasOwn(codexImportBatchDryRun, 'chainIllustrations')
 ) {
-	fail('Codex batch importer did not plan one deduplicated illustration phase.', {
-		codexIllustrationBatchDryRun,
-		codexBatchPaperCommands,
-		codexBatchImageCommand
+	fail('Codex batch import still plans the removed illustration phase.', {
+		codexImportBatchDryRun,
+		codexBatchPaperCommands
 	});
-}
-const codexIllustrationBatchSkippedDryRun = JSON.parse(
-	runNodeScript('scripts/run-codex-production-import-batch.mjs', [
-		`--manifest=${productionBatchManifestPath}`,
-		`--data-root=${productionBatchDataRoot}`,
-		'--all',
-		'--import',
-		'--skip-chain-illustrations',
-		'--dry-run'
-	])
-);
-if (
-	codexIllustrationBatchSkippedDryRun.chainIllustrations !== null ||
-	(codexIllustrationBatchSkippedDryRun.planned ?? []).some(
-		(paper) => !paper.command?.includes('--skip-chain-illustrations')
-	)
-) {
-	fail(
-		'Codex batch importer did not honor --skip-chain-illustrations.',
-		codexIllustrationBatchSkippedDryRun
-	);
 }
 const productionBatchDryRun = JSON.parse(
 	runNodeScript('scripts/run-production-extraction-batch.mjs', [

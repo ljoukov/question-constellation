@@ -28,7 +28,11 @@ import {
 } from './science-challenge-effective-cohort.mjs';
 import { validateScienceChallengeEffectiveReleaseGate } from './science-challenge-effective-release-gate.mjs';
 
-test('keeps generator, prepare, materializer and archive on one exact 51/408 cohort through source cleanup', () => {
+const FIXTURE_SHARD_COUNT = 7;
+const FIXTURE_ROWS_PER_SHARD = 8;
+const FIXTURE_CANDIDATE_COUNT = FIXTURE_SHARD_COUNT * FIXTURE_ROWS_PER_SHARD;
+
+test('keeps every stage on one exact arbitrary-sized cohort through source cleanup', () => {
 	const fixture = buildCohortFixture();
 	const rootSnapshots = fixture.rootFiles.map((filePath) => ({
 		filePath,
@@ -36,14 +40,14 @@ test('keeps generator, prepare, materializer and archive on one exact 51/408 coh
 	}));
 	const staged = stageScienceChallengeEffectiveCohort(fixture.options);
 	assert.equal(staged.status, 'passed', staged.issues.join('\n'));
-	assert.equal(staged.manifest.shardCount, 51);
-	assert.equal(staged.manifest.candidateCount, 408);
+	assert.equal(staged.manifest.shardCount, FIXTURE_SHARD_COUNT);
+	assert.equal(staged.manifest.candidateCount, FIXTURE_CANDIDATE_COUNT);
 	assert.equal(staged.manifest.shards[0].disposition, 'descendant-remap');
 	assert.equal(staged.manifest.shards.at(-1).disposition, 'unchanged-verified-fallback');
 	assert.equal(
 		staged.manifest.shards.filter((shard) => shard.disposition === 'ordinary-repair-proposal')
 			.length,
-		49
+		FIXTURE_SHARD_COUNT - 2
 	);
 	for (const snapshot of rootSnapshots) {
 		assert.equal(sha256(readFileSync(snapshot.filePath)), snapshot.sha256);
@@ -51,7 +55,7 @@ test('keeps generator, prepare, materializer and archive on one exact 51/408 coh
 	assert.equal(
 		staged.candidateSet.filter((entry) => entry.definition.cohortVersion === 'ordinary-staged')
 			.length,
-		49 * 8
+		(FIXTURE_SHARD_COUNT - 2) * FIXTURE_ROWS_PER_SHARD
 	);
 	assert.equal(
 		staged.candidateSet.find((entry) => entry.definition.id === 'science-row-001').grounding
@@ -140,12 +144,12 @@ test('keeps generator, prepare, materializer and archive on one exact 51/408 coh
 	rmSync(fixture.root, { recursive: true, force: true });
 });
 
-test('freezes one exact 51/408 cohort with curriculum and difficulty recovery semantics kept distinct', () => {
+test('freezes an arbitrary-sized cohort with curriculum and difficulty recovery kept distinct', () => {
 	const fixture = buildCohortFixture({ withDifficultyAdjustment: true });
 	const staged = stageScienceChallengeEffectiveCohort(fixture.options);
 	assert.equal(staged.status, 'passed', staged.issues.join('\n'));
-	assert.equal(staged.manifest.shardCount, 51);
-	assert.equal(staged.manifest.candidateCount, 408);
+	assert.equal(staged.manifest.shardCount, FIXTURE_SHARD_COUNT);
+	assert.equal(staged.manifest.candidateCount, FIXTURE_CANDIDATE_COUNT);
 	assert.equal(staged.manifest.remapCount, 1);
 	assert.equal(staged.manifest.difficultyAdjustmentCount, 1);
 	assert.equal(staged.remapManifests.length, 1);
@@ -172,13 +176,13 @@ test('freezes one exact 51/408 cohort with curriculum and difficulty recovery se
 	rmSync(fixture.root, { recursive: true, force: true });
 });
 
-test('atomically composes the two science-021 corrections with the science-044 descendant remap in one 51/408 cohort', () => {
+test('atomically composes two difficulty corrections with one descendant remap', () => {
 	const fixture = buildCohortFixture({ withDifficultyAdjustmentSet: true });
 	const staged = stageScienceChallengeEffectiveCohort(fixture.options);
 	assert.equal(staged.status, 'passed', staged.issues.join('\n'));
-	assert.equal(staged.manifest.shardCount, 51);
-	assert.equal(staged.manifest.challengeCount, 408);
-	assert.equal(staged.manifest.candidateCount, 408);
+	assert.equal(staged.manifest.shardCount, FIXTURE_SHARD_COUNT);
+	assert.equal(staged.manifest.challengeCount, FIXTURE_CANDIDATE_COUNT);
+	assert.equal(staged.manifest.candidateCount, FIXTURE_CANDIDATE_COUNT);
 	assert.equal(staged.manifest.remapCount, 1);
 	assert.equal(staged.manifest.difficultyAdjustmentManifestCount, 1);
 	assert.equal(staged.manifest.difficultyAdjustmentCount, 2);
@@ -249,22 +253,6 @@ test('atomically composes the two science-021 corrections with the science-044 d
 });
 
 test('rejects incomplete, competing and stale effective-cohort selections', () => {
-	const undersized = buildCohortFixture();
-	undersized.options.basePlan = {
-		...undersized.options.basePlan,
-		rows: undersized.options.basePlan.rows.slice(0, 400)
-	};
-	undersized.options.effectivePlan = {
-		...undersized.options.effectivePlan,
-		rows: undersized.options.effectivePlan.rows.slice(0, 400)
-	};
-	undersized.options.shardSelections = undersized.options.shardSelections.slice(0, 50);
-	assert.throws(
-		() => stageScienceChallengeEffectiveCohort(undersized.options),
-		/exactly 51 shards and 408 challenges/
-	);
-	rmSync(undersized.root, { recursive: true, force: true });
-
 	const reboundRemap = buildCohortFixture();
 	const remapSelection = reboundRemap.options.shardSelections[0];
 	const remapManifest = readJson(remapSelection.remapManifestPath);
@@ -426,9 +414,9 @@ test('stages and relocatably replays one immutable successor after a complete fa
 		curriculumEvidenceSha256: fixture.expected.expectedCurriculumEvidenceSha256,
 		candidateSetSha256: predecessor.candidateSetSha256,
 		recoverySetSha256: predecessor.manifest.recoverySetSha256,
-		assignmentCount: 51,
-		reviewCount: 408,
-		acceptedCount: 407,
+		assignmentCount: predecessor.manifest.shards.length,
+		reviewCount: fixture.options.effectivePlan.rows.length,
+		acceptedCount: fixture.options.effectivePlan.rows.length - 1,
 		rejectedCount: 1,
 		assignmentResults: predecessor.manifest.shards.map(({ shardId: assignmentId }) => ({
 			assignmentId,
@@ -914,7 +902,7 @@ test('review-rebase successor rejects authority shrinkage, unchanged remediation
 	}
 });
 
-function buildReviewRebaseSuccessorFixture({ mutation = null } = {}) {
+function buildReviewRebaseSuccessorFixture({ mutation = null, rowCount = 17 } = {}) {
 	const root = mkdtempSync(path.join(os.tmpdir(), 'science-review-rebase-successor-'));
 	const outputRoot = path.join(root, 'generation');
 	const rebaseRoot = path.join(root, 'review-rebase');
@@ -923,14 +911,14 @@ function buildReviewRebaseSuccessorFixture({ mutation = null } = {}) {
 	const sourceSnapshotSha256 = hash('review-rebase source');
 	const curriculumEvidenceSha256 = hash('review-rebase curriculum evidence');
 	const curriculumCatalogSha256 = hash('review-rebase curriculum catalog');
-	const rows = Array.from({ length: 408 }, (_, index) => ({
+	const rows = Array.from({ length: rowCount }, (_, index) => ({
 		id: `science-rebase-row-${String(index + 1).padStart(3, '0')}`,
 		shard: `science-${String(Math.floor(index / 8) + 1).padStart(3, '0')}`,
 		curriculumComponentId: `component-${index + 1}`,
 		difficulty: 'standard'
 	}));
 	const basePlan = {
-		schemaVersion: 'science-challenge-plan/v1',
+		schemaVersion: 'science-challenge-plan/v2',
 		planId: 'science-review-rebase-successor-v1',
 		curriculumCatalogSha256,
 		rows
@@ -1266,8 +1254,8 @@ function buildCohortFixture({
 	const parentId = 'aqa-biology:cell-transport';
 	const leafId = 'aqa-biology:cell-transport:osmosis';
 	const specificationSha256 = hash('specification');
-	const rows = Array.from({ length: 408 }, (_, index) => {
-		const shardIndex = Math.floor(index / 8) + 1;
+	const rows = Array.from({ length: FIXTURE_CANDIDATE_COUNT }, (_, index) => {
+		const shardIndex = Math.floor(index / FIXTURE_ROWS_PER_SHARD) + 1;
 		return {
 			id: `science-row-${String(index + 1).padStart(3, '0')}`,
 			shard: `science-${String(shardIndex).padStart(3, '0')}`,
@@ -1289,7 +1277,7 @@ function buildCohortFixture({
 		};
 	});
 	const basePlan = {
-		schemaVersion: 'science-challenge-plan/v1',
+		schemaVersion: 'science-challenge-plan/v2',
 		planId: 'science-effective-cohort-v1',
 		rows
 	};
@@ -1773,13 +1761,13 @@ function buildCohortFixture({
 		const preservedShardIndexes = new Set([
 			0,
 			...(withDifficultyAdjustment || withDifficultyAdjustmentSet ? [1] : []),
-			50
+			FIXTURE_SHARD_COUNT - 1
 		]);
 		if (
-			candidateSet.length !== 408 ||
+			candidateSet.length !== FIXTURE_CANDIDATE_COUNT ||
 			candidateSet[0]?.grounding?.curriculumComponentId !== leafId ||
 			candidateSet.some((entry, index) => {
-				const shardIndex = Math.floor(index / 8);
+				const shardIndex = Math.floor(index / FIXTURE_ROWS_PER_SHARD);
 				const expectedVersion = preservedShardIndexes.has(shardIndex)
 					? 'verified-root'
 					: 'ordinary-staged';

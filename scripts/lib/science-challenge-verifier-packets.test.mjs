@@ -16,7 +16,10 @@ import {
 	validateScienceChallengeVerifierPacketInputs
 } from './science-challenge-verifier-packets.mjs';
 
-test('builds three ordered 17-wave packets bound to one complete ledger', () => {
+const ASSIGNMENT_COUNT = 7;
+const VERIFIER_ASSIGNMENT_COUNTS = [3, 2, 2];
+
+test('builds balanced ordered packets bound to one complete arbitrary-sized ledger', () => {
 	const fixture = packetFixture();
 	const validation = validateScienceChallengeVerifierPacketInputs(fixture.index, fixture.ledger);
 	assert.equal(validation.status, 'passed', validation.issues.join('\n'));
@@ -30,14 +33,14 @@ test('builds three ordered 17-wave packets bound to one complete ledger', () => 
 		reviewRootPath: 'verification/reviews'
 	});
 	assert.equal(bundle.manifest.packetCount, 3);
-	assert.equal(bundle.manifest.waveCount, 51);
-	assert.equal(bundle.artifacts.length, 54);
+	assert.equal(bundle.manifest.waveCount, ASSIGNMENT_COUNT);
+	assert.equal(bundle.artifacts.length, ASSIGNMENT_COUNT + VERIFIER_ASSIGNMENT_COUNTS.length);
 	assert.deepEqual(
 		bundle.manifest.packets.map((packet) => [packet.firstAssignmentId, packet.lastAssignmentId]),
 		[
-			['science-001', 'science-017'],
-			['science-018', 'science-034'],
-			['science-035', 'science-051']
+			['science-001', 'science-003'],
+			['science-004', 'science-005'],
+			['science-006', 'science-007']
 		]
 	);
 });
@@ -235,7 +238,7 @@ test('rejects duplicate, stale and out-of-assignment difficulty adjustment evide
 test('binds ordered review-rebase remediation slices and gives non-forcing reviewer notice', () => {
 	const fixture = packetFixture();
 	const firstTarget = fixture.index.assignments[0].ids[0];
-	const secondTarget = fixture.index.assignments[17].ids[1];
+	const secondTarget = fixture.index.assignments[3].ids[1];
 	addReviewRebaseBindings(fixture.index, [
 		{
 			issue: `${firstTarget} opening context is too similar to its peer.`,
@@ -404,7 +407,7 @@ test('rejects partial, stale-mode and mixed infrastructure-recovery packet bindi
 });
 
 function packetFixture() {
-	const assignments = Array.from({ length: 51 }, (_unused, index) => {
+	const assignments = Array.from({ length: ASSIGNMENT_COUNT }, (_unused, index) => {
 		const ordinal = String(index + 1).padStart(3, '0');
 		return {
 			assignmentId: `science-${ordinal}`,
@@ -423,6 +426,7 @@ function packetFixture() {
 		sourceSnapshotSha256: 'b'.repeat(64),
 		curriculumEvidenceSha256: 'c'.repeat(64),
 		candidateSetSha256: 'd'.repeat(64),
+		candidateCount: assignments.reduce((sum, assignment) => sum + assignment.ids.length, 0),
 		assignments
 	};
 	return {
@@ -437,16 +441,24 @@ function packetFixture() {
 				assignmentPath: assignment.path,
 				assignmentSha256: assignment.sha256,
 				orchestrator: 'codex-collaboration',
-				taskName: `/root/science_verify_${String(Math.floor(assignmentIndex / 17) + 1).padStart(
-					3,
-					'0'
-				)}`,
+				taskName: verifierTaskName(assignmentIndex),
 				forkTurns: 'none',
 				model: 'gpt-5.6-sol',
 				reasoningEffort: 'max'
 			}))
 		}
 	};
+}
+
+function verifierTaskName(assignmentIndex) {
+	let upperBound = 0;
+	for (const [verifierIndex, count] of VERIFIER_ASSIGNMENT_COUNTS.entries()) {
+		upperBound += count;
+		if (assignmentIndex < upperBound) {
+			return `/root/science_verify_${String(verifierIndex + 1).padStart(3, '0')}`;
+		}
+	}
+	throw new Error(`No verifier allocation for assignment index ${assignmentIndex}.`);
 }
 
 function addReviewRebaseBindings(index, remediations) {

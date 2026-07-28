@@ -1,5 +1,5 @@
 import { d1Rows } from './d1-rest.mjs';
-import { sourceFingerprint } from './chain-illustration-pipeline.mjs';
+import { sourceFingerprint } from './answer-chain-source-fingerprint.mjs';
 
 const SCIENCE_SUBJECTS = new Set(['Biology', 'Chemistry', 'Physics']);
 const REASONING_ROLES = new Set([

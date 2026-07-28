@@ -48,8 +48,6 @@ export const SCIENCE_CHALLENGE_EFFECTIVE_COHORT_SUCCESSOR_DISPOSITION =
 	'review-pending-effective-cohort-successor';
 
 const HASH = /^[a-f0-9]{64}$/u;
-const EXPECTED_SHARD_COUNT = 51;
-const EXPECTED_CHALLENGE_COUNT = 408;
 const SHARD_DISPOSITIONS = new Set([
 	'ordinary-repair-proposal',
 	'descendant-remap',
@@ -704,12 +702,11 @@ export function validateScienceChallengeEffectiveCohortManifest({
 	}
 	const orderedShardIds = uniqueInOrder(effectivePlan.rows.map((row) => row?.shard));
 	if (
-		orderedShardIds.length !== EXPECTED_SHARD_COUNT ||
-		effectivePlan.rows.length !== EXPECTED_CHALLENGE_COUNT
+		effectivePlan.rows.length === 0 ||
+		orderedShardIds.length === 0 ||
+		basePlan.rows.length !== effectivePlan.rows.length
 	) {
-		issues.push(
-			`Effective-cohort plan must contain exactly ${EXPECTED_SHARD_COUNT} shards and ${EXPECTED_CHALLENGE_COUNT} challenges.`
-		);
+		issues.push('Effective-cohort plans must bind the same non-empty challenge cohort.');
 	}
 	if (
 		!Array.isArray(manifest.shards) ||
@@ -2241,22 +2238,24 @@ function requireScienceChallengeReviewRebaseEvidence(evidence) {
 		throw new Error('Replayed review-rebase B0 does not bind its complete V0/R0 parent chain.');
 	}
 	const orderedShardIds = uniqueInOrder(evidence.plan.rows.map((row) => row.shard));
+	const expectedChallengeCount = evidence.plan.rows.length;
+	const expectedShardCount = orderedShardIds.length;
 	const orderedCandidates = [];
 	if (
-		evidence.plan.rows.length !== EXPECTED_CHALLENGE_COUNT ||
-		orderedShardIds.length !== EXPECTED_SHARD_COUNT ||
-		core.candidateCount !== EXPECTED_CHALLENGE_COUNT ||
+		expectedChallengeCount === 0 ||
+		expectedShardCount === 0 ||
+		core.candidateCount !== expectedChallengeCount ||
 		!Array.isArray(core.selections) ||
-		core.selections.length !== EXPECTED_SHARD_COUNT ||
+		core.selections.length !== expectedShardCount ||
 		core.selectionSetSha256 !== canonicalHash(core.selections)
 	) {
-		throw new Error('Replayed review-rebase B0 does not contain one complete 51/408 cohort.');
+		throw new Error('Replayed review-rebase B0 does not contain its complete planned cohort.');
 	}
 	const selectionByShard = new Map(
 		core.selections.map((selection) => [selection?.shardId, selection])
 	);
 	if (
-		selectionByShard.size !== EXPECTED_SHARD_COUNT ||
+		selectionByShard.size !== expectedShardCount ||
 		orderedShardIds.some((shardId) => !selectionByShard.has(shardId))
 	) {
 		throw new Error('Replayed review-rebase B0 selection membership is incomplete.');
@@ -3202,12 +3201,11 @@ function prepareEffectiveCohort({
 	);
 	const orderedShardIds = uniqueInOrder(effectivePlan.rows.map((row) => row.shard));
 	if (
-		orderedShardIds.length !== EXPECTED_SHARD_COUNT ||
-		effectivePlan.rows.length !== EXPECTED_CHALLENGE_COUNT
+		effectivePlan.rows.length === 0 ||
+		orderedShardIds.length === 0 ||
+		basePlan.rows.length !== effectivePlan.rows.length
 	) {
-		throw new Error(
-			`Effective-cohort plan must contain exactly ${EXPECTED_SHARD_COUNT} shards and ${EXPECTED_CHALLENGE_COUNT} challenges.`
-		);
+		throw new Error('Effective-cohort plans must bind the same non-empty challenge cohort.');
 	}
 	const selectionByShard = new Map(
 		(shardSelections ?? []).map((selection) => [selection?.shardId, selection])

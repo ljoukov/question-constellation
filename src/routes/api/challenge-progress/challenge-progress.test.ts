@@ -135,7 +135,7 @@ describe('/api/challenge-progress', () => {
 		const response = await post({ progress: stored });
 		expect(response.status).toBe(200);
 		expect(mocks.mergeUserChallengeProgress).toHaveBeenCalledWith(user.uid, stored);
-		expect(await response.json()).toEqual({ progress: stored });
+		expect(await response.json()).toEqual({ progress: stored, rejectedChallengeIds: [] });
 	});
 
 	it('accepts a replay whose retained first completion predates the new run', async () => {
@@ -168,6 +168,9 @@ describe('/api/challenge-progress', () => {
 
 		expect(response.status).toBe(200);
 		expect(mocks.mergeUserChallengeProgress).toHaveBeenCalledWith(user.uid, unknown);
-		expect(await response.json()).toEqual({ progress: { version: 2, challenges: {} } });
+		expect(await response.json()).toEqual({
+			progress: { version: 2, challenges: {} },
+			rejectedChallengeIds: ['unknown-challenge']
+		});
 	});
 });

@@ -6,13 +6,11 @@ import {
 	isScienceChallengeDirectMultipartRunSummary,
 	validateScienceChallengeDirectMultipartRunPolicy
 } from './science-challenge-authoring-run-policy.mjs';
-import { SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON } from './science-challenge-authoring-transport.mjs';
 import {
 	SCIENCE_CHALLENGE_FAILED_MERGE_PLAN_SALVAGE_PATHWAY,
 	SCIENCE_CHALLENGE_MULTIPART_PLAN_SALVAGE_SCHEMA,
 	salvageScienceChallengeMergedCandidatePlanDifficultyDrift,
-	salvageScienceChallengeMultipartPlanDrift,
-	salvageScienceChallengeQuestionPresentationNullDefaults
+	salvageScienceChallengeMultipartPlanDrift
 } from './science-challenge-multipart-plan-salvage.mjs';
 import {
 	SCIENCE_CHALLENGE_NORMALIZATION_VERSION,
@@ -682,25 +680,15 @@ export function replayScienceChallengeMultipartPlanSalvageSourceAttempt(options)
 			summary.status === 'failed' &&
 			typeof summary.error === 'string' &&
 			summary.error.startsWith('Direct multipart merge failed:');
-		const questionPresentationDefault =
-			summary.status === 'failed' &&
-			typeof summary.error === 'string' &&
-			summary.error.startsWith('Prompt-JSON local response validation failed: ');
 		const mergedDifficulty = summary.status === 'passed' && sourceCandidate !== null;
-		if (
-			Number(failedMerge) + Number(questionPresentationDefault) + Number(mergedDifficulty) !==
-			1
-		) {
+		if (Number(failedMerge) + Number(mergedDifficulty) !== 1) {
 			return failed(
 				`Source attempt ${record.attempt} is not one exact permitted multipart salvage shape.`
 			);
 		}
-		const transportError =
-			failedMerge || questionPresentationDefault
-				? `Authoring transport failed: ${summary.error}`
-				: null;
+		const transportError = failedMerge ? `Authoring transport failed: ${summary.error}` : null;
 		const expectedTransportValidationIssues =
-			failedMerge || questionPresentationDefault
+			failedMerge
 				? [
 						transportError,
 						`schemaVersion must be ${challengeBatchOutputSchema(inputs.length).properties.schemaVersion.const}.`,
@@ -720,20 +708,16 @@ export function replayScienceChallengeMultipartPlanSalvageSourceAttempt(options)
 			sourceValidation.model !== summary.model ||
 			sourceValidation.modelVersion !== null ||
 			sourceValidation.thinkingLevel !== summary.thinkingLevel ||
+			sourceValidation.transportVersion !== summary.transportVersion ||
+			sourceValidation.responseMode !== summary.responseMode ||
+			sourceValidation.providerSchemaApplied !== summary.providerSchemaApplied ||
+			canonicalHash(sourceValidation.modelVersions) !== canonicalHash(summary.modelVersions) ||
+			sourceValidation.directPartSize !== summary.partSize ||
 			canonicalHash(sourceValidation.verificationRepairCohortIssues) !== canonicalHash([]) ||
-			((failedMerge || questionPresentationDefault) &&
+			(failedMerge &&
 				(sourceCandidate !== null ||
 					sourceValidation.candidateSha256 !== null ||
 					sourceValidation.rawCandidateSha256 !== null ||
-					sourceValidation.transportVersion !== null ||
-					!nullableTransportFieldMatches(sourceValidation, 'responseMode', {
-						allowLegacyOmission: options.allowLegacyNullableTransportOmissions === true
-					}) ||
-					!nullableTransportFieldMatches(sourceValidation, 'providerSchemaApplied', {
-						allowLegacyOmission: options.allowLegacyNullableTransportOmissions === true
-					}) ||
-					sourceValidation.modelVersions !== null ||
-					sourceValidation.directPartSize !== null ||
 					sourceValidation.transportError !== transportError ||
 					canonicalHash(sourceValidation.issues) !==
 						canonicalHash(expectedTransportValidationIssues))) ||
@@ -741,11 +725,6 @@ export function replayScienceChallengeMultipartPlanSalvageSourceAttempt(options)
 				(sourceValidation.candidateSha256 !== canonicalHash(sourceCandidate) ||
 					sourceValidation.rawCandidateSha256 !==
 						canonicalHash(JSON.parse(readFileSync(paths.lastMessage, 'utf8'))) ||
-					sourceValidation.transportVersion !== summary.transportVersion ||
-					sourceValidation.responseMode !== summary.responseMode ||
-					sourceValidation.providerSchemaApplied !== summary.providerSchemaApplied ||
-					canonicalHash(sourceValidation.modelVersions) !== canonicalHash(summary.modelVersions) ||
-					sourceValidation.directPartSize !== summary.partSize ||
 					sourceValidation.transportError !== null))
 		) {
 			return failed(
@@ -755,12 +734,10 @@ export function replayScienceChallengeMultipartPlanSalvageSourceAttempt(options)
 		if (summary.inputSha256 !== options.inputSha256) {
 			return failed(`Source attempt ${record.attempt} is not bound to the current repair input.`);
 		}
-		const summaryResponseMode =
-			summary.responseMode ?? SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON;
 		for (const [field, actual] of [
 			['model', summary.model],
 			['transport', summary.transport],
-			['responseMode', summaryResponseMode],
+			['responseMode', summary.responseMode],
 			['thinkingLevel', summary.thinkingLevel],
 			['directPartSize', summary.partSize]
 		]) {
@@ -810,13 +787,11 @@ export function replayScienceChallengeMultipartPlanSalvageSourceAttempt(options)
 		};
 		const salvage = failedMerge
 			? salvageScienceChallengeMultipartPlanDrift(policyInput)
-			: mergedDifficulty
-				? salvageScienceChallengeMergedCandidatePlanDifficultyDrift({
-						...policyInput,
-						sourceCandidate,
-						sourceValidation
-					})
-				: salvageScienceChallengeQuestionPresentationNullDefaults(policyInput);
+			: salvageScienceChallengeMergedCandidatePlanDifficultyDrift({
+					...policyInput,
+					sourceCandidate,
+					sourceValidation
+				});
 		if (salvage.status !== 'passed') return salvage;
 		const helperCandidateSha256 = canonicalHash(salvage.candidate);
 		if (helperCandidateSha256 !== salvage.candidateSha256) {
@@ -883,7 +858,6 @@ export function replayScienceChallengeMultipartPlanSalvageSourceAttempt(options)
 			salvage,
 			deterministicValidation,
 			repairValidation,
-			legacyNullableOmissions: legacyNullableTransportOmissions(sourceValidation)
 		};
 	} catch (error) {
 		return failed(errorMessage(error));
@@ -917,8 +891,7 @@ export function replayScienceChallengeMultipartDifficultyAttempt(options) {
 	const replay = replayScienceChallengeMultipartPlanSalvageSourceAttempt({
 		...options,
 		reviews,
-		deferRepairValidationForDifficultyComposition: true,
-		allowLegacyNullableTransportOmissions: true
+		deferRepairValidationForDifficultyComposition: true
 	});
 	if (replay.status !== 'passed') return replay;
 	if (
@@ -1052,7 +1025,6 @@ export function replayScienceChallengeMultipartDifficultyAttempt(options) {
 		executionId: options.expectedExecutionIdentity.executionId,
 		executionIdentitySha256: canonicalHash(options.expectedExecutionIdentity),
 		sourceAttempt: fileBindings,
-		legacyNullableOmissions: replay.legacyNullableOmissions,
 		salvage: {
 			schemaVersion: replay.salvage.schemaVersion,
 			pathway: replay.salvage.pathway,
@@ -1204,15 +1176,11 @@ function replayScienceChallengeMultipartDifficultyBudgetAttempt(options) {
 				existsSync(paths.candidate) ||
 				sourceValidation.candidateSha256 !== null ||
 				sourceValidation.rawCandidateSha256 !== null ||
-				sourceValidation.transportVersion !== null ||
-				!nullableTransportFieldMatches(sourceValidation, 'responseMode', {
-					allowLegacyOmission: true
-				}) ||
-				!nullableTransportFieldMatches(sourceValidation, 'providerSchemaApplied', {
-					allowLegacyOmission: true
-				}) ||
-				sourceValidation.modelVersions !== null ||
-				sourceValidation.directPartSize !== null ||
+				sourceValidation.transportVersion !== runSummary.transportVersion ||
+				sourceValidation.responseMode !== runSummary.responseMode ||
+				sourceValidation.providerSchemaApplied !== runSummary.providerSchemaApplied ||
+				canonicalHash(sourceValidation.modelVersions) !== canonicalHash(runSummary.modelVersions) ||
+				sourceValidation.directPartSize !== runSummary.partSize ||
 				sourceValidation.transportError !== transportError ||
 				canonicalHash(sourceValidation.issues) !== canonicalHash(expectedIssues)
 			) {
@@ -1237,8 +1205,7 @@ function replayScienceChallengeMultipartDifficultyBudgetAttempt(options) {
 					paths,
 					multipartEvidence,
 					shardDir: precondition.shardDir
-				}),
-				legacyNullableOmissions: legacyNullableTransportOmissions(sourceValidation)
+				})
 			}
 		};
 	} catch (error) {
@@ -1447,12 +1414,10 @@ function exactDifficultyBudgetCommonBindingIssues({
 	) {
 		issues.push('Multipart difficulty budget validation does not bind the exact repair run.');
 	}
-	const summaryResponseMode =
-		runSummary.responseMode ?? SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON;
 	for (const [field, actual] of [
 		['model', runSummary.model],
 		['transport', runSummary.transport],
-		['responseMode', summaryResponseMode],
+		['responseMode', runSummary.responseMode],
 		['thinkingLevel', runSummary.thinkingLevel],
 		['directPartSize', runSummary.partSize]
 	]) {
@@ -1517,19 +1482,6 @@ function mergedMultipartRawCandidateSha256(multipartEvidence) {
 		schemaVersion: batches[0]?.schemaVersion,
 		challenges: batches.flatMap((batch) => batch.challenges)
 	});
-}
-
-function nullableTransportFieldMatches(record, field, { allowLegacyOmission = false } = {}) {
-	return (
-		(allowLegacyOmission && !Object.prototype.hasOwnProperty.call(record, field)) ||
-		record[field] === null
-	);
-}
-
-function legacyNullableTransportOmissions(record) {
-	return ['providerSchemaApplied', 'responseMode'].filter(
-		(field) => !Object.prototype.hasOwnProperty.call(record, field)
-	);
 }
 
 function escapeRegExp(value) {

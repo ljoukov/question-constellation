@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
 	getHomePagePublicData: vi.fn(),
+	getChallengeCatalogIndex: vi.fn(),
 	getSignedInLearningHome: vi.fn(),
 	getUserChallengeProgress: vi.fn(),
 	refreshOneStaleRecommendationWithModel: vi.fn()
@@ -9,6 +10,10 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('$lib/server/learningChainData', () => ({
 	getHomePagePublicData: mocks.getHomePagePublicData
+}));
+
+vi.mock('$lib/server/challengeCatalog', () => ({
+	getChallengeCatalogIndex: mocks.getChallengeCatalogIndex
 }));
 
 vi.mock('$lib/server/subjectLearning', () => ({
@@ -23,8 +28,8 @@ vi.mock('$lib/server/recommendationLlm', () => ({
 	refreshOneStaleRecommendationWithModel: mocks.refreshOneStaleRecommendationWithModel
 }));
 
-import { challengeCatalog } from '$lib/challenges/catalog';
 import type { ChallengeProgress } from '$lib/challenges/progress';
+import { publicChallengePreviewFixture } from '$lib/challenges/testFixtures';
 import { load } from './+page.server';
 
 const user = {
@@ -33,6 +38,14 @@ const user = {
 	name: 'Ada Learner',
 	photoUrl: null
 };
+const challengeCatalog = [
+	publicChallengePreviewFixture(),
+	publicChallengePreviewFixture({
+		id: 'biology-fixture-b',
+		slug: 'fixture-b',
+		title: 'Second fixture challenge'
+	})
+];
 const completedChallenge = challengeCatalog[0];
 const challengeProgress: ChallengeProgress = {
 	version: 2,
@@ -83,9 +96,22 @@ function run({
 beforeEach(() => {
 	vi.clearAllMocks();
 	mocks.getHomePagePublicData.mockResolvedValue({
-		featuredChains: [],
+		featuredChains: [
+			{
+				subject: 'Biology',
+				questions: [
+					{
+						id: 'question-1',
+						title: 'Explain vaccination',
+						teaser: 'Describe how a vaccine prevents disease.',
+						marks: 4
+					}
+				]
+			}
+		],
 		stats: { chainCount: 7, questionCount: 12, subjectCount: 3 }
 	});
+	mocks.getChallengeCatalogIndex.mockResolvedValue({ challenges: challengeCatalog });
 });
 
 describe('home page server load', () => {
@@ -216,7 +242,13 @@ describe('home page server load', () => {
 			challengeTotalBestScore: 0,
 			snapshotInitialising: false,
 			pendingLocalSubjects: [],
-			stats: { chainCount: 7, questionCount: 12, subjectCount: 3 }
+			featuredQuestion: {
+				id: 'question-1',
+				subject: 'Biology',
+				title: 'Explain vaccination',
+				teaser: 'Describe how a vaccine prevents disease.',
+				marks: 4
+			}
 		});
 	});
 });

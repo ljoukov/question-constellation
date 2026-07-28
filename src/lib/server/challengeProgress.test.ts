@@ -3,8 +3,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
 	executePersonalQuery: vi.fn(),
 	queryPersonalRows: vi.fn(),
+	getActiveChallengeIds: vi.fn(),
 	invalidateUserHomeSnapshotForRepair: vi.fn(),
-	updateUserHomeSnapshotChallengeProjection: vi.fn()
+	updateUserHomeSnapshotChallengeProjection: vi.fn(),
+	updateChallengeLeaderboardProjection: vi.fn()
 }));
 
 vi.mock('$lib/server/db', () => ({
@@ -15,6 +17,14 @@ vi.mock('$lib/server/db', () => ({
 vi.mock('$lib/server/homeSnapshot', () => ({
 	invalidateUserHomeSnapshotForRepair: mocks.invalidateUserHomeSnapshotForRepair,
 	updateUserHomeSnapshotChallengeProjection: mocks.updateUserHomeSnapshotChallengeProjection
+}));
+
+vi.mock('$lib/server/challengeCatalog', () => ({
+	getActiveChallengeIds: mocks.getActiveChallengeIds
+}));
+
+vi.mock('$lib/server/challengeLeaderboard', () => ({
+	updateChallengeLeaderboardProjection: mocks.updateChallengeLeaderboardProjection
 }));
 
 import type { ChallengeProgress, ChallengeProgressEntry } from '$lib/challenges/progress';
@@ -64,8 +74,13 @@ beforeEach(() => {
 	vi.clearAllMocks();
 	mocks.queryPersonalRows.mockResolvedValue([]);
 	mocks.executePersonalQuery.mockResolvedValue(undefined);
+	mocks.getActiveChallengeIds.mockResolvedValue([
+		'biology-data-conclusions',
+		'biology-cell-differences'
+	]);
 	mocks.invalidateUserHomeSnapshotForRepair.mockResolvedValue(undefined);
 	mocks.updateUserHomeSnapshotChallengeProjection.mockResolvedValue(undefined);
+	mocks.updateChallengeLeaderboardProjection.mockResolvedValue(undefined);
 });
 
 describe('challenge progress persistence', () => {

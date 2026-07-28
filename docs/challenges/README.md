@@ -23,11 +23,8 @@ The documents are:
 - [Generated science verification](./generated-science-verification.md) — the immutable
   authoring, independent review, repair, and provenance gates for large generated cohorts.
 - [Science question art in R2](./science-question-art-r2.md) — the paired light/dark generation,
-  question-authoritative major/minor visual review, fresh-regeneration policy, retained-static gate,
-  perceptual audit, and content-addressed publication workflow.
-- [Science art major-error audit, 25 July 2026](./art-major-audit-2026-07-25.md) — the local
-  32-pair retained-art and available generated-art audit, nine fresh-regeneration targets, and
-  retained minor annotations.
+  question-authoritative major/minor visual review, fresh-regeneration policy, perceptual audit, and
+  content-addressed publication workflow.
 
 Supporting audit data:
 
@@ -38,10 +35,8 @@ Authoring and publication:
 
 - [Challenge authoring and solvability](./authoring.md) — curriculum grounding, transfer-task rules,
   illustration gates, deterministic checks, and browser review.
-- [Science challenge expansion, 21 July 2026](./science-expansion-2026-07-21.md) — the reviewed
-  20-per-subject cohort, curriculum coverage, transfer-solvability audit, and release evidence.
 - [Independent generated-science verification](./generated-science-verification.md) — the
-  three-verifier empty-context gate, frozen dispatch ledger, deterministic per-wave work packets,
-  repair loop, and accepted provenance archive.
+  count-derived empty-context gate, frozen dispatch ledger, deterministic work packets, repair
+  loop, and accepted provenance archive.
 - [Generated science question art in R2](./science-question-art-r2.md) — deterministic art planning,
   visual review, collision audit, upload and readback.

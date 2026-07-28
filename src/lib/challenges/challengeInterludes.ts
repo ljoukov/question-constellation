@@ -35,7 +35,7 @@ export const challengeInterludeDefinitions = [
 	},
 	{
 		id: 'chain-echo',
-		label: 'Chain echo',
+		label: 'Method recall',
 		action: 'Recall',
 		intensity: 'Light',
 		description: 'Look once, then recall the words that fade.'
@@ -56,10 +56,10 @@ export const challengeInterludeDefinitions = [
 	},
 	{
 		id: 'link-order',
-		label: 'Link order',
+		label: 'Marking order',
 		action: 'Arrange',
 		intensity: 'Light',
-		description: 'Put the reviewed answer-chain links back in order.'
+		description: 'Put the reviewed marking ideas back in a logical order.'
 	},
 	{
 		id: 'reason-match',

@@ -1,206 +1,120 @@
-# Science challenge question art: local generation and R2 release
+# Science challenge art in R2
 
-Question-specific challenge art is generated and reviewed locally, but final image bytes are never
-checked into `static/`. The release id is part of every local and remote path.
+Challenge artwork is production data. Accepted bytes live in `QUESTION_R2`; their question, brief,
+review, alt text, generation guards, hashes, and delivery bindings live in the canonical D1 record.
+Git contains only generic generation/review tooling and synthetic tests.
 
-Materializing the candidate first writes the hash-bound art manifest to
-`tmp/science-challenges/science-500-v1/compiled/art-manifest.json`. The generation, review and
-perceptual-audit commands use that path by default.
+## Source authority
 
-## Paths and immutable identity
+The generator reads either:
 
-- Local generation and review:
-  `tmp/science-challenges/<release-id>/art-assets/<art-id>-<theme>-v1.webp`
-- R2 object:
-  `images/challenges/<release-id>/<art-id>-<theme>-<first-16-sha256>.webp`
-- Public route:
-  `/images/challenges/<release-id>/<art-id>-<theme>-<first-16-sha256>.webp`
+- the active D1 catalogue; or
+- an explicit ignored catalogue export under `tmp/`.
 
-The accepted `art-delivery-manifest.json` binds all 2,000 local files by full SHA-256, byte size,
-content type, immutable cache policy, R2 key and public path. The accepted release's `runtime.json`
-visual projection contains only the public R2 routes; it never references the ignored local
-workspace.
+It must not import challenge definitions, art specs, or guard tables from `src/`, `data/`, `docs/`,
+or `static/`.
 
-## Operator workflow
+The learner-facing question is authoritative. `artAuthority.spec` defines the answer-neutral visual
+brief, and `artAuthority.spec.generationGuards` contains exact challenge-specific constraints.
+Prompt builders may add generic safety rules, but they must not contain challenge ids or
+question-specific exception tables.
 
-Generate one new dark composition and one geometry-matched light sibling for every question context.
-The learner-facing question is authoritative; the art brief is a fallible proposal. Before any model
-call, compare every variable, allele and case, genotype, formula, unit, count, direction, label,
-material and apparatus state with the question. A brief that conflicts with the question must fail
-before generation.
+## Pair generation
 
-```sh
-pnpm run generate:science-question-art --resume
-```
+`scripts/generate-science-question-art.mjs` generates one primary pair per selected owner:
 
-Generation sends the question and illustration brief to the configured image service. Confirm that
-the user or release operator has authorized that external disclosure when the material is
-unpublished.
+1. a brand-new dark original using `chatgpt-gpt-image-2`;
+2. a brand-new light variant generated independently from the same authoritative spec; and
+3. normalized opaque delivery WebPs.
 
-Generation reserves 10 GiB of free space by default. The generator checks every distinct filesystem
-that contains the work root or an output path before claiming or writing a work root and again
-between generation, edit, normalization and publication steps. Normalization, recovery and
-publication reserve their additional write headroom. A low-space reading—or an `ENOSPC`, `EDQUOT` or
-`EFBIG` write failure that a free-space reading cannot predict—latches one shared stop and aborts
-other in-flight model/ImageMagick phases. Override the reserve only when the storage plan justifies
-it:
+All manifests, prompts, masters, normalized files, jobs, repair evidence, and reviews stay under
+ignored `tmp/`. The checked-in `static/` tree is never a publication target.
 
-```sh
-pnpm run generate:science-question-art \
-  --resume \
-  --min-free-space-gib=20
-```
+Each immutable job binds:
 
-If the reserve is reached, the generation summary has `status: "failed-resumable"`, records the
-measured and required bytes, stops scheduling new pairs and exits non-zero. Free space and rerun with
-`--resume`; already accepted pairs are replayed from their hash-bound jobs. Repair runs remain bound
-to their source review/audit, so after a partial repair stop, re-review or re-audit the current bytes
-before starting the next repair pass. The summary's structured `nextAction.actions` is authoritative:
-ordinary work uses `--resume`, while repair work never does. A repair action first refreshes the
-complete independent review (and, for duplicate repair, the perceptual audit), then uses only the new
-evidence hash. Once any attempt or job exists for a repair evidence hash, that hash is consumed:
-rerunning the same repair command cannot implicitly continue it and stops before scheduling work.
+- release and challenge identity;
+- canonical art-authority hash;
+- exact dark and light prompts;
+- model and attempt;
+- master and normalized byte hashes;
+- dimensions and file sizes; and
+- any review or perceptual repair authority.
 
-`--max-attempts` accepts 1–4 (default 3), matching the release-lineage gate. Each failed attempt keeps
-its prompts and `failure.json`, including the SHA-256 and size of every generated image it discarded.
-The bulky failed image bytes are removed after that evidence is written. Successful attempts keep
-both masters and both normalized images because accepted-art lineage requires and re-hashes them.
-Attempt directories are immutable and monotonic across invocations, and the four-attempt ceiling is
-total for that ordinary or full-hash repair lineage—not reset by restarting the process. A
-12-character repair path prefix has a separate marker binding the complete 64-character evidence
-hash, so two different repair inputs cannot alias the same attempt slots. Failed ordinary work must
-be continued explicitly with `--resume`. Bare `--replace-output` refuses to mutate any existing
-ordinary lineage; replacements must use hash-bound review or perceptual-audit repair evidence.
-Choosing a lower `--max-attempts` on a later invocation does not invalidate already recorded
-attempts; it simply prevents a new attempt above that requested limit. Any unresolved failed-attempt
-cleanup or evidence error blocks every ordinary and repair lineage until the recorded prerequisite
-is resolved, including cleanup attached to an older repair hash.
+## Scientific and task checks
 
-Network, DNS, timeout, authentication, rate-limit and image-service HTTP failures are run-level
-prerequisites, not composition defects. After recording the current in-flight failure evidence, the
-generator latches `SCIENCE_ART_IMAGE_SERVICE_UNAVAILABLE`, stops scheduling pairs and does not burn
-the remaining attempt budget. Restore explicitly authorized service access, then follow the
-summary's ordinary-resume or fresh-repair instruction.
+Before generation and during review, compare the art authority with the learner question:
 
-The generation work root must be a real child of the workspace. Its ownership marker binds the exact
-directory, release id and manifest hash; unmarked non-empty roots, symlinks and rebound markers fail
-closed. A canonical release-output lock serializes every generator process even when callers request
-different work roots, while a second lock protects the selected work root itself.
+- exact variables, cases, allele notation, formulae, units, and numeric counts;
+- direction, sequence, polarity, wiring, and source/target relationships;
+- material, component, sample, and apparatus identity;
+- open/closed, sealed/unsealed, heated/unheated, and other visible states; and
+- whether the image supplies evidence the learner is asked to infer.
 
-Dark output, light output and their passed job are published as one recoverable transaction. Candidate
-bytes and backups are flushed before the journal; the job is renamed last; the complete job/spec/
-prompt/master/normalized/output/repair lineage is replayed before backups are removed. Startup
-re-validates a fully committed crash journal or rolls a partial/invalid transaction back without
-overwriting unrecognized bytes. Stranded transaction and atomic-write temporaries are cleaned only
-under the release lock. A valid pair whose transaction cleanup is still pending is preserved but
-still produces a non-zero `failed-resumable` run. Resume preflights every selected immutable lineage
-before the concurrent scheduler claims work. If a validated repair job supersedes an ordinary job,
-resume preserves or restores the repaired bytes and never silently reverts to the rejected ordinary
-pair; ambiguous repair histories and symlinked evidence archives stop before any pair is scheduled.
-Unknown, duplicate, positional or value-bearing boolean CLI forms also fail before the work root is
-claimed.
+A decorative background pattern is not a scale claim. Only a scale bar, axis, measurement mark,
+calibrated grid, explicit dimension, or comparable measurement cue claims scale.
 
-Review all 1,000 pairs against the exact learner question first and the art brief second. A failed
-review is expected to write a complete reject summary before exiting non-zero:
+## Independent review
 
-```sh
-pnpm run review:science-question-art --resume
-```
+`scripts/review-science-question-art.mjs` reviews exact dark/light pairs with `gpt-5.6-sol`. It
+checks scientific accuracy, question relevance, brief/question consistency, visible notation,
+answer leakage, unwanted text, theme fidelity, visual quality, mobile safety, and alt text.
 
-For a deliberately smaller validated fixture, pass the same explicit `--require-count=<count>` to
-generation, review and perceptual audit. Production remains gated at 1,000 by default.
+The decision rule is deliberately conservative:
 
-Review schema v2 records one of three dispositions:
+- `accept`: no material issue;
+- `retain-with-annotation`: a harmless or slightly imperfect depiction that remains scientifically
+  usable and does not leak the answer;
+- `fresh-regenerate`: clearly wrong question/material, false science, conflicting
+  notation/count/direction/state, answer leakage, or unusable task diagram.
 
-- `accept`: no issue;
-- `retain-with-annotation`: only minor, harmless depiction or cosmetic issues; keep the pair and its
-  annotation, and do not regenerate it; or
-- `fresh-regenerate`: one or more major semantic, answer-leakage, task-identity, notation, material,
-  direction, count, label, unit, apparatus-state or usability failures.
+Minor annotations remain attached to the D1 review record. They do not trigger image generation.
 
-Regenerate only `fresh-regenerate` pairs using the independent review's concrete major instructions.
-Never edit, inpaint, erase, or supply the rejected image as a reference. A major failure starts a
-brand-new dark composition; only after that dark master is accepted may it be used to derive the new
-light sibling. The rejected pair remains immutable evidence. Replacement is intentionally explicit,
-and repair mode will not accept a stale review or silently resume after any reviewed image byte
-changes:
+## Fresh regeneration only
 
-```sh
-pnpm run generate:science-question-art \
-  --repair-review=tmp/science-challenges/science-500-v1/art-review/review-summary.json \
-  --replace-output
-```
+A rejected image is never edited, inpainted, or supplied as a reference. A repair request:
 
-Repeat review and repair until all pairs pass. Then hash all 2,000 files perceptually and compare
-every asset against every different question context, including across themes. Only an art id's own
-intended light/dark sibling is excluded; the release requires zero near-duplicates:
+1. freezes the exact major rejection and candidate authority;
+2. asks for a new dark composition from scratch;
+3. asks separately for a new light composition from the same authoritative spec;
+4. does not attach the rejected pair or either new variant as a reference; and
+5. runs a fresh exact-pair review.
 
-```sh
-pnpm run audit:science-question-art-perceptual
-```
+The attempt ceiling is immutable. Provider infrastructure failures record resumable evidence and
+must not be relabelled as visual failures.
 
-Authored-static pairs are not exempt from semantic review. Freeze their current question, alt text,
-source paths and source hashes before reviewing:
+## Perceptual and ownership audit
 
-```sh
-pnpm run prepare:science-authored-static-art-review \
-  --release-id=science-179-v1-retained-static-final-v1
+Before bundling:
 
-pnpm run review:science-question-art \
-  --manifest=tmp/science-challenges/science-179-v1-retained-static-final-v1/art-manifest.json \
-  --output-root=tmp/science-challenges/science-179-v1-retained-static-final-v1/art-review \
-  --require-count=32 \
-  --resume
-```
+- verify every expected pair exists and every byte matches its job;
+- reject cross-owner path or art-id reuse;
+- run configured perceptual fingerprints across owners;
+- compare intended light/dark variants as one owner pair without suppressing cross-owner matches;
+- ensure each primary owner has exactly one accepted pair; and
+- ensure any task-dependent diagram is separately source-bound and reviewed.
 
-If that review finds a major defect, generate only the named major set under a new immutable
-generation-candidate release id, promote accepted replacements to new versioned static paths, then
-rebuild and fully re-review the 32-pair final cohort. Do not reuse a failed cohort id or overwrite an
-old static file. The final catalogue audit requires the passed 32-pair review and proves that its
-review copies are byte-identical to the current static sources. Minor issues survive in the audit as
-annotations.
+## R2 publication
 
-If the audit finds a near-duplicate cluster, regenerate a deterministic small cover of the
-colliding pairs rather than replacing every member:
+The challenge-catalogue bundle records local candidate paths only for portable import. Those paths
+are excluded from the canonical release hash. Public bindings use immutable content-addressed R2
+keys within the release namespace.
 
-```sh
-pnpm run generate:science-question-art \
-  --repair-perceptual-audit=tmp/science-challenges/science-500-v1/art-review/perceptual-audit.json \
-  --replace-output
-```
+The importer:
 
-Any perceptual repair changes image bytes, so run the independent visual review again (unchanged
-batches can resume) and then rebuild the perceptual audit. Continue until both gates pass.
+1. validates the complete bundle and all local bytes;
+2. uploads every R2 object;
+3. downloads every object again;
+4. verifies full SHA-256 and byte size;
+5. stages canonical record, asset, and denormalized route rows in D1; and
+6. activates the release only after exact D1 readback.
 
-The accepted release binds both the independent visual review and this byte-bound perceptual audit.
-It cannot materialize if either is stale, incomplete, rejected, duplicated or refers to different
-files. After materialization, inspect the delivery manifest without network access:
+There is no checked-in image fallback.
 
-```sh
-pnpm run upload:science-challenge-art
-```
+## Browser validation
 
-Dry-run is the default. It validates the source art manifest, delivery manifest, hard count, and
-every local file's size and SHA-256. It also requires the accepted challenge release and proves that
-the release binds these exact art and delivery manifests, its runtime projection and its durable
-provenance archive. The runtime and archive are fully revalidated immediately before and after remote
-writes, including complete archive file membership, so a late-added untracked event log, altered
-learner-facing projection or different structurally valid manifest cannot be uploaded unnoticed.
+After publication, inspect hub, subject, and representative detail routes on desktop and mobile.
+Require immutable release-scoped image URLs, non-zero natural dimensions, accurate alt text, no
+horizontal overflow, no console/network errors, and no learner answer dependency on decorative art.
 
-Remote writes require the explicit `--upload` flag and all three exact hashes printed by dry-run:
-
-```sh
-pnpm run upload:science-challenge-art \
-  --upload \
-	--release=data/challenges/releases/science-500-v1/accepted-challenges.json \
-  --expected-file-sha256=<file-sha256> \
-  --expected-canonical-sha256=<canonical-sha256> \
-  --expected-release-sha256=<accepted-release-canonical-sha256>
-```
-
-Before upload, all 2,000 inputs must pass together. Each object is copied into a private temporary
-snapshot and that snapshot is checked against the reviewed size and full SHA-256 before and after
-Wrangler reads it. The stable snapshot—not the mutable ignored-workspace path—is uploaded to the
-content-addressed key, downloaded from R2, and compared again by size and full SHA-256. A changed
-manifest or local file fails the release. Never use this command without explicit authorization for
-remote R2 writes.
+Publishing unpublished questions, briefs, prompts, or image pairs to configured model services
+requires explicit user authorization unless that disclosure is already in scope.

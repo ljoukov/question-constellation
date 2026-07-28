@@ -3,31 +3,29 @@ import test from 'node:test';
 
 import { canonicalHash } from './science-challenge-release.mjs';
 import {
-	SCIENCE_CHALLENGE_ASSIGNMENTS_PER_VERIFIER,
-	SCIENCE_CHALLENGE_VERIFICATION_ASSIGNMENT_COUNT,
-	SCIENCE_CHALLENGE_VERIFIER_COUNT,
+	scienceChallengeVerifierAllocationRanges,
 	validateScienceChallengeVerifierDispatchLedger
 } from './science-challenge-verifier-dispatch.mjs';
 
-test('accepts exactly three unique canonical task names covering 17 assignments each', () => {
+const ASSIGNMENT_COUNT = 7;
+const VERIFIER_COUNT = 3;
+
+test('accepts balanced contiguous verifier blocks for the exact assignment count', () => {
 	const fixture = dispatchFixture();
 	const validation = validateScienceChallengeVerifierDispatchLedger(fixture.ledger, fixture.index);
 	assert.equal(validation.status, 'passed', validation.issues.join('\n'));
-	assert.equal(validation.assignmentCountByTaskName.size, SCIENCE_CHALLENGE_VERIFIER_COUNT);
-	assert.deepEqual(
-		[...validation.assignmentCountByTaskName.values()],
-		Array(SCIENCE_CHALLENGE_VERIFIER_COUNT).fill(SCIENCE_CHALLENGE_ASSIGNMENTS_PER_VERIFIER)
-	);
+	assert.equal(validation.assignmentCountByTaskName.size, VERIFIER_COUNT);
+	assert.deepEqual([...validation.assignmentCountByTaskName.values()], [3, 2, 2]);
 });
 
-test('rejects one verifier identity per assignment', () => {
+test('accepts one verifier identity per assignment without a fixed cohort geometry', () => {
 	const fixture = dispatchFixture();
 	for (const [index, dispatch] of fixture.ledger.dispatches.entries()) {
 		dispatch.taskName = `/root/science_verify_${String(index + 1).padStart(3, '0')}`;
 	}
 	const validation = validateScienceChallengeVerifierDispatchLedger(fixture.ledger, fixture.index);
-	assert.equal(validation.status, 'failed');
-	assert.match(validation.issues.join('\n'), /exactly 3 unique canonical task names/);
+	assert.equal(validation.status, 'passed', validation.issues.join('\n'));
+	assert.equal(validation.assignmentCountByTaskName.size, ASSIGNMENT_COUNT);
 });
 
 test('rejects a non-canonical task name even when the allocation count is valid', () => {
@@ -53,26 +51,33 @@ test('rejects reordered assignment rows and interleaved verifier blocks', () => 
 
 	const interleaved = dispatchFixture();
 	interleaved.ledger.dispatches[0].taskName = '/root/science_verify_002';
-	interleaved.ledger.dispatches[17].taskName = '/root/science_verify_001';
+	interleaved.ledger.dispatches[3].taskName = '/root/science_verify_001';
 	const interleavedValidation = validateScienceChallengeVerifierDispatchLedger(
 		interleaved.ledger,
 		interleaved.index
 	);
 	assert.equal(interleavedValidation.status, 'failed');
-	assert.match(interleavedValidation.issues.join('\n'), /deterministic 17-row verifier block/);
+	assert.match(interleavedValidation.issues.join('\n'), /reopens a completed verifier block/);
 });
 
-test('rejects an uneven 16/17/18 assignment allocation', () => {
+test('rejects an allocation whose contiguous blocks are not balanced', () => {
 	const fixture = dispatchFixture();
-	fixture.ledger.dispatches[16].taskName = '/root/science_verify_003';
+	for (const [index, dispatch] of fixture.ledger.dispatches.entries()) {
+		dispatch.taskName =
+			index < 1
+				? '/root/science_verify_001'
+				: index < 3
+					? '/root/science_verify_002'
+					: '/root/science_verify_003';
+	}
 	const validation = validateScienceChallengeVerifierDispatchLedger(fixture.ledger, fixture.index);
 	assert.equal(validation.status, 'failed');
-	assert.match(validation.issues.join('\n'), /must cover exactly 17 assignments; found (?:16|18)/);
+	assert.match(validation.issues.join('\n'), /balanced to within one assignment/);
 });
 
 function dispatchFixture() {
 	const assignments = Array.from(
-		{ length: SCIENCE_CHALLENGE_VERIFICATION_ASSIGNMENT_COUNT },
+		{ length: ASSIGNMENT_COUNT },
 		(_, index) => {
 			const ordinal = String(index + 1).padStart(3, '0');
 			return {
@@ -93,10 +98,17 @@ function dispatchFixture() {
 		sourceSnapshotSha256: 'b'.repeat(64),
 		curriculumEvidenceSha256: 'c'.repeat(64),
 		candidateSetSha256: 'd'.repeat(64),
+		candidateCount: assignments.reduce((sum, assignment) => sum + assignment.ids.length, 0),
 		assignments
 	};
+	const allocations = scienceChallengeVerifierAllocationRanges({
+		assignmentCount: assignments.length,
+		verifierCount: VERIFIER_COUNT
+	});
 	const dispatches = assignments.map((assignment, index) => {
-		const verifierIndex = Math.floor(index / SCIENCE_CHALLENGE_ASSIGNMENTS_PER_VERIFIER) + 1;
+		const verifierIndex =
+			allocations.findIndex((allocation) => index >= allocation.start && index < allocation.end) +
+			1;
 		return {
 			assignmentId: assignment.assignmentId,
 			assignmentPath: assignment.path,

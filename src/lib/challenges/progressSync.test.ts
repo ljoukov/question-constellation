@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-	CHALLENGE_PROGRESS_GUEST_STORAGE_KEY,
+	CHALLENGE_PROGRESS_STORAGE_KEY,
 	challengeProgressStorageKey,
 	type ChallengeProgress,
 	type ChallengeProgressEntry
@@ -49,7 +49,7 @@ describe('challenge progress sync', () => {
 	it('merges guest and account state, writes the confirmed result, then clears guest state', async () => {
 		const accountKey = challengeProgressStorageKey('user-1');
 		const storage = memoryStorage({
-			[CHALLENGE_PROGRESS_GUEST_STORAGE_KEY]: JSON.stringify(
+			[CHALLENGE_PROGRESS_STORAGE_KEY]: JSON.stringify(
 				progress('biology-data-conclusions', entry({ bestScore: 475, bestTimeMs: 150_000 }))
 			),
 			[accountKey]: JSON.stringify(
@@ -72,7 +72,7 @@ describe('challenge progress sync', () => {
 			bestTimeMs: 150_000
 		});
 		expect(JSON.parse(storage.values.get(accountKey) ?? '{}')).toEqual(merged);
-		expect(storage.values.has(CHALLENGE_PROGRESS_GUEST_STORAGE_KEY)).toBe(false);
+		expect(storage.values.has(CHALLENGE_PROGRESS_STORAGE_KEY)).toBe(false);
 		expect(fetchMock).toHaveBeenCalledTimes(1);
 	});
 
@@ -97,7 +97,7 @@ describe('challenge progress sync', () => {
 			})
 		);
 		const storage = memoryStorage({
-			[CHALLENGE_PROGRESS_GUEST_STORAGE_KEY]: JSON.stringify(outgoing)
+			[CHALLENGE_PROGRESS_STORAGE_KEY]: JSON.stringify(outgoing)
 		});
 		const fetchMock = vi.fn(
 			async () =>
@@ -112,14 +112,14 @@ describe('challenge progress sync', () => {
 
 		expect(confirmed).toEqual(canonical);
 		expect(fetchMock).toHaveBeenCalledOnce();
-		expect(storage.values.has(CHALLENGE_PROGRESS_GUEST_STORAGE_KEY)).toBe(false);
+		expect(storage.values.has(CHALLENGE_PROGRESS_STORAGE_KEY)).toBe(false);
 		expect(JSON.parse(storage.values.get(accountKey) ?? '{}')).toEqual(canonical);
 	});
 
 	it('keeps guest progress when the server does not confirm the import', async () => {
 		const accountKey = challengeProgressStorageKey('user-failure');
 		const storage = memoryStorage({
-			[CHALLENGE_PROGRESS_GUEST_STORAGE_KEY]: JSON.stringify(
+			[CHALLENGE_PROGRESS_STORAGE_KEY]: JSON.stringify(
 				progress('biology-cell-differences', entry())
 			)
 		});
@@ -130,7 +130,7 @@ describe('challenge progress sync', () => {
 
 		await expect(importGuestChallengeProgress('user-failure', storage)).rejects.toThrow();
 
-		expect(storage.values.has(CHALLENGE_PROGRESS_GUEST_STORAGE_KEY)).toBe(true);
+		expect(storage.values.has(CHALLENGE_PROGRESS_STORAGE_KEY)).toBe(true);
 		expect(
 			(JSON.parse(storage.values.get(accountKey) ?? '{}') as ChallengeProgress).challenges[
 				'biology-cell-differences'
@@ -149,7 +149,7 @@ describe('challenge progress sync', () => {
 			[accountKey]: JSON.stringify(
 				progress('biology-data-conclusions', entry({ bestScore: 450, lastScore: 450 }))
 			),
-			[CHALLENGE_PROGRESS_GUEST_STORAGE_KEY]: JSON.stringify(
+			[CHALLENGE_PROGRESS_STORAGE_KEY]: JSON.stringify(
 				progress('biology-data-conclusions', entry({ bestScore: 425, lastScore: 425 }))
 			)
 		});
@@ -161,7 +161,7 @@ describe('challenge progress sync', () => {
 		expect(fetchMock).not.toHaveBeenCalled();
 		expect(merged).toEqual(serverSeed);
 		expect(JSON.parse(storage.values.get(accountKey) ?? '{}')).toEqual(serverSeed);
-		expect(storage.values.has(CHALLENGE_PROGRESS_GUEST_STORAGE_KEY)).toBe(false);
+		expect(storage.values.has(CHALLENGE_PROGRESS_STORAGE_KEY)).toBe(false);
 	});
 
 	it('uploads only a recognized local delta missing from the home snapshot seed', async () => {
@@ -170,7 +170,7 @@ describe('challenge progress sync', () => {
 		const serverSeed = progress('biology-data-conclusions', entry());
 		const storage = memoryStorage({
 			[accountKey]: JSON.stringify(serverSeed),
-			[CHALLENGE_PROGRESS_GUEST_STORAGE_KEY]: JSON.stringify(
+			[CHALLENGE_PROGRESS_STORAGE_KEY]: JSON.stringify(
 				progress('biology-cell-differences', entry({ bestScore: 500, lastScore: 500 }))
 			)
 		});
@@ -191,7 +191,7 @@ describe('challenge progress sync', () => {
 		};
 		expect(Object.keys(outgoing.progress.challenges)).toEqual(['biology-cell-differences']);
 		expect(merged.challenges['biology-cell-differences']?.bestScore).toBe(500);
-		expect(storage.values.has(CHALLENGE_PROGRESS_GUEST_STORAGE_KEY)).toBe(false);
+		expect(storage.values.has(CHALLENGE_PROGRESS_STORAGE_KEY)).toBe(false);
 	});
 
 	it('splits a 500-entry account cache into requests below the API byte ceiling', () => {
@@ -223,17 +223,29 @@ describe('challenge progress sync', () => {
 		const emptySeed: ChallengeProgress = { version: 2, challenges: {} };
 		const storage = memoryStorage({
 			[accountKey]: JSON.stringify(progress('retired-account-id', entry())),
-			[CHALLENGE_PROGRESS_GUEST_STORAGE_KEY]: JSON.stringify(progress('retired-guest-id', entry()))
+			[CHALLENGE_PROGRESS_STORAGE_KEY]: JSON.stringify(progress('retired-guest-id', entry()))
 		});
-		const fetchMock = vi.fn();
+		const fetchMock = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+			const request = JSON.parse(String(init?.body)) as { progress: ChallengeProgress };
+			return new Response(
+				JSON.stringify({
+					progress: emptySeed,
+					rejectedChallengeIds: Object.keys(request.progress.challenges)
+				}),
+				{
+					status: 200,
+					headers: { 'content-type': 'application/json' }
+				}
+			);
+		});
 		vi.stubGlobal('fetch', fetchMock);
 
 		const merged = await importGuestChallengeProgress(userId, storage, emptySeed);
 
-		expect(fetchMock).not.toHaveBeenCalled();
+		expect(fetchMock).toHaveBeenCalledOnce();
 		expect(merged).toEqual(emptySeed);
 		expect(JSON.parse(storage.values.get(accountKey) ?? '{}')).toEqual(emptySeed);
-		expect(storage.values.has(CHALLENGE_PROGRESS_GUEST_STORAGE_KEY)).toBe(false);
+		expect(storage.values.has(CHALLENGE_PROGRESS_STORAGE_KEY)).toBe(false);
 	});
 
 	it('skips later focus-style sync when the confirmed seed still dominates local state', async () => {
@@ -351,7 +363,7 @@ describe('challenge progress sync', () => {
 
 	it('uploads guest progress written while the first import request is in flight before clearing', async () => {
 		const storage = memoryStorage({
-			[CHALLENGE_PROGRESS_GUEST_STORAGE_KEY]: JSON.stringify(
+			[CHALLENGE_PROGRESS_STORAGE_KEY]: JSON.stringify(
 				progress('biology-data-conclusions', entry())
 			)
 		});
@@ -371,7 +383,7 @@ describe('challenge progress sync', () => {
 		const importing = importGuestChallengeProgress('user-mid-flight', storage);
 		await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
 		storage.setItem(
-			CHALLENGE_PROGRESS_GUEST_STORAGE_KEY,
+			CHALLENGE_PROGRESS_STORAGE_KEY,
 			JSON.stringify({
 				version: 2,
 				challenges: {
@@ -402,7 +414,7 @@ describe('challenge progress sync', () => {
 		const merged = await importing;
 
 		expect(merged.challenges['biology-cell-differences']?.bestScore).toBe(500);
-		expect(storage.values.has(CHALLENGE_PROGRESS_GUEST_STORAGE_KEY)).toBe(false);
+		expect(storage.values.has(CHALLENGE_PROGRESS_STORAGE_KEY)).toBe(false);
 	});
 
 	it('confirms account progress written while a sync request is in flight before returning', async () => {
@@ -461,7 +473,7 @@ describe('challenge progress sync', () => {
 
 	it('treats a malformed 200 progress document as non-confirmation', async () => {
 		const storage = memoryStorage({
-			[CHALLENGE_PROGRESS_GUEST_STORAGE_KEY]: JSON.stringify(
+			[CHALLENGE_PROGRESS_STORAGE_KEY]: JSON.stringify(
 				progress('biology-cell-differences', entry())
 			)
 		});
@@ -483,12 +495,12 @@ describe('challenge progress sync', () => {
 		await expect(importGuestChallengeProgress('user-malformed', storage)).rejects.toThrow(
 			'invalid progress document'
 		);
-		expect(storage.values.has(CHALLENGE_PROGRESS_GUEST_STORAGE_KEY)).toBe(true);
+		expect(storage.values.has(CHALLENGE_PROGRESS_STORAGE_KEY)).toBe(true);
 	});
 
 	it('treats a canonical 200 response that drops an outgoing entry as non-confirmation', async () => {
 		const storage = memoryStorage({
-			[CHALLENGE_PROGRESS_GUEST_STORAGE_KEY]: JSON.stringify(
+			[CHALLENGE_PROGRESS_STORAGE_KEY]: JSON.stringify(
 				progress('biology-cell-differences', entry())
 			)
 		});
@@ -506,7 +518,7 @@ describe('challenge progress sync', () => {
 		await expect(importGuestChallengeProgress('user-dropped', storage)).rejects.toThrow(
 			'did not confirm every submitted result'
 		);
-		expect(storage.values.has(CHALLENGE_PROGRESS_GUEST_STORAGE_KEY)).toBe(true);
+		expect(storage.values.has(CHALLENGE_PROGRESS_STORAGE_KEY)).toBe(true);
 	});
 
 	it('rejects canonical responses that lose a submitted durable personal best', async () => {
@@ -519,7 +531,7 @@ describe('challenge progress sync', () => {
 			entry({ bestScore: 475, bestTimeMs: 30_000, lastScore: null, lastTimeMs: null })
 		);
 		const storage = memoryStorage({
-			[CHALLENGE_PROGRESS_GUEST_STORAGE_KEY]: JSON.stringify(outgoing)
+			[CHALLENGE_PROGRESS_STORAGE_KEY]: JSON.stringify(outgoing)
 		});
 		vi.stubGlobal(
 			'fetch',
@@ -535,7 +547,7 @@ describe('challenge progress sync', () => {
 		await expect(importGuestChallengeProgress('user-weaker-best', storage)).rejects.toThrow(
 			'did not confirm every submitted result'
 		);
-		expect(storage.values.has(CHALLENGE_PROGRESS_GUEST_STORAGE_KEY)).toBe(true);
+		expect(storage.values.has(CHALLENGE_PROGRESS_STORAGE_KEY)).toBe(true);
 	});
 
 	it('serializes concurrent writes for the same user', async () => {

@@ -39,7 +39,7 @@ test('minimum-free-space guard reserves 10 GiB by default and latches a resumabl
 	});
 	assert.doesNotThrow(() => guard.check({ phase: 'preflight' }));
 	assert.throws(
-		() => guard.check({ phase: 'before light edit', artId: 'biology-cell-opening' }),
+		() => guard.check({ phase: 'before light generation', artId: 'biology-cell-opening' }),
 		(error) => {
 			assert.equal(error.code, 'SCIENCE_ART_MIN_FREE_SPACE');
 			assert.equal(error.resumable, true);
@@ -52,7 +52,7 @@ test('minimum-free-space guard reserves 10 GiB by default and latches a resumabl
 	);
 	assert.deepEqual(inspectedTargets, ['/art-work', '/art-work']);
 	assert.deepEqual(guard.targets, ['/art-work']);
-	assert.equal(guard.failure.details.phase, 'before light edit');
+	assert.equal(guard.failure.details.phase, 'before light generation');
 	assert.throws(
 		() => guard.check({ phase: 'before normalization', artId: 'another-id' }),
 		(error) => error === guard.failure
@@ -61,7 +61,7 @@ test('minimum-free-space guard reserves 10 GiB by default and latches a resumabl
 		code: 'SCIENCE_ART_MIN_FREE_SPACE',
 		message: guard.failure.message,
 		resumable: true,
-		phase: 'before light edit',
+		phase: 'before light generation',
 		artId: 'biology-cell-opening',
 		targetPath: 'art-work',
 		availableBytes: (9n * GIB_BYTES).toString(),
@@ -249,7 +249,7 @@ test('filesystem quota and capacity errors become resumable shared safety stops'
 	);
 });
 
-test('image-service infrastructure failures stop the cohort before exhausting attempt budgets', () => {
+test('image-service infrastructure failures stop the cohort before scheduling more pairs', () => {
 	for (const error of [
 		new TypeError('fetch failed'),
 		Object.assign(new Error('DNS lookup failed'), { code: 'ENOTFOUND' }),
@@ -264,7 +264,7 @@ test('image-service infrastructure failures stop the cohort before exhausting at
 		assert.equal(stop.code, 'SCIENCE_ART_IMAGE_SERVICE_UNAVAILABLE');
 		assert.equal(stop.details.artId, 'biology-test-opening');
 		assert.equal(stop.resumable, true);
-		assert.match(stop.message, /No additional image attempts will be consumed/);
+		assert.match(stop.message, /No additional art pairs will be scheduled/);
 		assert.match(stop.message, /--resume/);
 		assert.equal(isArtGenerationSafetyStop(stop), true);
 	}

@@ -284,32 +284,12 @@ node scripts/build-selective-paper-cohort-evidence.mjs \
 Stop unless the cohort is schema v4, `passed`, exactly 20/20, database-matched, and every paper is
 either exactly current/approved or explicitly `withheld_ineligible`.
 
-## 7. Generate and atomically publish fresh illustration pairs
+## 7. Keep image generation out of paper imports
 
-Run only after migration 0027 and after all paper evidence is sealed. Do not overlap this with any
-other model phase.
-
-```sh
-ILLUSTRATION_WORK_ROOT="tmp/chain-illustrations/final-release-$(date -u +%Y%m%dT%H%M%SZ)"
-node scripts/generate-chain-illustrations.mjs \
-  --subject=all \
-  --max-chains=20 \
-  --work-root="$ILLUSTRATION_WORK_ROOT" \
-  --publish \
-  --require \
-  --release-manifest=docs/release-evidence/chain-illustration-release-manifest.json
-```
-
-The runner now fails closed: every selected job must be either an explicit semantic rejection or a
-fully validated ready pair before any upload; all sources/files/provenance and D1 identities are
-preflighted; all content-addressed R2 objects must upload and verify; source fingerprints are
-rechecked; then one transactional D1 batch exposes the complete accepted set. A failed R2 phase
-can leave only unreferenced content-addressed objects. No partial D1 illustration release or
-partial manifest is valid.
-
-Stop unless the tracked manifest and run summary prove one pass with 1-20 selected chains, unique
-planner/judge run ids, exact passed hard checks/judges, and only `published` or semantic-rejection
-jobs.
+Paper imports do not generate answer-chain illustrations. Challenge artwork is generated in an
+ignored `tmp/` release workspace and published separately through the immutable challenge catalogue
+release process. Do not add image-generation flags, tracked prompts, candidate images, or release
+manifests to this paper-import runbook.
 
 ## 8. Local browser, model, and cleanup validation
 

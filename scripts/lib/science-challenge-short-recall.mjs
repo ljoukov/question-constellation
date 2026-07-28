@@ -15,25 +15,9 @@ export const SCIENCE_CHALLENGE_SHORT_RECALL_RUN_MANIFEST_SCHEMA =
 	'science-challenge-short-recall-run-manifest/v1';
 export const SCIENCE_CHALLENGE_SHORT_RECALL_BATCH_INPUT_SCHEMA =
 	'science-challenge-short-recall-batch-input/v1';
-export const SCIENCE_CHALLENGE_SHORT_RECALL_ACCEPTED_SUBSET_SCHEMA =
-	'science-challenge-accepted-subset/v1';
-export const SCIENCE_CHALLENGE_SHORT_RECALL_RELEASE_ID = 'science-179-v1';
-export const SCIENCE_CHALLENGE_SHORT_RECALL_REVIEWED_COUNT = 408;
-export const SCIENCE_CHALLENGE_SHORT_RECALL_EXPECTED_COUNT = 179;
-export const SCIENCE_CHALLENGE_SHORT_RECALL_REJECTED_COUNT =
-	SCIENCE_CHALLENGE_SHORT_RECALL_REVIEWED_COUNT - SCIENCE_CHALLENGE_SHORT_RECALL_EXPECTED_COUNT;
+export const SCIENCE_CHALLENGE_SHORT_RECALL_CANDIDATE_SET_SCHEMA =
+	'challenge-catalog-candidate-set/v1';
 export const SCIENCE_CHALLENGE_SHORT_RECALL_BATCH_SIZE = 8;
-export const SCIENCE_CHALLENGE_SHORT_RECALL_BATCH_COUNT = Math.ceil(
-	SCIENCE_CHALLENGE_SHORT_RECALL_EXPECTED_COUNT / SCIENCE_CHALLENGE_SHORT_RECALL_BATCH_SIZE
-);
-export const SCIENCE_CHALLENGE_SHORT_RECALL_REVIEWED_CANDIDATE_SET_SHA256 =
-	'a952fb3eaeea0a17ead1e14c8f47d1fdfe040185d13015f6ab3c458bf2a99202';
-export const SCIENCE_CHALLENGE_SHORT_RECALL_ACCEPTED_CANDIDATE_SET_SHA256 =
-	'e8d5366939295208d1f56eb6b2c64f7d71cb015989d2cd65614434512a582eba';
-export const SCIENCE_CHALLENGE_SHORT_RECALL_ACCEPTED_ID_SET_SHA256 =
-	'b63211399bbed340786c2d8642108bc48c0a26abcb01dd3bcd4c65801227cbfa';
-export const SCIENCE_CHALLENGE_SHORT_RECALL_REVIEW_SET_SHA256 =
-	'e391880a8f35e447f2574e1b00c25b0336957b7fcbafa9f720e7f5ad7063175c';
 export const SCIENCE_CHALLENGE_SHORT_RECALL_MAX_ATTEMPTS = 4;
 export const SCIENCE_CHALLENGE_SHORT_RECALL_MODEL = 'chatgpt-gpt-5.6-sol';
 export const SCIENCE_CHALLENGE_SHORT_RECALL_AUTHORING_THINKING = 'high';
@@ -168,21 +152,24 @@ const REVIEW_ISSUE_CATEGORIES = new Set([
 	'format'
 ]);
 
-export function readScienceChallengeShortRecallCandidateSet(
-	value,
-	{ expectedCount = SCIENCE_CHALLENGE_SHORT_RECALL_EXPECTED_COUNT } = {}
-) {
+export function readScienceChallengeShortRecallCandidateSet(value, { expectedCount = null } = {}) {
 	const entries = Array.isArray(value)
 		? value
-		: Array.isArray(value?.challenges)
-			? value.challenges
+		: Array.isArray(value?.records)
+			? value.records
 			: null;
 	if (!entries) {
 		throw new Error(
-			'Short-recall candidate input must be a JSON array or an object with a challenges array.'
+			'Short-recall candidate input must be a JSON array or an object with a records array.'
 		);
 	}
-	if (entries.length !== expectedCount) {
+	if (entries.length === 0) {
+		throw new Error('Short-recall candidate input must contain at least one challenge.');
+	}
+	if (
+		expectedCount !== null &&
+		(!Number.isInteger(expectedCount) || expectedCount < 1 || entries.length !== expectedCount)
+	) {
 		throw new Error(
 			`Short-recall candidate input must contain exactly ${expectedCount} challenges; found ${entries.length}.`
 		);
@@ -227,95 +214,41 @@ export function readScienceChallengeShortRecallCandidateSet(
 }
 
 /**
- * Production authoring and review accept only the authenticated science-179-v1 projection.
- * Small bare arrays remain supported by the generic reader and the explicit test entry points.
+ * Production authoring and review accept one hash-bound final candidate-set document. Catalogue
+ * size comes from its records; no historical selection or cohort projection is supported.
+ * Bare arrays remain available only through the explicit test entry points.
  */
 export function readAuthenticatedScienceChallengeShortRecallCandidateSet(value) {
 	if (!isRecord(value) || Array.isArray(value)) {
 		throw new Error(
-			'Release short-recall input must be an authenticated accepted-subset object, not a bare candidate array.'
+			'Release short-recall input must be an authenticated candidate-set object, not a bare array.'
 		);
 	}
-	if (value.schemaVersion !== SCIENCE_CHALLENGE_SHORT_RECALL_ACCEPTED_SUBSET_SCHEMA) {
+	if (value.schemaVersion !== SCIENCE_CHALLENGE_SHORT_RECALL_CANDIDATE_SET_SCHEMA) {
 		throw new Error(
-			`Release short-recall input must use ${SCIENCE_CHALLENGE_SHORT_RECALL_ACCEPTED_SUBSET_SCHEMA}.`
+			`Release short-recall input must use ${SCIENCE_CHALLENGE_SHORT_RECALL_CANDIDATE_SET_SCHEMA}.`
 		);
 	}
-	if (value.releaseId !== SCIENCE_CHALLENGE_SHORT_RECALL_RELEASE_ID) {
-		throw new Error(
-			`Release short-recall input must target ${SCIENCE_CHALLENGE_SHORT_RECALL_RELEASE_ID}.`
-		);
+	if (typeof value.releaseId !== 'string' || !SAFE_CHALLENGE_ID.test(value.releaseId)) {
+		throw new Error('Release short-recall input must include a safe releaseId.');
 	}
-	if (!isRecord(value.selection) && !isRecord(value.evidence)) {
-		throw new Error('Release short-recall input must include accepted-subset selection evidence.');
+	if (!SHA256.test(String(value.sourceContentSha256 ?? ''))) {
+		throw new Error('Release short-recall input must bind its source catalogue SHA-256.');
 	}
-
-	const candidateSet = readScienceChallengeShortRecallCandidateSet(value, {
-		expectedCount: SCIENCE_CHALLENGE_SHORT_RECALL_EXPECTED_COUNT
-	});
+	const unsigned = { ...value };
+	delete unsigned.contentSha256;
 	if (
-		candidateSet.candidateSetSha256 !== SCIENCE_CHALLENGE_SHORT_RECALL_ACCEPTED_CANDIDATE_SET_SHA256
+		!SHA256.test(String(value.contentSha256 ?? '')) ||
+		canonicalHash(unsigned) !== value.contentSha256
 	) {
-		throw new Error(
-			'Release short-recall candidates differ from the pinned accepted candidate set.'
-		);
+		throw new Error('Release short-recall candidate-set content hash is invalid.');
 	}
-	const acceptedIdsSha256 = canonicalHash(
-		candidateSet.rows.map((candidate) => candidate.challengeId)
-	);
-	if (acceptedIdsSha256 !== SCIENCE_CHALLENGE_SHORT_RECALL_ACCEPTED_ID_SET_SHA256) {
-		throw new Error(
-			'Release short-recall candidate order differs from the pinned accepted selection.'
-		);
-	}
-
-	const authenticationSources = acceptedSubsetAuthenticationSources(value);
-	requireAcceptedSubsetBinding(authenticationSources, {
-		label: 'reviewed count',
-		keys: ['reviewedCount', 'reviewCount', 'reviewed'],
-		expected: SCIENCE_CHALLENGE_SHORT_RECALL_REVIEWED_COUNT
-	});
-	requireAcceptedSubsetBinding(authenticationSources, {
-		label: 'accepted count',
-		keys: ['acceptedCount', 'accepted'],
-		expected: SCIENCE_CHALLENGE_SHORT_RECALL_EXPECTED_COUNT
-	});
-	requireAcceptedSubsetBinding(authenticationSources, {
-		label: 'rejected count',
-		keys: ['rejectedCount', 'rejected'],
-		expected: SCIENCE_CHALLENGE_SHORT_RECALL_REJECTED_COUNT
-	});
-	requireAcceptedSubsetBinding(authenticationSources, {
-		label: 'reviewed candidate-set hash',
-		keys: [
-			'reviewedCandidateSetSha256',
-			'fullCandidateSetSha256',
-			'sourceCandidateSetSha256',
-			'b0CandidateSetSha256'
-		],
-		expected: SCIENCE_CHALLENGE_SHORT_RECALL_REVIEWED_CANDIDATE_SET_SHA256
-	});
-	requireAcceptedSubsetBinding(authenticationSources, {
-		label: 'accepted candidate-set hash',
-		keys: ['acceptedCandidateSetSha256', 'candidateSetSha256'],
-		expected: SCIENCE_CHALLENGE_SHORT_RECALL_ACCEPTED_CANDIDATE_SET_SHA256
-	});
-	requireAcceptedSubsetBinding(authenticationSources, {
-		label: 'accepted id-set hash',
-		keys: [
-			'acceptedIdSetSha256',
-			'acceptedIdsSha256',
-			'acceptedSelectionSha256',
-			'selectionSha256'
-		],
-		expected: SCIENCE_CHALLENGE_SHORT_RECALL_ACCEPTED_ID_SET_SHA256
-	});
-	requireAcceptedSubsetBinding(authenticationSources, {
-		label: 'review-set hash',
-		keys: ['reviewSetSha256', 'reviewRowsSha256', 'reviewsSha256'],
-		expected: SCIENCE_CHALLENGE_SHORT_RECALL_REVIEW_SET_SHA256
-	});
-	return candidateSet;
+	const candidateSet = readScienceChallengeShortRecallCandidateSet(value);
+	return {
+		...candidateSet,
+		releaseId: value.releaseId,
+		sourceContentSha256: value.sourceContentSha256
+	};
 }
 
 export function memoryHandleSteps(memoryHandle, { challengeId = 'candidate' } = {}) {
@@ -1757,7 +1690,7 @@ export function validateAcceptedScienceChallengeShortRecallArtifacts({
 	prompts,
 	authoringEvidence,
 	reviewEvidence,
-	expectedCount = SCIENCE_CHALLENGE_SHORT_RECALL_EXPECTED_COUNT
+	expectedCount = null
 }) {
 	const issues = [];
 	let candidateSet;
@@ -1769,12 +1702,13 @@ export function validateAcceptedScienceChallengeShortRecallArtifacts({
 		issues.push(error instanceof Error ? error.message : String(error));
 		return { status: 'failed', issues, candidateSet: null, promptSetSha256: null };
 	}
+	const resolvedExpectedCount = expectedCount ?? candidateSet.rows.length;
 	const evidenceValidation = validateScienceChallengeShortRecallReviewEvidence({
 		reviewEvidence,
 		authoringEvidence,
 		candidateSet,
 		prompts,
-		expectedCount,
+		expectedCount: resolvedExpectedCount,
 		requirePassed: true
 	});
 	issues.push(...evidenceValidation.issues);
@@ -2272,31 +2206,6 @@ function nonEmpty(value) {
 
 function isRecord(value) {
 	return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-}
-
-function acceptedSubsetAuthenticationSources(value) {
-	const roots = [value.selection, value.evidence].filter(isRecord);
-	return roots.flatMap((root) => [
-		root,
-		...['counts', 'hashes', 'bindings', 'source'].map((key) => root[key]).filter(isRecord)
-	]);
-}
-
-function requireAcceptedSubsetBinding(sources, { label, keys, expected }) {
-	for (const source of sources) {
-		for (const key of keys) {
-			if (!Object.hasOwn(source, key)) continue;
-			if (source[key] !== expected) {
-				throw new Error(
-					`Release short-recall accepted-subset ${label} must equal ${expected}; found ${String(source[key])}.`
-				);
-			}
-			return;
-		}
-	}
-	throw new Error(
-		`Release short-recall accepted-subset is missing its ${label} (${keys.join(' or ')}).`
-	);
 }
 
 function hasExactKeys(value, expectedKeys) {

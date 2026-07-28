@@ -96,7 +96,7 @@ export function imageServiceInfrastructureSafetyStop(
 	{
 		phase,
 		artId = null,
-		nextAction = 'Restore authorized image-service access, then follow the run summary.'
+		nextAction = 'Restore image-service access or connectivity, then rerun the ordinary lineage with --resume.'
 	} = {}
 ) {
 	if (isArtGenerationSafetyStop(error)) return error;
@@ -104,7 +104,7 @@ export function imageServiceInfrastructureSafetyStop(
 	if (!failureKind) return null;
 	return new ArtGenerationSafetyStop(
 		`The image service failed ${phaseLabel(phase, artId)} (${failureKind}). ` +
-			`No additional image attempts will be consumed in this run. ${nextAction}`,
+			`No additional art pairs will be scheduled in this run. ${nextAction}`,
 		{
 			code: 'SCIENCE_ART_IMAGE_SERVICE_UNAVAILABLE',
 			details: { phase, artId, failureKind, nextAction },

@@ -22,6 +22,7 @@ import {
 	prepareRepairLineageIdentity
 } from './lib/science-question-art-run-state.mjs';
 import {
+	SCIENCE_QUESTION_ART_CONFIRMATION_DHASH_THRESHOLD,
 	SCIENCE_QUESTION_ART_DHASH_ALGORITHM,
 	SCIENCE_QUESTION_ART_DHASH_THRESHOLD,
 	SCIENCE_QUESTION_ART_DHASH_VARIANTS,
@@ -42,7 +43,7 @@ test('generator and accepted-art lineage share the four-attempt ceiling', () => 
 });
 
 test('generator rejects unknown, bare-value and boolean-assignment arguments before any work', () => {
-	const root = mkdtempSync(path.join(tmpdir(), 'science-art-argument-guard-'));
+	const root = realpathSync(mkdtempSync(path.join(tmpdir(), 'science-art-argument-guard-')));
 	try {
 		const manifestPath = path.join(root, 'art-manifest.json');
 		const workRoot = path.join(root, 'generation-work');
@@ -64,7 +65,7 @@ test('generator rejects unknown, bare-value and boolean-assignment arguments bef
 });
 
 test('bare replacement refuses existing output before writing or scheduling work', () => {
-	const root = mkdtempSync(path.join(tmpdir(), 'science-art-replacement-guard-'));
+	const root = realpathSync(mkdtempSync(path.join(tmpdir(), 'science-art-replacement-guard-')));
 	try {
 		const manifest = artManifest();
 		const manifestPath = path.join(root, 'art-manifest.json');
@@ -96,7 +97,7 @@ test('bare replacement refuses existing output before writing or scheduling work
 });
 
 test('preflight reserve failure exits non-zero without claiming a work root', () => {
-	const root = mkdtempSync(path.join(tmpdir(), 'science-art-preflight-stop-'));
+	const root = realpathSync(mkdtempSync(path.join(tmpdir(), 'science-art-preflight-stop-')));
 	try {
 		const manifest = artManifest();
 		const manifestPath = path.join(root, 'art-manifest.json');
@@ -108,14 +109,57 @@ test('preflight reserve failure exits non-zero without claiming a work root', ()
 		assert.equal(summary.status, 'failed-resumable');
 		assert.equal(summary.scheduledCount, 0);
 		assert.equal(summary.resumableFailure.code, 'SCIENCE_ART_MIN_FREE_SPACE');
+		assert.match(summary.nextAction.instruction, /recorded safety prerequisite/);
+		assert.doesNotMatch(summary.nextAction.instruction, /Free the required disk reserve/);
 		assert.equal(existsSync(workRoot), false);
 	} finally {
 		rmSync(root, { recursive: true, force: true });
 	}
 });
 
+test('ordinary retry prompts never expose prior operational failure text to the image model', () => {
+	const source = readFileSync(generatorPath, 'utf8');
+	assert.doesNotMatch(source, /priorFailure\.error/);
+	assert.doesNotMatch(source, /A prior attempt failed:/);
+	assert.match(source, /buildVariantPrompt\(spec, repair, 'dark'\)/);
+	assert.match(source, /buildVariantPrompt\(spec, repair, 'light'\)/);
+	assert.match(source, /action: 'generate'/);
+	assert.doesNotMatch(source, /action: 'edit'/);
+	assert.doesNotMatch(source, /styleImages:/);
+});
+
+test('generator combines generic safety rules with exact D1-backed challenge guards', () => {
+	const source = readFileSync(generatorPath, 'utf8');
+	for (const expected of [
+		'Trace every visible wire, tube, beam, hose, collection path',
+		'never draw a sealed rounded end where the collection opening must be',
+		'"Sealed" means visibly closed',
+		'objects described as identical must visibly match',
+		'a gas particle model must remain widely dispersed',
+		'Never leave a less-dense-than-air sample such as possible hydrogen',
+		'Do not translate question-given measurements, percentages or rankings',
+		'stop before the missing answer-bearing step',
+		'Include every person, team, patient, driver, operator',
+		'black lava remains visibly black or dark charcoal',
+		'regeneration instruction as a diagnosis of what failed'
+	]) {
+		assert.match(source, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+	}
+	assert.match(source, /const guards = spec\.generationGuards \?\? \[\]/);
+	assert.match(source, /has invalid D1-backed generation guards/);
+	assert.match(source, /VISIBLE DEFECT TO ELIMINATE/);
+	assert.match(source, /question-specific guards are present above/);
+	assert.match(source, /suggested correction is intentionally omitted/);
+	assert.match(source, /rejected images are not edit targets or composition references/i);
+	assert.doesNotMatch(source, /physics-exp-current-wire-motor-effect-opening/);
+	assert.doesNotMatch(
+		source,
+		/one bacterium and one budding yeast cell only as intact OPAQUE exterior teaching models/
+	);
+});
+
 test('repair reserve summaries refresh canonical evidence and never prescribe repair resume', () => {
-	const root = mkdtempSync(path.join(tmpdir(), 'science-art-repair-action-'));
+	const root = realpathSync(mkdtempSync(path.join(tmpdir(), 'science-art-repair-action-')));
 	try {
 		const manifest = artManifest();
 		const manifestPath = path.join(root, 'art-manifest.json');
@@ -596,6 +640,9 @@ function makeUsedPerceptualRepairFixture() {
 	const fingerprints = Object.fromEntries(
 		SCIENCE_QUESTION_ART_DHASH_VARIANTS.map((variant) => [variant, '0'.repeat(16)])
 	);
+	const confirmationFingerprints = Object.fromEntries(
+		SCIENCE_QUESTION_ART_DHASH_VARIANTS.map((variant) => [variant, '0'.repeat(64)])
+	);
 	const records = [];
 	for (const spec of manifest.specs) {
 		const inventory = { id: spec.id };
@@ -611,7 +658,8 @@ function makeUsedPerceptualRepairFixture() {
 				theme,
 				localPath: spec.output[`${theme}Path`],
 				sha256: digest,
-				dHashes: fingerprints
+				dHashes: fingerprints,
+				confirmationDHashes: confirmationFingerprints
 			});
 		}
 		assetInventory.push(inventory);
@@ -623,6 +671,7 @@ function makeUsedPerceptualRepairFixture() {
 		assetInventorySha256: canonicalHash(assetInventory),
 		algorithm: SCIENCE_QUESTION_ART_DHASH_ALGORITHM,
 		threshold: SCIENCE_QUESTION_ART_DHASH_THRESHOLD,
+		confirmationThreshold: SCIENCE_QUESTION_ART_CONFIRMATION_DHASH_THRESHOLD,
 		recordCount: records.length,
 		collisionCount: collisions.length,
 		status: 'failed',

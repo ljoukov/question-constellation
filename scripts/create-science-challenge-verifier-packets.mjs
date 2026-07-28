@@ -100,7 +100,7 @@ function main(argv) {
 		packetCount: bundle.manifest.packetCount,
 		waveCount: bundle.manifest.waveCount,
 		usage:
-			'For wave 01 through 17, load the matching verifier-NN/wave-NN.json and pass its exact target and message fields to followup_task. Send at most one payload per verifier, wait for that assignment result, then advance that verifier to its next wave.',
+			'For each verifier packet, load its wave files in order and pass the exact target and message fields to followup_task. Send at most one payload per verifier, wait for that assignment result, then advance that verifier to its next wave.',
 		allocations: bundle.manifest.packets
 	};
 	console.log(JSON.stringify(report, null, 2));
@@ -160,18 +160,18 @@ function parseArgs(argv) {
 		help: false,
 		index: String(
 			values.get('index') ??
-				'tmp/science-challenges/science-500-v1/verification/assignment-index.json'
+				'tmp/science-challenges/candidate-release/verification/assignment-index.json'
 		),
 		dispatchLedger: String(
 			values.get('dispatch-ledger') ??
-				'tmp/science-challenges/science-500-v1/verification/dispatch-ledger.json'
+				'tmp/science-challenges/candidate-release/verification/dispatch-ledger.json'
 		),
 		outputRoot: String(
 			values.get('output-root') ??
-				'tmp/science-challenges/science-500-v1/verification/verifier-packets'
+				'tmp/science-challenges/candidate-release/verification/verifier-packets'
 		),
 		reviewRoot: String(
-			values.get('review-root') ?? 'tmp/science-challenges/science-500-v1/verification/reviews'
+			values.get('review-root') ?? 'tmp/science-challenges/candidate-release/verification/reviews'
 		)
 	};
 }

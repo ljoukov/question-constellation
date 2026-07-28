@@ -18,7 +18,7 @@ import {
 import {
 	normalizedSourceFingerprintInput,
 	sourceFingerprint
-} from '../../../scripts/lib/chain-illustration-pipeline.mjs';
+} from '../../../scripts/lib/answer-chain-source-fingerprint.mjs';
 
 const oldId = PHYSICS_QUESTION_ID_RECONCILIATION.placeholderQuestionId;
 const canonicalId = PHYSICS_QUESTION_ID_RECONCILIATION.canonicalQuestionId;

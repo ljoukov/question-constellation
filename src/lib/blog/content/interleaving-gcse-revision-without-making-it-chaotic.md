@@ -3,13 +3,13 @@
   'slug': 'interleaving-gcse-revision-without-making-it-chaotic',
   'title': 'Interleaving GCSE Revision Without Making It Chaotic',
   'shortTitle': 'Interleaving GCSE revision',
-  'description': 'How to use interleaving in GCSE revision by mixing related exam questions through answer chains instead of random topic hopping.',
-  'standfirst': 'Interleaving works best when the mix is meaningful. Answer chains give students a way to mix questions without losing the thread.',
+  'description': 'How to use interleaving in GCSE revision by mixing related exam questions instead of hopping randomly between topics.',
+  'standfirst': 'Interleaving works best when the mix is meaningful. Related questions let students compare what each exam prompt actually rewards.',
   'category': 'Revision research',
   'publishedAt': '2026-06-28',
   'readMinutes': 5,
   'tags': ['interleaving', 'GCSE revision', 'transfer'],
-  'quickTake': 'Mixing practice can help students choose the right method or reasoning pattern. The mix needs structure, or it can feel like noise.',
+  'quickTake': 'Mixing practice can help students recognise what different questions demand. The mix needs structure, or it can feel like noise.',
   'sources':
     [
       {
@@ -27,9 +27,8 @@
     ],
   'relatedSlugs':
     [
-      'why-gcse-answer-chains-help-transfer',
       'retrieval-practice-with-gcse-exam-questions',
-      'question-constellation-vs-seneca'
+      'mark-schemes-as-feedback-for-gcse-revision'
     ],
   'faqs':
     [
@@ -38,12 +37,12 @@
         'answer': 'No. The most useful version asks students to compare related problems and choose the right pattern.'
       },
       {
-        'question': 'How do answer chains help?',
-        'answer': 'They show what stays the same when the surface of the question changes.'
+        'question': 'How do related questions help?',
+        'answer': 'They let students compare which marking points stay important and which details change.'
       },
       {
         'question': 'How many questions should a student mix?',
-        'answer': 'A small set is enough: one start question, one near question and one stretch question can work well.'
+        'answer': 'A small set is enough: attempt one question, improve it, then try one or two related questions.'
       }
     ]
 }
@@ -53,20 +52,20 @@
 
 Students hear that mixed practice is good and then jump between unrelated topics. That can make revision feel busy without helping them choose the right answer structure.
 
-The useful version of interleaving asks students to compare related problems. What changed? What stayed the same? Which chain still works?
+The useful version of interleaving asks students to compare related problems. What changed? What stayed the same? Which marking points does this question reward?
 
-## Answer chains make the mix legible
+## Related questions make the mix legible
 
-A constellation can place a start question next to a near question, then a stretch question. The student sees the same chain under different surfaces.
+A related-question set can keep the subject matter close while changing the wording, context or command. The student sees which parts of a complete answer still matter.
 
-That makes the hard part explicit. The student is practising recognition of the answer pattern.
+That makes the hard part explicit. The student is practising how to read the question and build a complete response.
 
 ## A useful session plan
 
-Start with one topic the student has revised. Open a question. Reveal the chain after attempting it. Then practise two related questions that keep the chain but change the context.
+Start with one topic the student has revised. Open a question and answer it without notes. Check the marking points, improve the whole answer, then try a related question with a changed context.
 
-End by asking the student to write the chain from memory. That turns mixed practice back into a compact revision cue.
+End by asking the student to name the marking points they almost missed. That turns mixed practice into a compact revision cue.
 
 ## What to avoid
 
-Do not mix everything at once. Biology, chemistry, physics and maths can all benefit from mixed practice, but the mix should have a reason. A chain, method or misconception gives the session a thread.
+Do not mix everything at once. Biology, chemistry, physics and maths can all benefit from mixed practice, but the mix should have a reason. A topic, question type or recurring misconception can give the session a thread.

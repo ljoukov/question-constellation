@@ -1,11 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {
-	normalizeScienceChallengeAuthoringProviderValue,
-	scienceChallengeAuthoringProviderSchema
-} from './science-challenge-authoring-provider-schema.mjs';
-import { canonicalHash, normalizeGeneratedChallengeBatch } from './science-challenge-release.mjs';
+import { scienceChallengeAuthoringProviderSchema } from './science-challenge-authoring-provider-schema.mjs';
 
 const PROVIDER_SCHEMA = {
 	type: 'object',
@@ -51,25 +47,18 @@ const PROVIDER_SCHEMA = {
 	}
 };
 
-test('authoring provider schema defaults only an omitted nullable questionPresentation', () => {
+test('authoring provider schema rejects an omitted required nullable questionPresentation', () => {
 	const schema = scienceChallengeAuthoringProviderSchema(PROVIDER_SCHEMA);
 	const omitted = batch({ id: 'omitted' });
-	const parsed = schema.parse(omitted);
 
 	assert.equal(Object.hasOwn(omitted.challenges[0].definition, 'questionPresentation'), false);
-	assert.equal(parsed.challenges[0].definition.questionPresentation, null);
-	assert.notStrictEqual(parsed, omitted);
+	assert.equal(schema.safeParse(omitted).success, false);
 });
 
 test('authoring provider schema leaves explicit null unchanged', () => {
 	const schema = scienceChallengeAuthoringProviderSchema(PROVIDER_SCHEMA);
 	const explicitNull = batch({ id: 'explicit-null', questionPresentation: null });
 
-	assert.strictEqual(
-		normalizeScienceChallengeAuthoringProviderValue(explicitNull),
-		explicitNull,
-		'explicitly schema-valid output must not be cloned or rewritten'
-	);
 	assert.deepEqual(schema.parse(explicitNull), explicitNull);
 });
 
@@ -82,11 +71,10 @@ test('authoring provider schema rejects malformed non-null questionPresentation'
 		}
 	});
 
-	assert.strictEqual(normalizeScienceChallengeAuthoringProviderValue(malformed), malformed);
 	assert.equal(schema.safeParse(malformed).success, false);
 });
 
-test('authoring provider normalization does not weaken unrelated schema requirements', () => {
+test('authoring provider schema keeps every unrelated requirement strict', () => {
 	const schema = scienceChallengeAuthoringProviderSchema(PROVIDER_SCHEMA);
 	const missingId = batch({});
 	const extraDefinitionField = batch({ id: 'extra', unsupported: true });
@@ -95,18 +83,6 @@ test('authoring provider normalization does not weaken unrelated schema requirem
 	for (const value of [missingId, extraDefinitionField, extraRootField]) {
 		assert.equal(schema.safeParse(value).success, false);
 	}
-});
-
-test('omitted and explicit-null provider forms retain one deterministic accepted candidate hash', () => {
-	const omitted = batch({ id: 'same-candidate' });
-	const explicitNull = batch({ id: 'same-candidate', questionPresentation: null });
-	const schema = scienceChallengeAuthoringProviderSchema(PROVIDER_SCHEMA);
-
-	assert.equal(canonicalHash(schema.parse(omitted)), canonicalHash(schema.parse(explicitNull)));
-	assert.equal(
-		canonicalHash(normalizeGeneratedChallengeBatch(omitted)),
-		canonicalHash(normalizeGeneratedChallengeBatch(explicitNull))
-	);
 });
 
 function batch(definition) {

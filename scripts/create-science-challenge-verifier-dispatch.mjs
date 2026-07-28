@@ -5,9 +5,7 @@ import path from 'node:path';
 
 import { canonicalHash, stableStringify } from './lib/science-challenge-release.mjs';
 import {
-	SCIENCE_CHALLENGE_ASSIGNMENTS_PER_VERIFIER,
-	SCIENCE_CHALLENGE_VERIFICATION_ASSIGNMENT_COUNT,
-	SCIENCE_CHALLENGE_VERIFIER_COUNT,
+	scienceChallengeVerifierAllocationRanges,
 	validateScienceChallengeVerifierDispatchLedger
 } from './lib/science-challenge-verifier-dispatch.mjs';
 
@@ -43,6 +41,10 @@ function main(argv) {
 	const assignmentIndex = readAssignmentIndex(indexPath);
 	validateAssignmentIndex(assignmentIndex);
 	const verifiers = parseVerifiers(args.verifiers);
+	const allocations = scienceChallengeVerifierAllocationRanges({
+		assignmentCount: assignmentIndex.assignments.length,
+		verifierCount: verifiers.length
+	});
 	const ledger = buildLedger(assignmentIndex, verifiers, args.createdAt);
 	validateLedgerOrder(ledger, assignmentIndex, verifiers);
 
@@ -67,13 +69,12 @@ function main(argv) {
 				dispatchLedgerSha256: canonicalHash(ledger),
 				dispatchCount: ledger.dispatches.length,
 				allocations: verifiers.map((verifier, index) => {
-					const first = index * SCIENCE_CHALLENGE_ASSIGNMENTS_PER_VERIFIER;
-					const last = first + SCIENCE_CHALLENGE_ASSIGNMENTS_PER_VERIFIER - 1;
+					const allocation = allocations[index];
 					return {
 						taskName: verifier,
-						assignmentCount: SCIENCE_CHALLENGE_ASSIGNMENTS_PER_VERIFIER,
-						firstAssignmentId: assignmentIndex.assignments[first].assignmentId,
-						lastAssignmentId: assignmentIndex.assignments[last].assignmentId
+						assignmentCount: allocation.count,
+						firstAssignmentId: assignmentIndex.assignments[allocation.start].assignmentId,
+						lastAssignmentId: assignmentIndex.assignments[allocation.end - 1].assignmentId
 					};
 				})
 			},
@@ -84,13 +85,20 @@ function main(argv) {
 }
 
 function buildLedger(assignmentIndex, verifiers, createdAt) {
+	const allocations = scienceChallengeVerifierAllocationRanges({
+		assignmentCount: assignmentIndex.assignments.length,
+		verifierCount: verifiers.length
+	});
 	return {
 		schemaVersion: DISPATCH_LEDGER_SCHEMA,
 		orchestrator: ORCHESTRATOR,
 		indexSha256: canonicalHash(assignmentIndex),
 		createdAt,
 		dispatches: assignmentIndex.assignments.map((assignment, index) => {
-			const taskName = verifiers[Math.floor(index / SCIENCE_CHALLENGE_ASSIGNMENTS_PER_VERIFIER)];
+			const verifierIndex = allocations.findIndex(
+				(allocation) => index >= allocation.start && index < allocation.end
+			);
+			const taskName = verifiers[verifierIndex];
 			return {
 				assignmentId: assignment.assignmentId,
 				assignmentPath: assignment.path,
@@ -125,11 +133,9 @@ function validateAssignmentIndex(index) {
 	}
 	if (
 		!Array.isArray(index.assignments) ||
-		index.assignments.length !== SCIENCE_CHALLENGE_VERIFICATION_ASSIGNMENT_COUNT
+		index.assignments.length === 0
 	) {
-		throw new Error(
-			`assignment index must contain exactly ${SCIENCE_CHALLENGE_VERIFICATION_ASSIGNMENT_COUNT} assignments`
-		);
+		throw new Error('assignment index must contain at least one assignment');
 	}
 
 	const paths = new Set();
@@ -138,7 +144,7 @@ function validateAssignmentIndex(index) {
 		const expectedAssignmentId = `science-${String(indexPosition + 1).padStart(3, '0')}`;
 		if (assignment?.assignmentId !== expectedAssignmentId) {
 			throw new Error(
-				`assignment index order must be science-001 through science-051; position ${
+				`assignment index must use contiguous science-NNN ids; position ${
 					indexPosition + 1
 				} contains ${String(assignment?.assignmentId)}`
 			);
@@ -157,8 +163,12 @@ function validateAssignmentIndex(index) {
 		if (!SHA256_PATTERN.test(String(assignment.sha256 ?? ''))) {
 			throw new Error(`${expectedAssignmentId} has an invalid assignment SHA-256`);
 		}
-		if (!Array.isArray(assignment.ids) || assignment.ids.length !== 8) {
-			throw new Error(`${expectedAssignmentId} must bind exactly 8 challenge ids`);
+		if (
+			!Array.isArray(assignment.ids) ||
+			assignment.ids.length < 1 ||
+			assignment.ids.length > 20
+		) {
+			throw new Error(`${expectedAssignmentId} must bind 1-20 challenge ids`);
 		}
 		for (const challengeId of assignment.ids) {
 			if (
@@ -172,13 +182,14 @@ function validateAssignmentIndex(index) {
 			challengeIds.add(challengeId);
 		}
 	}
+	if (index.candidateCount !== challengeIds.size) {
+		throw new Error('assignment index candidateCount differs from its exact challenge-id union');
+	}
 }
 
 function parseVerifiers(values) {
-	if (values.length !== SCIENCE_CHALLENGE_VERIFIER_COUNT) {
-		throw new Error(
-			`exactly ${SCIENCE_CHALLENGE_VERIFIER_COUNT} --verifier arguments are required`
-		);
+	if (values.length < 1) {
+		throw new Error('at least one --verifier argument is required');
 	}
 
 	const verifiers = values.map((taskName, index) => {
@@ -195,10 +206,16 @@ function parseVerifiers(values) {
 }
 
 function validateLedgerOrder(ledger, assignmentIndex, verifiers) {
+	const allocations = scienceChallengeVerifierAllocationRanges({
+		assignmentCount: assignmentIndex.assignments.length,
+		verifierCount: verifiers.length
+	});
 	for (const [index, dispatch] of ledger.dispatches.entries()) {
 		const assignment = assignmentIndex.assignments[index];
-		const expectedTaskName =
-			verifiers[Math.floor(index / SCIENCE_CHALLENGE_ASSIGNMENTS_PER_VERIFIER)];
+		const verifierIndex = allocations.findIndex(
+			(allocation) => index >= allocation.start && index < allocation.end
+		);
+		const expectedTaskName = verifiers[verifierIndex];
 		if (
 			dispatch.assignmentId !== assignment.assignmentId ||
 			dispatch.assignmentPath !== assignment.path ||
@@ -265,10 +282,10 @@ function usage() {
 	return [
 		'Usage: node scripts/create-science-challenge-verifier-dispatch.mjs [options]',
 		'',
-		'--index=<assignment-index.json>       Required; must contain science-001 through science-051',
+		'--index=<assignment-index.json>       Required; must contain a non-empty contiguous assignment set',
 		'--output=<dispatch-ledger.json>        Required; existing files are never overwritten',
 		'--created-at=<canonical ISO datetime>  Required; for example 2026-07-23T00:00:00.000Z',
-		'--verifier=/root/<canonical-task>      Repeat exactly 3 times in 1-17, 18-34, 35-51 order',
+		'--verifier=/root/<canonical-task>      Repeat for each reviewer; assignments are balanced in contiguous blocks',
 		'--help'
 	].join('\n');
 }

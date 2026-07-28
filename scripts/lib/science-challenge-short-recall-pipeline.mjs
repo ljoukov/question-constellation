@@ -18,10 +18,8 @@ import { writeImmutableRepairJson } from './science-challenge-verification-repai
 import {
 	SCIENCE_CHALLENGE_SHORT_RECALL_AUTHORING_EVIDENCE_SCHEMA,
 	SCIENCE_CHALLENGE_SHORT_RECALL_AUTHORING_THINKING,
-	SCIENCE_CHALLENGE_SHORT_RECALL_BATCH_COUNT,
 	SCIENCE_CHALLENGE_SHORT_RECALL_BATCH_SIZE,
 	SCIENCE_CHALLENGE_SHORT_RECALL_CONTENT_VERSION,
-	SCIENCE_CHALLENGE_SHORT_RECALL_EXPECTED_COUNT,
 	SCIENCE_CHALLENGE_SHORT_RECALL_MAX_ATTEMPTS,
 	SCIENCE_CHALLENGE_SHORT_RECALL_MODEL,
 	SCIENCE_CHALLENGE_SHORT_RECALL_PIPELINE_VERSION,
@@ -66,12 +64,15 @@ export async function runScienceChallengeShortRecallAuthoring(options = {}) {
 		Object.hasOwn(options, 'requireAuthenticatedCohort')
 	) {
 		throw new Error(
-			`Release short-recall authoring always requires exactly ${SCIENCE_CHALLENGE_SHORT_RECALL_EXPECTED_COUNT} authenticated candidates.`
+			'Release short-recall authoring derives its count from the authenticated candidate set.'
 		);
 	}
+	const candidateSet = readAuthenticatedScienceChallengeShortRecallCandidateSet(
+		options.candidateValue
+	);
 	return runScienceChallengeShortRecallAuthoringInternal({
 		...options,
-		expectedCount: SCIENCE_CHALLENGE_SHORT_RECALL_EXPECTED_COUNT,
+		expectedCount: candidateSet.rows.length,
 		requireAuthenticatedCohort: true
 	});
 }
@@ -91,7 +92,7 @@ async function runScienceChallengeShortRecallAuthoringInternal({
 	priorPrompts = null,
 	repairReview = null,
 	repairAuthoringEvidence = null,
-	expectedCount = SCIENCE_CHALLENGE_SHORT_RECALL_EXPECTED_COUNT,
+	expectedCount = null,
 	requireAuthenticatedCohort = false,
 	transport = defaultScienceChallengeShortRecallPromptJsonTransport,
 	now = () => new Date().toISOString()
@@ -100,13 +101,14 @@ async function runScienceChallengeShortRecallAuthoringInternal({
 	const candidateSet = requireAuthenticatedCohort
 		? readAuthenticatedScienceChallengeShortRecallCandidateSet(candidateValue)
 		: readScienceChallengeShortRecallCandidateSet(candidateValue, { expectedCount });
+	expectedCount ??= candidateSet.rows.length;
 	if (candidateSet.rows.length !== expectedCount) {
 		throw new Error(
 			`Short-recall authenticated cohort count differs from the required ${expectedCount} candidates.`
 		);
 	}
 	const batches = buildScienceChallengeShortRecallBatches(candidateSet);
-	requireCanonicalBatchGeometry(batches, expectedCount, concurrency);
+	requireCanonicalBatchGeometry(batches, expectedCount);
 	const repair = priorPrompts !== null || repairReview !== null || repairAuthoringEvidence !== null;
 	let priorPromptById = null;
 	let reviewById = null;
@@ -398,12 +400,15 @@ export async function runScienceChallengeShortRecallReview(options = {}) {
 		Object.hasOwn(options, 'requireAuthenticatedCohort')
 	) {
 		throw new Error(
-			`Release short-recall review always requires exactly ${SCIENCE_CHALLENGE_SHORT_RECALL_EXPECTED_COUNT} authenticated candidates.`
+			'Release short-recall review derives its count from the authenticated candidate set.'
 		);
 	}
+	const candidateSet = readAuthenticatedScienceChallengeShortRecallCandidateSet(
+		options.candidateValue
+	);
 	return runScienceChallengeShortRecallReviewInternal({
 		...options,
-		expectedCount: SCIENCE_CHALLENGE_SHORT_RECALL_EXPECTED_COUNT,
+		expectedCount: candidateSet.rows.length,
 		requireAuthenticatedCohort: true
 	});
 }
@@ -422,7 +427,7 @@ async function runScienceChallengeShortRecallReviewInternal({
 	concurrency = 6,
 	timeoutMs = 7_200_000,
 	authMode = 'default-chatgpt-profile',
-	expectedCount = SCIENCE_CHALLENGE_SHORT_RECALL_EXPECTED_COUNT,
+	expectedCount = null,
 	requireAuthenticatedCohort = false,
 	transport = defaultScienceChallengeShortRecallPromptJsonTransport,
 	now = () => new Date().toISOString()
@@ -431,6 +436,7 @@ async function runScienceChallengeShortRecallReviewInternal({
 	const candidateSet = requireAuthenticatedCohort
 		? readAuthenticatedScienceChallengeShortRecallCandidateSet(candidateValue)
 		: readScienceChallengeShortRecallCandidateSet(candidateValue, { expectedCount });
+	expectedCount ??= candidateSet.rows.length;
 	if (candidateSet.rows.length !== expectedCount) {
 		throw new Error(
 			`Short-recall authenticated cohort count differs from the required ${expectedCount} candidates.`
@@ -454,7 +460,7 @@ async function runScienceChallengeShortRecallReviewInternal({
 		expectedCount
 	});
 	const batches = buildScienceChallengeShortRecallBatches(candidateSet);
-	requireCanonicalBatchGeometry(batches, expectedCount, concurrency);
+	requireCanonicalBatchGeometry(batches, expectedCount);
 	const promptById = new Map(prompts.map((prompt) => [prompt.challengeId, prompt]));
 	const globalPromptIndex = buildScienceChallengeShortRecallGlobalPromptIndex(
 		prompts,
@@ -2023,14 +2029,12 @@ function validateInvocation({ outputRoot, resume, dryRun, concurrency, timeoutMs
 	}
 }
 
-function requireCanonicalBatchGeometry(batches, expectedCount, concurrency) {
-	if (expectedCount !== SCIENCE_CHALLENGE_SHORT_RECALL_EXPECTED_COUNT) return;
+function requireCanonicalBatchGeometry(batches, expectedCount) {
 	const expectedBatchCount = Math.ceil(expectedCount / SCIENCE_CHALLENGE_SHORT_RECALL_BATCH_SIZE);
 	const expectedFinalBatchSize =
 		expectedCount - SCIENCE_CHALLENGE_SHORT_RECALL_BATCH_SIZE * Math.max(0, expectedBatchCount - 1);
 	const invalidBatchGeometry =
 		batches.length !== expectedBatchCount ||
-		expectedBatchCount !== SCIENCE_CHALLENGE_SHORT_RECALL_BATCH_COUNT ||
 		batches.some(
 			(batch, index) =>
 				batch.rows.length !==
@@ -2038,9 +2042,9 @@ function requireCanonicalBatchGeometry(batches, expectedCount, concurrency) {
 					? expectedFinalBatchSize
 					: SCIENCE_CHALLENGE_SHORT_RECALL_BATCH_SIZE)
 		);
-	if (invalidBatchGeometry || concurrency !== 6) {
+	if (invalidBatchGeometry) {
 		throw new Error(
-			`Release short-recall authoring/review must use exactly ${expectedBatchCount} batches at concurrency 6: full batches of ${SCIENCE_CHALLENGE_SHORT_RECALL_BATCH_SIZE} and a final batch of ${expectedFinalBatchSize}.`
+			`Release short-recall authoring/review must use exactly ${expectedBatchCount} batches: full batches of ${SCIENCE_CHALLENGE_SHORT_RECALL_BATCH_SIZE} and a final batch of ${expectedFinalBatchSize}.`
 		);
 	}
 }

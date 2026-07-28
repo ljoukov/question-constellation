@@ -36,12 +36,13 @@
 	import { matchShortRecall, type ShortRecallPrompt } from '../shortRecall';
 	import { playChallengeSound } from '../sound';
 	import type { ChallengeWeakAnswerKind } from '../types';
-	import { challengeVisual } from '../visuals';
+	import type { ChallengeVisualDefinition } from '../visuals';
 	import ChallengeButton from './ChallengeButton.svelte';
 	import ChallengeChoiceControl from './ChallengeChoice.svelte';
 
 	let {
 		challenge,
+		visual,
 		shortRecallPrompt = null,
 		mechanic,
 		sessionStartedAt,
@@ -52,6 +53,7 @@
 		oncomplete
 	}: {
 		challenge: PublicChallengeDefinition;
+		visual: ChallengeVisualDefinition;
 		shortRecallPrompt?: ShortRecallPrompt | null;
 		mechanic: ChallengeInterludeMechanic;
 		sessionStartedAt: string | null;
@@ -98,7 +100,6 @@
 			challengeInterludeDefinitions[0]
 	);
 	const echo = $derived(buildChainEcho(challenge.memoryHandle));
-	const visual = $derived(challengeVisual(challenge));
 	const echoSteps = $derived(visual?.segments ?? echo.steps);
 	const seededLinkOrder = $derived(buildLinkOrder(echoSteps, challenge.id));
 	const shownLinkOrder = $derived(linkOrder.length > 0 ? linkOrder : seededLinkOrder);
@@ -109,7 +110,7 @@
 		)
 	);
 	const echoExpectedAnswer = $derived(shortRecallPrompt?.canonicalAnswer ?? echo.hiddenStep);
-	const echoStem = $derived(shortRecallPrompt?.stem ?? 'Restore the missing link: ___.');
+	const echoStem = $derived(shortRecallPrompt?.stem ?? 'Complete the missing idea: ___.');
 	const echoResolved = $derived(echoCorrect || echoRevealed);
 	const sweepItems = $derived(buildEvidenceSweep(challenge.repairChoices, challenge.id));
 	const linkOrderResolved = $derived(linkOrderCorrect || linkOrderRevealed);
@@ -202,13 +203,13 @@
 		echoFaded = true;
 		haptics.selection();
 		void playChallengeSound('reveal');
-		announcement = 'One link has faded. Recall the missing words.';
+		announcement = 'One step has faded. Recall the missing words.';
 		analyticsEvent(
 			'challenge_interlude_reveal',
 			context({
 				activity: 'chain-echo',
 				hiddenIndex: echoHiddenIndex,
-				contentVersion: shortRecallPrompt?.contentVersion ?? 'legacy-fallback'
+				contentVersion: shortRecallPrompt?.contentVersion ?? 'memory-handle-derived-v1'
 			})
 		);
 		void tick().then(() => echoInput?.focus());
@@ -229,17 +230,17 @@
 		if (correct) {
 			echoCorrect = true;
 			echoIncorrect = false;
-			echoFeedback = 'That is the short answer this link needs.';
+			echoFeedback = 'That is the short answer this marking point needs.';
 			haptics.success();
 			void playChallengeSound('correct');
-			announcement = 'The missing link is back in the chain.';
+			announcement = 'The missing idea is restored.';
 			void focusResult();
 		} else {
 			echoIncorrect = true;
-			echoFeedback = 'Not that link yet. Try one or two words, or reveal it.';
+			echoFeedback = 'Not that idea yet. Try one or two words, or reveal it.';
 			haptics.error();
 			void playChallengeSound('incorrect');
-			announcement = 'That does not restore the missing link yet.';
+			announcement = 'That does not restore the missing idea yet.';
 		}
 		analyticsEvent(
 			'challenge_interlude_decision',
@@ -247,7 +248,7 @@
 				activity: 'chain-echo',
 				correct,
 				matchKind: match.kind,
-				contentVersion: shortRecallPrompt?.contentVersion ?? 'legacy-fallback',
+				contentVersion: shortRecallPrompt?.contentVersion ?? 'memory-handle-derived-v1',
 				attempt: attempts
 			})
 		);
@@ -266,7 +267,7 @@
 			context({
 				activity: 'chain-echo',
 				supportUsed: true,
-				contentVersion: shortRecallPrompt?.contentVersion ?? 'legacy-fallback',
+				contentVersion: shortRecallPrompt?.contentVersion ?? 'memory-handle-derived-v1',
 				attempt: attempts
 			})
 		);
@@ -365,16 +366,16 @@
 		const correct = isLinkOrderCorrect(shownLinkOrder);
 		linkOrderCorrect = correct;
 		if (correct) {
-			linkOrderFeedback = 'The chain now runs from cause or method to outcome.';
+			linkOrderFeedback = 'The ideas now run logically from cause or calculation to outcome.';
 			haptics.success();
 			void playChallengeSound('correct');
-			announcement = 'The answer chain is in order.';
+			announcement = 'The marking ideas are in order.';
 			void focusResult();
 		} else {
-			linkOrderFeedback = 'A link is still out of sequence. Move it and check again.';
+			linkOrderFeedback = 'One idea is still out of sequence. Move it and check again.';
 			haptics.error();
 			void playChallengeSound('incorrect');
-			announcement = 'The chain is not in order yet.';
+			announcement = 'The marking ideas are not in order yet.';
 		}
 		analyticsEvent(
 			'challenge_interlude_decision',
@@ -386,10 +387,10 @@
 		if (linkOrderResolved) return;
 		linkOrder = restoreLinkOrder(shownLinkOrder);
 		linkOrderRevealed = true;
-		linkOrderFeedback = 'Read the restored chain from first link to last.';
+		linkOrderFeedback = 'Read the restored method from first step to last.';
 		haptics.selection();
 		void playChallengeSound('reveal');
-		announcement = 'The reviewed link order is visible.';
+		announcement = 'The reviewed step order is visible.';
 		analyticsEvent(
 			'challenge_interlude_reveal',
 			context({ activity: 'link-order', supportUsed: true, attempt: attempts })
@@ -538,7 +539,7 @@
 			</ChallengeButton>
 		{/if}
 	{:else if mechanic === 'chain-echo'}
-		<div class="echo-chain" aria-label="Question Chain">
+		<div class="echo-chain" aria-label="Marking method">
 			{#each echoSteps as step, index (`${index}:${step}`)}
 				{#if index > 0}<ArrowRight size={17} strokeWidth={2.1} aria-hidden="true" />{/if}
 				<span class:hidden={echoFaded && !echoResolved && index === echoHiddenIndex}>
@@ -549,7 +550,7 @@
 
 		{#if !echoFaded}
 			<ChallengeButton onclick={fadeEchoLink} fullWidth>
-				Fade one link
+				Fade one step
 				<ArrowRight size={18} aria-hidden="true" />
 			</ChallengeButton>
 		{:else if !echoResolved}
@@ -583,7 +584,7 @@
 							echoFeedback = '';
 						}
 					}}
-					data-analytics-label={`Challenge ${challenge.id}: chain echo recall`}
+					data-analytics-label={`Challenge ${challenge.id}: method recall`}
 					data-analytics-redact
 				/>
 				<div class="interlude-actions">
@@ -720,7 +721,7 @@
 			class:resolved={linkOrderResolved}
 			class:correct={linkOrderCorrect}
 			class="link-order-list"
-			aria-label="Answer-chain links"
+			aria-label="Marking ideas"
 		>
 			{#each shownLinkOrder as item, index (item.id)}
 				<li style={`--link-order-delay: ${index * 90}ms`}>
@@ -750,7 +751,7 @@
 
 		{#if !linkOrderResolved}
 			<div class="interlude-actions">
-				<ChallengeButton onclick={checkLinkOrder} fullWidth>Check the chain</ChallengeButton>
+				<ChallengeButton onclick={checkLinkOrder} fullWidth>Check the method</ChallengeButton>
 				<ChallengeButton variant="secondary" onclick={revealLinkOrder} fullWidth>
 					Show the order
 				</ChallengeButton>
@@ -758,7 +759,7 @@
 			{#if linkOrderFeedback}<p class="inline-feedback" role="status">{linkOrderFeedback}</p>{/if}
 		{:else}
 			<div class="interlude-explanation" tabindex="-1" bind:this={resultFocus}>
-				<span>{linkOrderCorrect ? 'Chain restored' : 'Reviewed order'}</span>
+				<span>{linkOrderCorrect ? 'Method restored' : 'Reviewed order'}</span>
 				<strong>{visual?.decisiveLabel ?? challenge.memoryHandle}</strong>
 			</div>
 		{/if}

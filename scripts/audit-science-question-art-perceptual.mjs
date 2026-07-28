@@ -78,11 +78,12 @@ function parseArgs(argv) {
 	return {
 		help: Boolean(values.get('help')),
 		manifest: String(
-			values.get('manifest') ?? 'tmp/science-challenges/science-500-v1/compiled/art-manifest.json'
+			values.get('manifest') ??
+				'tmp/science-challenges/candidate-release/compiled/art-manifest.json'
 		),
 		output: String(
 			values.get('output') ??
-				'tmp/science-challenges/science-500-v1/art-review/perceptual-audit.json'
+				'tmp/science-challenges/candidate-release/art-review/perceptual-audit.json'
 		),
 		requireCount: integer(values.get('require-count') ?? 1_000, '--require-count', 1, 1_000),
 		batchSize: integer(values.get('batch-size') ?? 100, '--batch-size', 1, 250)

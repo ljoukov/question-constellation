@@ -1,4 +1,3 @@
-import { challengeCatalog } from '$lib/challenges/catalog';
 import {
 	challengeProgressTotals,
 	emptyChallengeProgress,
@@ -30,13 +29,11 @@ import {
 	safeThemePreference,
 	type UserAppearancePreferences
 } from '$lib/server/userTheme';
+import { getActiveChallengeIds } from '$lib/server/challengeCatalog';
 
 const REFRESH_CLAIM_STALE_AFTER_MINUTES = 2;
 const CHALLENGE_PROJECTION_CAS_ATTEMPTS = 3;
 const HOME_SNAPSHOT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
-const challengeProjectionIdsJson = JSON.stringify(
-	challengeCatalog.map((challenge) => challenge.id)
-);
 
 type HomeSnapshotRow = {
 	schema_version: number;
@@ -776,6 +773,7 @@ export async function updateUserHomeSnapshotChallengeProjection(
 ): Promise<void> {
 	let progress = initialProgress;
 	try {
+		const challengeProjectionIdsJson = JSON.stringify(await getActiveChallengeIds());
 		for (let attempt = 0; attempt < CHALLENGE_PROJECTION_CAS_ATTEMPTS; attempt += 1) {
 			const row = await queryPersonalFirst<{ source_revision: number }>(
 				`SELECT source_revision

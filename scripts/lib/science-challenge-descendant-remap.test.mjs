@@ -255,7 +255,7 @@ test('real-shaped eight-row shard retains six rejected repairs and preserves two
 
 function remapFixture() {
 	const plan = {
-		schemaVersion: 'science-challenge-plan/v1',
+		schemaVersion: 'science-challenge-plan/v2',
 		planId: 'science-test-v1',
 		rows: [
 			{

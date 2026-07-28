@@ -71,7 +71,7 @@
 	import ChallengeSessionShell from './ui/ChallengeSessionShell.svelte';
 	import ChallengeVisualStory from './ui/ChallengeVisualStory.svelte';
 	import ThemeAwareChallengeArt from './ui/ThemeAwareChallengeArt.svelte';
-	import { challengeVisual } from './visuals';
+	import type { ChallengeVisualDefinition } from './visuals';
 
 	type Stage = 'showdown' | 'diagnose' | 'repair' | 'transfer' | 'complete';
 	type CompletionView = 'result' | 'interlude' | 'checkpoint';
@@ -79,6 +79,7 @@
 	let {
 		challenge,
 		chain,
+		visual,
 		nextChallenges,
 		initialProgress = null,
 		userId = null,
@@ -89,6 +90,7 @@
 	}: {
 		challenge: PublicChallengeDefinition;
 		chain: AnswerChain;
+		visual: ChallengeVisualDefinition;
 		nextChallenges: PublicNextChallengeDefinition[];
 		initialProgress?: ChallengeProgress | null;
 		userId?: string | null;
@@ -106,7 +108,7 @@
 		{ id: 'showdown', short: '1', label: 'Compare answers' },
 		{ id: 'diagnose', short: '2', label: 'Find the problem' },
 		{ id: 'repair', short: '3', label: 'Fix the answer' },
-		{ id: 'transfer', short: '4', label: 'Apply the method' }
+		{ id: 'transfer', short: '4', label: 'Try a new question' }
 	];
 
 	let stage = $state<Stage>('showdown');
@@ -197,7 +199,6 @@
 			'off-command': 'Does not answer the command word'
 		}[challenge.weakAnswerKind]
 	);
-	const visual = $derived(challengeVisual(challenge));
 	const questionArt = $derived(visual?.cardArt);
 	const transferArt = $derived(visual?.transferArt);
 	const subjectLabel = $derived(challengeSubjectLabel(challenge.subject));
@@ -210,11 +211,7 @@
 			!transferHintOpen
 	);
 	const completionTitle = $derived(
-		challenge.id === 'physics-zero-resultant'
-			? 'You used balanced forces to explain a stationary parcel and a moving glider.'
-			: challenge.id === 'physics-half-range'
-				? 'You calculated uncertainty from repeated readings and used the same steps with new values.'
-				: 'You repaired the answer and applied the same method.'
+		challenge.completionTitle ?? 'You improved the answer and used the idea in a new question.'
 	);
 	const sessionTotals = $derived(challengeSessionTotals(challengeSession));
 	const currentPersonalBest = $derived(
@@ -254,10 +251,10 @@
 			return 'Name the weakness in the answer you just reviewed.';
 		}
 		if (automaticInterlude === 'chain-echo') {
-			return 'Recall one short missing link from the answer chain.';
+			return 'Recall one short idea that the stronger answer needs.';
 		}
 		if (automaticInterlude === 'link-order') {
-			return 'Put the answer-chain links back in order.';
+			return 'Put the marking ideas back in a logical order.';
 		}
 		if (automaticInterlude === 'reason-match') {
 			return 'Match each problem with the reason it matters.';
@@ -491,7 +488,7 @@
 			}
 			haptics.error();
 			void playChallengeSound('incorrect');
-			announcement = `${choice.feedback ?? 'That does not fix the decisive gap.'} Try again. Attempt ${diagnosisAttempts}.`;
+			announcement = `${choice.feedback ?? 'That does not fix the decisive problem.'} Try again. Attempt ${diagnosisAttempts}.`;
 		}
 		analyticsEvent(
 			'challenge_missing_link_result',
@@ -591,8 +588,8 @@
 			void playChallengeSound('correct');
 			announcement =
 				transferAttempts === 1
-					? 'You recognised the link in a new context first time.'
-					: 'You recognised the link in a new context with feedback.';
+					? 'You recognised the idea in a new context first time.'
+					: 'You recognised the idea in a new context with feedback.';
 			void revealStageAction();
 		} else {
 			if (!transferWrongChoices.includes(choice.id)) {
@@ -600,7 +597,7 @@
 			}
 			haptics.error();
 			void playChallengeSound('incorrect');
-			announcement = `${choice.feedback ?? 'That answer misses the shared link.'} Try again. Attempt ${transferAttempts}.`;
+			announcement = `${choice.feedback ?? 'That answer misses the shared idea.'} Try again. Attempt ${transferAttempts}.`;
 		}
 		analyticsEvent(
 			'challenge_transfer_result',
@@ -942,6 +939,7 @@
 							{#key selectedInterlude}
 								<ChallengeInterlude
 									{challenge}
+									{visual}
 									{shortRecallPrompt}
 									mechanic={selectedInterlude}
 									sessionStartedAt={challengeSession.startedAt}
@@ -1415,6 +1413,7 @@
 											</header>
 											<ChallengeVisualStory
 												{challenge}
+												{visual}
 												mode="earned"
 												compact
 												illustrationOverride={chain.illustration}
@@ -1460,7 +1459,7 @@
 								</div>
 							{:else}
 								<div class="challenge-stage-heading" tabindex="-1" bind:this={stageHeading}>
-									<h2>Use the same method on this question.</h2>
+									<h2>Use what you learned on this question.</h2>
 								</div>
 
 								<div class="transfer-options" role="group" aria-label="New-question choices">

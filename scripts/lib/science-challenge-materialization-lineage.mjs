@@ -76,62 +76,6 @@ export function relativeMultipartPlanSalvageLineage(lineage, { rootDir, multipar
 	};
 }
 
-export function relativeMultipartContinuationLineage(lineage, { rootDir }) {
-	const relativePath = (filePath) =>
-		workspaceRelativeMaterializationPath(rootDir, filePath, 'Multipart continuation lineage path');
-	return {
-		...lineage,
-		manifestPath: relativePath(lineage.manifestPath),
-		planPath: relativePath(lineage.planPath),
-		candidatePath: relativePath(lineage.candidatePath),
-		validationPath: relativePath(lineage.validationPath),
-		execution: {
-			...lineage.execution,
-			objectivePath: relativePath(lineage.execution.objectivePath),
-			claims: lineage.execution.claims.map((claim) => ({
-				...claim,
-				path: relativePath(claim.path),
-				invocationPath: relativePath(claim.invocationPath)
-			}))
-		},
-		collectionValidationSnapshot: lineage.collectionValidationSnapshot
-			? {
-					...lineage.collectionValidationSnapshot,
-					path: relativePath(lineage.collectionValidationSnapshot.path)
-				}
-			: null,
-		priorCollectionFailureEvidence: lineage.priorCollectionFailureEvidence
-			? {
-					...lineage.priorCollectionFailureEvidence,
-					path: relativePath(lineage.priorCollectionFailureEvidence.path)
-				}
-			: null,
-		sourceAttempt: {
-			...lineage.sourceAttempt,
-			attemptDir: relativePath(lineage.sourceAttempt.attemptDir),
-			files: Object.fromEntries(
-				Object.entries(lineage.sourceAttempt.files).map(([name, filePath]) => [
-					name,
-					relativePath(filePath)
-				])
-			),
-			partFiles: lineage.sourceAttempt.partFiles.map((part) => ({
-				...part,
-				paths: Object.fromEntries(
-					Object.entries(part.paths).map(([name, filePath]) => [name, relativePath(filePath)])
-				)
-			}))
-		},
-		continuationParts: lineage.continuationParts.map((part) => ({
-			...part,
-			claimPath: relativePath(part.claimPath),
-			paths: Object.fromEntries(
-				Object.entries(part.paths).map(([name, filePath]) => [name, relativePath(filePath)])
-			)
-		}))
-	};
-}
-
 /**
  * Select the authoritative source for one shard in a recovery-bound effective-cohort chain.
  *

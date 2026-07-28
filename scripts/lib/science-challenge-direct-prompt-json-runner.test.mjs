@@ -94,36 +94,31 @@ test('prompt-json rejects malformed and locally schema-invalid text without fall
 	}
 });
 
-test('prompt-json defaults an omitted nullable questionPresentation before local validation', async () => {
-	const root = mkdtempSync(path.join(tmpdir(), 'science-prompt-json-nullable-default-'));
+test('prompt-json rejects an omitted required nullable questionPresentation', async () => {
+	const root = mkdtempSync(path.join(tmpdir(), 'science-prompt-json-required-nullable-'));
 	const paths = evidencePaths(root);
 	const rawValue = {
 		schemaVersion: 'science-challenge-batch/v1',
-		challenges: [{ definition: { id: 'science-nullable-default' } }]
-	};
-	const normalizedValue = {
-		schemaVersion: 'science-challenge-batch/v1',
-		challenges: [{ definition: { id: 'science-nullable-default', questionPresentation: null } }]
+		challenges: [{ definition: { id: 'science-required-nullable' } }]
 	};
 	const rawText = JSON.stringify(rawValue);
 	try {
-		const run = await runDirectScienceChallengePromptJsonTurn({
-			prompt: 'Author one minimal schema fixture.',
-			outputSchema: nullablePresentationSchema(),
-			...paths,
-			streamTextImpl: () => fakeCall(rawText)
-		});
+		await assert.rejects(
+			() =>
+				runDirectScienceChallengePromptJsonTurn({
+					prompt: 'Author one minimal schema fixture.',
+					outputSchema: nullablePresentationSchema(),
+					...paths,
+					streamTextImpl: () => fakeCall(rawText)
+				}),
+			/local response validation failed/
+		);
 		const resultMetadata = JSON.parse(readFileSync(paths.resultMetadataPath, 'utf8'));
 
-		assert.equal(run.finalResponse, rawText);
 		assert.equal(readFileSync(paths.lastMessagePath, 'utf8'), rawText);
-		assert.equal(resultMetadata.localValidationStatus, 'passed');
-		assert.equal(resultMetadata.valueCanonicalSha256, canonicalHash(normalizedValue));
-		assert.equal(
-			Object.hasOwn(rawValue.challenges[0].definition, 'questionPresentation'),
-			false,
-			'normalization must not mutate the raw model value'
-		);
+		assert.equal(resultMetadata.localValidationStatus, 'failed');
+		assert.equal(resultMetadata.valueCanonicalSha256, null);
+		assert.equal(Object.hasOwn(rawValue.challenges[0].definition, 'questionPresentation'), false);
 	} finally {
 		rmSync(root, { recursive: true, force: true });
 	}

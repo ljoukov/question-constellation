@@ -1,14 +1,18 @@
-import { publicChallengePreviewDefinition } from '$lib/challenges/authoredData';
-import { challengesForSubject } from '$lib/challenges/catalog';
 import type { ChallengeProgress } from '$lib/challenges/progress';
+import { publicChallengePreviewFixture } from '$lib/challenges/testFixtures';
 import type { SignedInSubjectView } from '$lib/learning/viewTypes';
 import { render } from 'svelte/server';
 import { describe, expect, it } from 'vitest';
 import SubjectHub from './SubjectHub.svelte';
 
-const challengeCatalog = challengesForSubject('biology')
-	.slice(0, 2)
-	.map(publicChallengePreviewDefinition);
+const challengeCatalog = [
+	publicChallengePreviewFixture(),
+	publicChallengePreviewFixture({
+		id: 'biology-fixture-b',
+		slug: 'fixture-b',
+		title: 'Second fixture challenge'
+	})
+];
 const completedChallenge = challengeCatalog[0];
 const recommendedChallenge = challengeCatalog[1];
 const challengeProgress: ChallengeProgress = {

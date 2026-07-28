@@ -1,21 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { challengeCatalog } from './catalog';
 import { validateChallengeTransferVisuals } from './contentValidation';
 import type { ChallengeDefinition } from './types';
-import { challengeVisual } from './visuals';
+import { challengeDefinitionFixture } from './testFixtures';
 
 describe('challenge transfer solvability', () => {
-	it('keeps every published follow-up self-contained or backed by reviewed transfer art', () => {
-		const issues = challengeCatalog.flatMap((challenge) =>
-			validateChallengeTransferVisuals(challenge, challengeVisual(challenge))
-		);
+	const fixture = challengeDefinitionFixture();
+
+	it('accepts a self-contained prose follow-up', () => {
+		const issues = validateChallengeTransferVisuals(fixture, undefined);
 
 		expect(issues).toEqual([]);
 	});
 
 	it('rejects the missing-diagram failure mode', () => {
 		const challenge = {
-			...challengeCatalog[0],
+			...fixture,
 			id: 'regression-missing-diagram',
 			transferPromptLead: 'A diagram shows three cells. Which cell is prokaryotic?'
 		} satisfies ChallengeDefinition;
@@ -30,7 +29,7 @@ describe('challenge transfer solvability', () => {
 
 	it('rejects follow-ups that ask for an unsupported drawing interaction', () => {
 		const challenge = {
-			...challengeCatalog[0],
+			...fixture,
 			id: 'regression-drawing-task',
 			transferPromptLead: 'Draw a graph of the values before choosing the conclusion.'
 		} satisfies ChallengeDefinition;

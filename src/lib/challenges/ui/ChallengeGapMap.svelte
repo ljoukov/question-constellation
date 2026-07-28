@@ -1,22 +1,23 @@
 <script lang="ts">
 	import { ArrowRight, Sparkles } from '@lucide/svelte';
 	import type { ChallengeDefinition } from '../types';
-	import { challengeVisual } from '../visuals';
+	import type { ChallengeVisualDefinition } from '../visuals';
 
 	let {
 		challenge,
+		visual,
 		compact = false,
 		showLabel = true
 	}: {
 		challenge: Pick<ChallengeDefinition, 'id' | 'memoryHandle'>;
+		visual: ChallengeVisualDefinition;
 		compact?: boolean;
 		showLabel?: boolean;
 	} = $props();
 
-	const visual = $derived(challengeVisual(challenge));
 	const accessibleSummary = $derived(
 		visual
-			? `The decisive link is ${visual.segments[visual.decisiveIndex]}. ${visual.decisiveLabel}`
+			? `The decisive step is ${visual.segments[visual.decisiveIndex]}. ${visual.decisiveLabel}`
 			: challenge.memoryHandle
 	);
 </script>

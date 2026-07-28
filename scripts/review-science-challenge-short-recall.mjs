@@ -8,22 +8,12 @@ import { loadDefaultEnv } from './lib/codex-sdk-runner.mjs';
 import { configureScienceChallengeDirectJsonTransport } from './lib/science-challenge-direct-json-runner.mjs';
 import { runScienceChallengeShortRecallReview } from './lib/science-challenge-short-recall-pipeline.mjs';
 import {
-	SCIENCE_CHALLENGE_SHORT_RECALL_BATCH_COUNT,
 	SCIENCE_CHALLENGE_SHORT_RECALL_BATCH_SIZE,
-	SCIENCE_CHALLENGE_SHORT_RECALL_EXPECTED_COUNT,
 	SCIENCE_CHALLENGE_SHORT_RECALL_MAX_ATTEMPTS,
 	SCIENCE_CHALLENGE_SHORT_RECALL_MODEL,
 	SCIENCE_CHALLENGE_SHORT_RECALL_REVIEW_THINKING,
 	readAuthenticatedScienceChallengeShortRecallCandidateSet
 } from './lib/science-challenge-short-recall.mjs';
-
-const DEFAULT_CANDIDATE_SET =
-	'tmp/science-challenges/science-179-v1/accepted-subset-evidence/accepted-subset.json';
-const DEFAULT_PROMPT_BUNDLE =
-	'tmp/science-challenges/science-179-v1/short-recall/authoring-v1/candidate-prompts.json';
-const DEFAULT_AUTHORING_EVIDENCE =
-	'tmp/science-challenges/science-179-v1/short-recall/authoring-v1/authoring-evidence.json';
-const DEFAULT_OUTPUT_ROOT = 'tmp/science-challenges/science-179-v1/short-recall/review-v1';
 
 export async function runReviewScienceChallengeShortRecallCli({
 	argv = process.argv.slice(2),
@@ -131,14 +121,20 @@ export function parseReviewScienceChallengeShortRecallArgs(argv) {
 	}
 	const concurrency = integer(values.get('concurrency') ?? 6, '--concurrency', 1, 6);
 	if (concurrency !== 6) throw new Error('--concurrency must be exactly 6.');
+	const help = Boolean(values.get('help'));
+	if (!help) {
+		for (const name of ['candidate-set', 'prompt-bundle', 'authoring-evidence', 'output-root']) {
+			if (!values.has(name)) throw new Error(`--${name} is required.`);
+		}
+	}
 	return {
-		help: Boolean(values.get('help')),
+		help,
 		resume: Boolean(values.get('resume')),
 		dryRun: Boolean(values.get('dry-run')),
-		candidateSet: String(values.get('candidate-set') ?? DEFAULT_CANDIDATE_SET),
-		promptBundle: String(values.get('prompt-bundle') ?? DEFAULT_PROMPT_BUNDLE),
-		authoringEvidence: String(values.get('authoring-evidence') ?? DEFAULT_AUTHORING_EVIDENCE),
-		outputRoot: String(values.get('output-root') ?? DEFAULT_OUTPUT_ROOT),
+		candidateSet: String(values.get('candidate-set') ?? ''),
+		promptBundle: String(values.get('prompt-bundle') ?? ''),
+		authoringEvidence: String(values.get('authoring-evidence') ?? ''),
+		outputRoot: String(values.get('output-root') ?? ''),
 		concurrency,
 		timeoutMs: integer(values.get('timeout-ms') ?? 7_200_000, '--timeout-ms', 1, 14_400_000),
 		maxAttempts,
@@ -201,21 +197,21 @@ function usage() {
 	return [
 		'Usage: node scripts/review-science-challenge-short-recall.mjs [options]',
 		'',
-		`--candidate-set=<json>       Authenticated ${SCIENCE_CHALLENGE_SHORT_RECALL_EXPECTED_COUNT}-candidate accepted subset (default ${DEFAULT_CANDIDATE_SET})`,
-		`--prompt-bundle=<json>       Complete authored prompt array (default ${DEFAULT_PROMPT_BUNDLE})`,
-		`--authoring-evidence=<json>  Bound authoring evidence (default ${DEFAULT_AUTHORING_EVIDENCE})`,
-		`--output-root=<directory>    Fresh full-review root (default ${DEFAULT_OUTPUT_ROOT})`,
+		'--candidate-set=<json>       Required hash-bound challenge-catalog-candidate-set/v1',
+		'--prompt-bundle=<json>       Required complete authored prompt array',
+		'--authoring-evidence=<json>  Required bound authoring evidence',
+		'--output-root=<directory>    Required fresh full-review root under ignored tmp/',
 		'--concurrency=6              Fixed release concurrency',
 		'--timeout-ms=<1-14400000>    Per review turn; default 7200000',
 		'--resume                     Resume only this exact full review and immutable attempt budget',
-		`--dry-run                    Validate and print the ${SCIENCE_CHALLENGE_SHORT_RECALL_BATCH_COUNT}-batch review plan with no writes/model calls`,
+		'--dry-run                    Validate the derived complete batch plan with no writes/model calls',
 		`--max-attempts=4             Fixed malformed-transport retry ceiling`,
 		`--batch-size=8               Fixed full-review geometry`,
 		`--model=${SCIENCE_CHALLENGE_SHORT_RECALL_MODEL}`,
 		`--thinking-level=${SCIENCE_CHALLENGE_SHORT_RECALL_REVIEW_THINKING}`,
 		'--help, -h',
 		'',
-		`Any repair changes promptSetSha256. Use a fresh output root and run all ${SCIENCE_CHALLENGE_SHORT_RECALL_BATCH_COUNT} review batches again.`
+		'Any repair changes promptSetSha256. Use a fresh output root and review every derived batch again.'
 	].join('\n');
 }
 

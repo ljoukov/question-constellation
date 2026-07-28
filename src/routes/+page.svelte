@@ -3,7 +3,6 @@
 	import AppTopbar from '$lib/components/AppTopbar.svelte';
 	import MathText from '$lib/experiments/questions/components/MathText.svelte';
 	import SignedInHome from '$lib/learning/SignedInHome.svelte';
-	import type { ChainQuestionTeaser, LearningChain } from '$lib/learningChains';
 	import { ArrowRight } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
@@ -11,8 +10,7 @@
 
 	const questionBankHref = resolve('/questions');
 	const pastPapersHref = resolve('/past-papers/gcse');
-	const featuredChain = $derived(data.featuredChains[0] ?? null);
-	const featuredQuestion = $derived(featuredChain?.questions[0] ?? null);
+	const featuredQuestion = $derived(data.featuredQuestion);
 	const websiteJsonLd = JSON.stringify({
 		'@context': 'https://schema.org',
 		'@type': 'WebSite',
@@ -22,8 +20,8 @@
 	}).replace(/</g, '\\u003c');
 	const websiteJsonLdScript = `<script type="application/ld+json">${websiteJsonLd}</` + 'script>';
 	const startQuestionHref = $derived(
-		featuredChain && featuredQuestion
-			? questionHref(featuredChain, featuredQuestion)
+		featuredQuestion
+			? resolve('/questions/[questionId]', { questionId: featuredQuestion.id })
 			: questionBankHref
 	);
 
@@ -70,12 +68,6 @@
 		}
 	];
 
-	function questionHref(chain: LearningChain, question: ChainQuestionTeaser) {
-		if (question.id) {
-			return resolve('/questions/[questionId]', { questionId: question.id });
-		}
-		return questionBankHref;
-	}
 </script>
 
 <svelte:head>
@@ -146,15 +138,13 @@
 					<a class="qc-home-quiet-link" href={pastPapersHref}>Looking for a full past paper?</a>
 				</div>
 
-				{#if featuredChain && featuredQuestion}
+				{#if featuredQuestion}
 					<aside
 						class="qc-home-hero-preview qc-home-question-preview"
 						aria-label="Featured question"
 					>
 						<p class="qc-home-mini-label">
-							<MathText
-								text={`${featuredChain.subject} · ${featuredQuestion.marks ?? '?'} marks`}
-							/>
+							<MathText text={`${featuredQuestion.subject} · ${featuredQuestion.marks ?? '?'} marks`} />
 						</p>
 						<h2><MathText text={featuredQuestion.title} /></h2>
 						<p><MathText text={featuredQuestion.teaser} /></p>

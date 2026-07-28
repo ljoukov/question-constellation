@@ -18,8 +18,9 @@ const VERIFIERS = [
 	'/root/science_verify_002',
 	'/root/science_verify_003'
 ];
+const ASSIGNMENT_COUNT = 7;
 
-test('creates a validated 51-row ledger in index and verifier argument order', () => {
+test('creates a validated arbitrary-sized ledger in index and verifier argument order', () => {
 	const fixture = createFixture();
 	try {
 		const result = runCli(fixture);
@@ -33,11 +34,14 @@ test('creates a validated 51-row ledger in index and verifier argument order', (
 			fixture.index.assignments.map((assignment) => assignment.assignmentId)
 		);
 
+		const expectedCounts = [3, 2, 2];
+		let allocationStart = 0;
 		for (const [verifierIndex, taskName] of VERIFIERS.entries()) {
-			const start = verifierIndex * 17;
-			const allocation = ledger.dispatches.slice(start, start + 17);
-			assert.equal(allocation.length, 17);
+			const count = expectedCounts[verifierIndex];
+			const allocation = ledger.dispatches.slice(allocationStart, allocationStart + count);
+			assert.equal(allocation.length, count);
 			assert.ok(allocation.every((dispatch) => dispatch.taskName === taskName));
+			allocationStart += count;
 		}
 
 		const rawLedger = readFileSync(fixture.outputPath, 'utf8');
@@ -50,9 +54,9 @@ test('creates a validated 51-row ledger in index and verifier argument order', (
 				allocation.lastAssignmentId
 			]),
 			[
-				['science-001', 'science-017'],
-				['science-018', 'science-034'],
-				['science-035', 'science-051']
+				['science-001', 'science-003'],
+				['science-004', 'science-005'],
+				['science-006', 'science-007']
 			]
 		);
 
@@ -65,17 +69,27 @@ test('creates a validated 51-row ledger in index and verifier argument order', (
 	}
 });
 
-test('rejects missing, extra and duplicate canonical verifier identities before writing', () => {
+test('accepts a variable verifier count and balances contiguous blocks', () => {
+	const fixture = createFixture();
+	try {
+		const result = runCli(fixture, { verifiers: VERIFIERS.slice(0, 2) });
+		assert.equal(result.status, 0, result.stderr);
+		const report = JSON.parse(result.stdout);
+		assert.deepEqual(
+			report.allocations.map((allocation) => allocation.assignmentCount),
+			[4, 3]
+		);
+	} finally {
+		rmSync(fixture.rootDir, { recursive: true, force: true });
+	}
+});
+
+test('rejects missing and duplicate canonical verifier identities before writing', () => {
 	const cases = [
 		{
-			name: 'two identities',
-			verifiers: VERIFIERS.slice(0, 2),
-			expected: /exactly 3 --verifier arguments/
-		},
-		{
-			name: 'four identities',
-			verifiers: [...VERIFIERS, '/root/science_verify_004'],
-			expected: /exactly 3 --verifier arguments/
+			name: 'no identities',
+			verifiers: [],
+			expected: /at least one --verifier argument/
 		},
 		{
 			name: 'duplicate task name',
@@ -138,7 +152,7 @@ test('rejects a reordered assignment index and a non-canonical creation timestam
 		writeJson(reordered.indexPath, reordered.index);
 		const result = runCli(reordered);
 		assert.notEqual(result.status, 0);
-		assert.match(result.stderr, /assignment index order must be science-001 through science-051/);
+		assert.match(result.stderr, /contiguous science-NNN ids/);
 		assert.equal(existsSync(reordered.outputPath), false);
 	} finally {
 		rmSync(reordered.rootDir, { recursive: true, force: true });
@@ -159,7 +173,7 @@ function createFixture() {
 	const rootDir = mkdtempSync(path.join(tmpdir(), 'science-verifier-dispatch-'));
 	const indexPath = path.join(rootDir, 'verification/assignment-index.json');
 	const outputPath = path.join(rootDir, 'verification/dispatch-ledger.json');
-	const assignments = Array.from({ length: 51 }, (_unused, index) => {
+	const assignments = Array.from({ length: ASSIGNMENT_COUNT }, (_unused, index) => {
 		const ordinal = String(index + 1).padStart(3, '0');
 		return {
 			assignmentId: `science-${ordinal}`,
@@ -178,6 +192,7 @@ function createFixture() {
 		sourceSnapshotSha256: 'b'.repeat(64),
 		curriculumEvidenceSha256: 'c'.repeat(64),
 		candidateSetSha256: 'd'.repeat(64),
+		candidateCount: assignments.reduce((sum, assignment) => sum + assignment.ids.length, 0),
 		assignments
 	};
 	writeJson(indexPath, index);

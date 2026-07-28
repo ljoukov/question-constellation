@@ -2,10 +2,12 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+	SCIENCE_QUESTION_ART_CONFIRMATION_DHASH_THRESHOLD,
 	SCIENCE_QUESTION_ART_DHASH_ALGORITHM,
 	SCIENCE_QUESTION_ART_DHASH_THRESHOLD,
 	SCIENCE_QUESTION_ART_DHASH_VARIANTS,
 	SCIENCE_QUESTION_ART_PERCEPTUAL_AUDIT_SCHEMA,
+	confirmationDHashFromGrayPixels,
 	dHashFromGrayPixels,
 	findPerceptualCollisions,
 	hammingDistanceHex,
@@ -22,12 +24,19 @@ test('builds a deterministic 64-bit dHash from a 9x8 grayscale grid', () => {
 	);
 	assert.equal(dHashFromGrayPixels(descendingRows), 'ffffffffffffffff');
 	assert.equal(dHashFromGrayPixels(ascendingRows), '0000000000000000');
+	const confirmationDescendingRows = Uint8Array.from(
+		Array.from({ length: 16 }, () =>
+			Array.from({ length: 17 }, (_, index) => 255 - index * 15)
+		).flat()
+	);
+	assert.equal(confirmationDHashFromGrayPixels(confirmationDescendingRows), 'f'.repeat(64));
 });
 
 test('computes exact Hamming distance and rejects malformed hashes', () => {
 	assert.equal(hammingDistanceHex('0000000000000000', '000000000000000f'), 4);
 	assert.equal(hammingDistanceHex('ffffffffffffffff', '0000000000000000'), 64);
-	assert.throws(() => hammingDistanceHex('xyz', '0000000000000000'), /16 lowercase/);
+	assert.equal(hammingDistanceHex('f'.repeat(64), '0'.repeat(64)), 256);
+	assert.throws(() => hammingDistanceHex('xyz', '0000000000000000'), /16- or 64-character/);
 });
 
 test('reports near-duplicates across themes while excluding each intended light/dark sibling pair', () => {
@@ -110,6 +119,30 @@ test('multi-transform fingerprints catch horizontally mirrored compositions', ()
 	assert.equal(collisions[0].distance, 0);
 });
 
+test('high-resolution confirmation rejects coarse silhouette collisions but never exact bytes', () => {
+	const falsePositive = [
+		{
+			artId: 'weather-balloon',
+			theme: 'dark',
+			sha256: '1'.repeat(64),
+			dHashes: fingerprints('0000000000000000'),
+			confirmationDHashes: confirmationFingerprints('0'.repeat(64))
+		},
+		{
+			artId: 'parachutist',
+			theme: 'dark',
+			sha256: '2'.repeat(64),
+			dHashes: fingerprints('0000000000000003'),
+			confirmationDHashes: confirmationFingerprints('f'.repeat(64))
+		}
+	];
+	assert.deepEqual(findPerceptualCollisions(falsePositive, 4), []);
+
+	const exactDuplicate = structuredClone(falsePositive);
+	exactDuplicate[1].sha256 = exactDuplicate[0].sha256;
+	assert.equal(findPerceptualCollisions(exactDuplicate, 4).length, 1);
+});
+
 test('release audit validation binds every perceptual record to manifest paths and image bytes', () => {
 	const manifest = {
 		specs: [
@@ -128,7 +161,8 @@ test('release audit validation binds every perceptual record to manifest paths a
 			theme: 'dark',
 			localPath: 'one-dark.webp',
 			sha256: '1'.repeat(64),
-			dHashes: fingerprints('0000000000000000')
+			dHashes: fingerprints('0000000000000000'),
+			confirmationDHashes: confirmationFingerprints('0'.repeat(64))
 		},
 		{
 			id: 'one-light',
@@ -136,7 +170,8 @@ test('release audit validation binds every perceptual record to manifest paths a
 			theme: 'light',
 			localPath: 'one-light.webp',
 			sha256: '2'.repeat(64),
-			dHashes: fingerprints('0000000000000000')
+			dHashes: fingerprints('0000000000000000'),
+			confirmationDHashes: confirmationFingerprints('0'.repeat(64))
 		},
 		{
 			id: 'two-dark',
@@ -144,7 +179,8 @@ test('release audit validation binds every perceptual record to manifest paths a
 			theme: 'dark',
 			localPath: 'two-dark.webp',
 			sha256: '3'.repeat(64),
-			dHashes: fingerprints('ffffffffffffffff')
+			dHashes: fingerprints('ffffffffffffffff'),
+			confirmationDHashes: confirmationFingerprints('f'.repeat(64))
 		},
 		{
 			id: 'two-light',
@@ -152,7 +188,8 @@ test('release audit validation binds every perceptual record to manifest paths a
 			theme: 'light',
 			localPath: 'two-light.webp',
 			sha256: '4'.repeat(64),
-			dHashes: fingerprints('ffffffffffffffff')
+			dHashes: fingerprints('ffffffffffffffff'),
+			confirmationDHashes: confirmationFingerprints('f'.repeat(64))
 		}
 	];
 	const audit = {
@@ -161,6 +198,7 @@ test('release audit validation binds every perceptual record to manifest paths a
 		assetInventorySha256: canonicalHash(assetInventory),
 		algorithm: SCIENCE_QUESTION_ART_DHASH_ALGORITHM,
 		threshold: SCIENCE_QUESTION_ART_DHASH_THRESHOLD,
+		confirmationThreshold: SCIENCE_QUESTION_ART_CONFIRMATION_DHASH_THRESHOLD,
 		recordCount: records.length,
 		collisionCount: 0,
 		status: 'passed',
@@ -190,27 +228,13 @@ test('release audit validation binds every perceptual record to manifest paths a
 	const duplicateEvidence = structuredClone(audit);
 	duplicateEvidence.records.find((record) => record.id === 'two-dark').dHashes =
 		fingerprints('0000000000000003');
-	duplicateEvidence.collisions = [
-		{
-			leftId: 'one',
-			leftTheme: 'dark',
-			rightId: 'two',
-			rightTheme: 'dark',
-			distance: 2,
-			leftVariant: 'full',
-			rightVariant: 'full'
-		},
-		{
-			leftId: 'one',
-			leftTheme: 'light',
-			rightId: 'two',
-			rightTheme: 'dark',
-			distance: 2,
-			leftVariant: 'full',
-			rightVariant: 'full'
-		}
-	];
-	duplicateEvidence.collisionCount = 2;
+	duplicateEvidence.records.find((record) => record.id === 'two-dark').confirmationDHashes =
+		confirmationFingerprints(`${'0'.repeat(63)}3`);
+	duplicateEvidence.collisions = findPerceptualCollisions(
+		duplicateEvidence.records,
+		SCIENCE_QUESTION_ART_DHASH_THRESHOLD
+	);
+	duplicateEvidence.collisionCount = duplicateEvidence.collisions.length;
 	duplicateEvidence.status = 'failed';
 	assert.equal(
 		validatePerceptualAudit(duplicateEvidence, {
@@ -238,4 +262,8 @@ function fingerprints(full, mirror = full) {
 			variant.toLowerCase().includes('mirror') ? mirror : full
 		])
 	);
+}
+
+function confirmationFingerprints(value) {
+	return Object.fromEntries(SCIENCE_QUESTION_ART_DHASH_VARIANTS.map((variant) => [variant, value]));
 }

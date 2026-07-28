@@ -163,12 +163,6 @@
 	const includedPointCount = $derived(
 		data.markingPoints.filter((point) => presentStepIds.has(point.id)).length
 	);
-	const resultTitle = $derived(
-		`${includedPointCount} of ${data.markingPoints.length} marking ${data.markingPoints.length === 1 ? 'point' : 'points'} included`
-	);
-	const fullMarksTitle = $derived(
-		`All ${data.markingPoints.length} marking ${data.markingPoints.length === 1 ? 'point is' : 'points are'} included`
-	);
 	const questionHref = $derived(
 		resolve('/questions/[questionId]', { questionId: data.question.id })
 	);
@@ -1017,43 +1011,9 @@
 					bind:this={resultHeader}
 					class="qc-practice-result-header"
 					tabindex="-1"
-					aria-live="polite"
+					aria-label="Question reference"
 				>
 					<p class="qc-real-kicker"><MathText text={data.question.sourceRef} /></p>
-					<h2>
-						{rewriteCheckPending
-							? 'Checking your improved answer'
-							: choiceNeedsRetry
-								? 'Not quite'
-								: needsImprovement
-									? resultTitle
-									: isChoiceResponse
-										? `${gradeResult?.awardedMarks ?? 0}/${gradeResult?.maxMarks ?? data.question.meta.marks} marks`
-										: fullMarksTitle}
-					</h2>
-					{#if !rewriteCheckPending && needsImprovement}
-						<p class="qc-practice-result-meta">
-							<strong>
-								{gradeResult?.awardedMarks ?? 0}/{gradeResult?.maxMarks ?? data.question.meta.marks}
-								marks
-							</strong>
-							Use the missing marking points below to improve it.
-						</p>
-					{:else if !rewriteCheckPending && !choiceNeedsRetry && !isChoiceResponse}
-						<p class="qc-practice-result-meta">
-							<strong>
-								{gradeResult?.awardedMarks ?? 0}/{gradeResult?.maxMarks ?? data.question.meta.marks}
-								marks
-							</strong>
-							You are ready for another question.
-						</p>
-					{/if}
-					{#if !rewriteCheckPending && gradeResult?.evidence?.externalInputDetected}
-						<p class="qc-assisted-evidence-note">
-							Paste and drop are blocked here. Type the answer yourself; this attempted input is not
-							counted as independent evidence.
-						</p>
-					{/if}
 				</header>
 
 				<section class="qc-practice-original-question" aria-labelledby="original-question-title">
@@ -1080,12 +1040,14 @@
 					>
 						<header class="qc-marking-result-heading">
 							<div>
-								<p class="qc-panel-label">Marking points</p>
+								<div class="qc-marking-result-title-row">
+									<p class="qc-panel-label">Marking points</p>
+									{#if !rewriteCheckPending}
+										<span>{includedPointCount}/{data.markingPoints.length} included</span>
+									{/if}
+								</div>
 								<p>These are the ideas the examiner can credit in this answer.</p>
 							</div>
-							{#if !rewriteCheckPending}
-								<span>{includedPointCount}/{data.markingPoints.length} included</span>
-							{/if}
 						</header>
 						<ol>
 							{#each data.markingPoints as point, index (point.id)}
@@ -1105,19 +1067,12 @@
 									<span>
 										<span class="sr-only">
 											{rewriteCheckPending
-												? 'Marking point: '
+												? 'Checking marking point: '
 												: presentStepIds.has(point.id)
 													? 'Included: '
 													: 'Missing: '}
 										</span>
 										<MathText text={checkedMarkingPointText(point)} />
-									</span>
-									<span class="qc-marking-result-status">
-										{rewriteCheckPending
-											? 'Checking'
-											: presentStepIds.has(point.id)
-												? 'Included'
-												: 'Missing'}
 									</span>
 								</li>
 							{/each}
@@ -1125,7 +1080,14 @@
 					</section>
 				{/if}
 
-				<section class="qc-practice-answer-card" class:qc-practice-improve-card={needsImprovement}>
+				<section
+					class="qc-practice-answer-card"
+					class:qc-practice-improve-card={needsImprovement}
+					class:qc-choice-result-card={isChoiceResponse}
+					class:incorrect={choiceNeedsRetry}
+					class:correct={isChoiceResponse && !choiceNeedsRetry}
+					aria-live={isChoiceResponse ? 'polite' : undefined}
+				>
 					{#if needsImprovement}
 						<header class="qc-practice-improve-copy">
 							<p class="qc-panel-label">Improve your answer</p>
@@ -1161,9 +1123,33 @@
 								{rewriteCheckPending ? 'Checking...' : 'Check improved answer'}
 							</button>
 						</div>
+					{:else if isChoiceResponse}
+						<header class="qc-choice-result-heading">
+							{#if choiceNeedsRetry}
+								<CircleAlert size={22} aria-hidden="true" />
+							{:else}
+								<CheckCircle2 size={22} aria-hidden="true" />
+							{/if}
+							<div>
+								<p class="qc-practice-answer-label">Your checked answer</p>
+								<h2>{choiceNeedsRetry ? 'Not quite' : 'Correct'}</h2>
+							</div>
+						</header>
+						<p class="qc-checked-answer">{answerText}</p>
+						{#if choiceNeedsRetry}
+							<p class="qc-choice-result-guidance">
+								That answer is not correct. Try again, or reveal the correct answer below.
+							</p>
+						{/if}
 					{:else}
 						<p class="qc-practice-answer-label">Your checked answer</p>
 						<p class="qc-checked-answer">{answerText}</p>
+					{/if}
+					{#if !rewriteCheckPending && gradeResult?.evidence?.externalInputDetected}
+						<p class="qc-assisted-evidence-note">
+							Paste and drop are blocked here. Type the answer yourself; this attempted input is not
+							counted as independent evidence.
+						</p>
 					{/if}
 				</section>
 
@@ -1242,7 +1228,7 @@
 								<p>Compare your response with one complete answer.</p>
 							</div>
 							<button
-								class="qc-practice-reveal-button primary"
+								class="qc-practice-reveal-button"
 								type="button"
 								onclick={() => (showFullMarkAnswer = !showFullMarkAnswer)}
 								aria-expanded={showFullMarkAnswer}
@@ -1267,14 +1253,14 @@
 						{/if}
 					</section>
 				{:else if isChoiceResponse && choiceNeedsRetry && (choiceCorrectAnswerText || data.question.modelAnswer)}
-					<section class="qc-practice-reveal qc-practice-full-mark-reveal">
+					<section class="qc-practice-reveal qc-practice-full-mark-reveal qc-choice-correct-reveal">
 						<header class="qc-practice-reveal-header">
 							<div>
 								<p class="qc-panel-label">Correct answer</p>
 								<p>Reveal the correct response when you are ready to compare.</p>
 							</div>
 							<button
-								class="qc-practice-reveal-button primary"
+								class="qc-practice-reveal-button"
 								type="button"
 								onclick={() => (showFullMarkAnswer = !showFullMarkAnswer)}
 								aria-expanded={showFullMarkAnswer}

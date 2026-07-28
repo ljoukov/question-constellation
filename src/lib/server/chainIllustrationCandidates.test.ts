@@ -1,6 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
 
 const { d1Rows } = vi.hoisted(() => ({ d1Rows: vi.fn() }));
 
@@ -24,14 +22,5 @@ describe('chain illustration candidate freshness', () => {
 		for (const field of ['light_r2_key', 'light_public_path', 'light_asset_sha256']) {
 			expect(sql.match(new RegExp(`${field} IS NOT NULL`, 'g'))).toHaveLength(2);
 		}
-	});
-
-	it('keeps the current primary visible until a replacement pair is ready to publish', () => {
-		const generator = readFileSync(
-			path.join(process.cwd(), 'scripts/generate-chain-illustrations.mjs'),
-			'utf8'
-		);
-
-		expect(generator).not.toContain('demoteStaleIllustrations');
 	});
 });

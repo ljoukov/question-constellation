@@ -5,9 +5,7 @@
 	import ChallengePreview from '$lib/challenges/ChallengePreview.svelte';
 	import { challengePath, challengePathWithScope } from '$lib/challenges/routing';
 	import {
-		CHALLENGE_PROGRESS_GUEST_STORAGE_KEY,
 		CHALLENGE_PROGRESS_STORAGE_KEY,
-		LEGACY_CHALLENGE_PROGRESS_STORAGE_KEY,
 		challengeProgressStorageKey,
 		emptyChallengeProgress,
 		mergeChallengeProgress,
@@ -23,12 +21,6 @@
 		mostRecentlyCompletedChallenge,
 		recommendedUnfinishedChallenge
 	} from '$lib/challenges/recommendations';
-	import {
-		challengeSocialImage,
-		challengeSocialImageAlt,
-		challengeSocialImageHeight,
-		challengeSocialImageWidth
-	} from '$lib/challenges/seo';
 	import ChallengeCardLink from '$lib/challenges/ui/ChallengeCardLink.svelte';
 	import ChallengeRouteShell from '$lib/challenges/ui/ChallengeRouteShell.svelte';
 	import ChallengeLeaderboard from '$lib/challenges/ui/ChallengeLeaderboard.svelte';
@@ -66,7 +58,7 @@
 	);
 	const pageTitle = $derived(subjectCopy.pageTitle);
 	const pageDescription = $derived(
-		`Try free ${subjectLabel} exam-question challenges. Compare two answers, find the missing idea, improve the answer and apply the same method again.`
+		`Try free ${subjectLabel} exam-question challenges. Compare two answers, find the missing idea, improve the answer and use what you learned on a new question.`
 	);
 	const challenges = $derived(data.challenges);
 	const serverProgress = $derived(data.challengeProgress as ChallengeProgress);
@@ -181,8 +173,6 @@
 		return (
 			key === null ||
 			key === CHALLENGE_PROGRESS_STORAGE_KEY ||
-			key === CHALLENGE_PROGRESS_GUEST_STORAGE_KEY ||
-			key === LEGACY_CHALLENGE_PROGRESS_STORAGE_KEY ||
 			key === challengeProgressStorageKey(userId)
 		);
 	}
@@ -215,15 +205,15 @@
 	<meta property="og:title" content={pageTitle} />
 	<meta property="og:description" content={pageDescription} />
 	<meta property="og:url" content={canonicalUrl} />
-	<meta property="og:image" content={challengeSocialImage} />
-	<meta property="og:image:width" content={challengeSocialImageWidth} />
-	<meta property="og:image:height" content={challengeSocialImageHeight} />
-	<meta property="og:image:alt" content={challengeSocialImageAlt} />
+	<meta property="og:image" content={data.socialImage.url} />
+	<meta property="og:image:width" content={String(data.socialImage.width)} />
+	<meta property="og:image:height" content={String(data.socialImage.height)} />
+	<meta property="og:image:alt" content={data.socialImage.alt} />
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content={pageTitle} />
 	<meta name="twitter:description" content={pageDescription} />
-	<meta name="twitter:image" content={challengeSocialImage} />
-	<meta name="twitter:image:alt" content={challengeSocialImageAlt} />
+	<meta name="twitter:image" content={data.socialImage.url} />
+	<meta name="twitter:image:alt" content={data.socialImage.alt} />
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 	{@html jsonLdScript}
 </svelte:head>

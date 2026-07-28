@@ -154,12 +154,13 @@ export async function runDirectScienceChallengeMultipartTurn({
 			runSummarySha256: record.runSummarySha256,
 			rawOutputSha256: record.rawOutputSha256,
 			eventLogSha256: record.eventLogSha256,
-			...(responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON
-				? {
-						responseMode,
-						transportVersion: SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_TRANSPORT_VERSION
-					}
-				: {})
+			responseMode,
+			providerSchemaApplied:
+				responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON,
+			transportVersion:
+				responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON
+					? SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_TRANSPORT_VERSION
+					: record.transportVersion
 		});
 		if (!partFailure && run) {
 			const policy = validateScienceChallengeAuthoringRunPolicy({
@@ -212,12 +213,13 @@ export async function runDirectScienceChallengeMultipartTurn({
 				partCount: parts.length,
 				rowIds: parts.flatMap((part) => part.rowIds),
 				mergedCandidateSha256: canonicalHash(mergedCandidate),
-				...(responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON
-					? {
-							responseMode,
-							transportVersion: SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_MULTIPART_TRANSPORT_VERSION
-						}
-					: {})
+				responseMode,
+				providerSchemaApplied:
+					responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON,
+				transportVersion:
+					responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON
+						? SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_MULTIPART_TRANSPORT_VERSION
+						: SCIENCE_CHALLENGE_DIRECT_MULTIPART_TRANSPORT_VERSION
 			});
 		}
 	}
@@ -282,17 +284,15 @@ function buildPartRecord({ part, relativePaths, absolutePaths, responseSchema })
 		status: runSummary?.status ?? 'failed',
 		provider: runSummary?.provider ?? null,
 		model: runSummary?.model ?? null,
-		modelVersion: runSummary?.modelVersion ?? null,
-		thinkingLevel: runSummary?.thinkingLevel ?? null,
-		usage: runSummary?.usage ?? null,
-		costUsd: runSummary?.costUsd ?? null
-	};
-	if (runSummary?.responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON) {
-		record.transportVersion = runSummary.transportVersion;
-		record.responseMode = runSummary.responseMode;
-		record.providerSchemaApplied = runSummary.providerSchemaApplied;
-	}
-	return record;
+			modelVersion: runSummary?.modelVersion ?? null,
+			thinkingLevel: runSummary?.thinkingLevel ?? null,
+			usage: runSummary?.usage ?? null,
+			costUsd: runSummary?.costUsd ?? null,
+			transportVersion: runSummary?.transportVersion ?? null,
+			responseMode: runSummary?.responseMode ?? null,
+			providerSchemaApplied: runSummary?.providerSchemaApplied ?? null
+		};
+		return record;
 }
 
 function buildCompositeSummary({
@@ -331,6 +331,9 @@ function buildCompositeSummary({
 			responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON
 				? SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_MULTIPART_TRANSPORT_VERSION
 				: SCIENCE_CHALLENGE_DIRECT_MULTIPART_TRANSPORT_VERSION,
+		responseMode,
+		providerSchemaApplied:
+			responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON,
 		authMode,
 		provider: SCIENCE_CHALLENGE_DIRECT_JSON_PROVIDER,
 		model,
@@ -367,10 +370,6 @@ function buildCompositeSummary({
 		lastMessageFileSha256: sha256(readOptional(rootPaths.lastMessage)),
 		mergedCandidateSha256: mergedCandidate ? canonicalHash(mergedCandidate) : null
 	};
-	if (responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON) {
-		summary.responseMode = responseMode;
-		summary.providerSchemaApplied = false;
-	}
 	return summary;
 }
 

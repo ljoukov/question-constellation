@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -256,7 +256,14 @@ describe('production import integrity policy', () => {
 		expect(result.stderr).toMatch(expectedError);
 	});
 
-	it('allows the source-drop flag through CLI planning only for an exact locked OCR paper', () => {
+	it.skipIf(
+		![
+			'data/ocr-gcse-english-language/question-papers/OCR-J351-01-QP-JUN24.PDF',
+			'data/ocr-gcse-english-language/mark-schemes/OCR-J351-01-MS-JUN24.PDF',
+			'data/ocr-gcse-english-language/examiner-reports/OCR-J351-01-ER-JUN24.PDF',
+			'data/ocr-gcse-english-language/supporting-documents/OCR-J351-01-INSERT-JUN24.PDF'
+		].every((filePath) => existsSync(filePath))
+	)('allows the source-drop flag through CLI planning only for an exact locked OCR paper', () => {
 		const result = spawnSync(
 			process.execPath,
 			[
@@ -268,7 +275,6 @@ describe('production import integrity policy', () => {
 				'--supporting-document=data/ocr-gcse-english-language/supporting-documents/OCR-J351-01-INSERT-JUN24.PDF',
 				'--allow-unpublishable-source-drops',
 				'--import',
-				'--skip-chain-illustrations',
 				'--dry-run'
 			],
 			{ cwd: process.cwd(), encoding: 'utf8' }

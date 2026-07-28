@@ -1,14 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
-	challengeCatalog: Array.from({ length: 500 }, (_, index) => ({
-		id: `challenge-${index}`
-	})),
+	challengeIds: Array.from({ length: 500 }, (_, index) => `challenge-${index}`),
 	queryPersonalRows: vi.fn().mockResolvedValue([])
 }));
 
-vi.mock('$lib/challenges/catalog', () => ({
-	challengeCatalog: mocks.challengeCatalog
+vi.mock('$lib/server/challengeCatalog', () => ({
+	getActiveChallengeIds: vi.fn().mockResolvedValue(mocks.challengeIds)
 }));
 
 vi.mock('$lib/server/db', () => ({
@@ -31,9 +29,7 @@ describe('challenge progress query parameters', () => {
 		expect(query).toContain('FROM json_each(?)');
 		expect(params.length).toBeLessThanOrEqual(100);
 		expect(params).toHaveLength(3);
-		expect(JSON.parse(params[1] as string)).toEqual(
-			mocks.challengeCatalog.map((challenge) => challenge.id)
-		);
+		expect(JSON.parse(params[1] as string)).toEqual(mocks.challengeIds);
 		expect(params[2]).toBe(500);
 	});
 });

@@ -12,7 +12,7 @@ import {
 	writeFileSync
 } from 'node:fs';
 import path from 'node:path';
-import { createServer } from 'vite';
+import { loadChallengeCatalogSource } from './lib/challenge-catalog-source.mjs';
 
 import {
 	SCIENCE_CHALLENGE_BATCH_SCHEMA,
@@ -80,6 +80,7 @@ import {
 } from './lib/science-challenge-difficulty-plan-adjustment-evidence.mjs';
 import { validateScienceChallengeVerifierAllocation } from './lib/science-challenge-verifier-dispatch.mjs';
 import { requireArtGenerationJobEvidence } from './lib/science-challenge-art-lineage.mjs';
+import { buildReviewedRuntimeArtRecord } from './lib/science-challenge-runtime-art.mjs';
 import {
 	buildScienceChallengeProvenanceArchive,
 	scienceChallengeProvenanceBindings,
@@ -112,27 +113,14 @@ import {
 	validateScienceChallengeMultipartPlanSalvageAcceptance
 } from './lib/science-challenge-multipart-plan-salvage-evidence.mjs';
 import {
-	requireExclusiveScienceChallengeMultipartRecoveryLineage,
-	scienceChallengeMultipartContinuationDirectory,
-	validateScienceChallengeMultipartContinuationAcceptance
-} from './lib/science-challenge-multipart-continuation.mjs';
-import {
 	classifyScienceChallengeReviewRebaseMaterializationSource,
-	relativeMultipartContinuationLineage,
 	relativeMultipartPlanSalvageLineage,
 	scienceChallengeReviewRebaseInfrastructureRecoveryProposalLineage,
 	workspaceRelativeMaterializationPath
 } from './lib/science-challenge-materialization-lineage.mjs';
 import {
-	buildVerificationRepairExecutionLedgerSnapshot,
-	discoverVerificationRepairRecoveryBinding,
-	discoverVerificationRepairRecoveryManifest,
 	inspectVerificationRepairGenerationEvidence,
-	requireMatchingVerificationRepairExecutionIdentity,
-	requireVerificationRepairRecoveryArchivePair,
-	scienceChallengeVerificationRepairExecutionIdentity,
-	validateVerificationRepairRecoveryManifest,
-	verificationRepairExecutionLedgerRoot
+	scienceChallengeVerificationRepairExecutionIdentity
 } from './lib/science-challenge-verification-repair-lineage.mjs';
 
 const rootDir = process.cwd();
@@ -174,54 +162,6 @@ const repairGenerationEvidence = inspectVerificationRepairGenerationEvidence({
 	generationRoot,
 	terminalEffectiveCohortManifestPath
 });
-const repairExecutionLedgerRoot = repairGenerationEvidence.required
-	? verificationRepairExecutionLedgerRoot(rootDir, repairGenerationEvidence.objectiveId)
-	: null;
-const repairRecoveryManifestPath = repairExecutionLedgerRoot
-	? discoverVerificationRepairRecoveryManifest({ ledgerRoot: repairExecutionLedgerRoot })
-	: null;
-const repairRecoveryBinding = repairExecutionLedgerRoot
-	? discoverVerificationRepairRecoveryBinding({
-			ledgerRoot: repairExecutionLedgerRoot,
-			generationRoot
-		})
-	: null;
-const repairRecoveryManifest = repairRecoveryManifestPath
-	? readJson(repairRecoveryManifestPath)
-	: null;
-requireVerificationRepairRecoveryArchivePair({
-	bindingRecord: repairRecoveryBinding,
-	manifest: repairRecoveryManifest,
-	manifestPath: repairRecoveryManifestPath,
-	recoveryRequired: Boolean(repairRecoveryBinding || repairRecoveryManifestPath)
-});
-if (repairRecoveryBinding) {
-	requireMatchingVerificationRepairExecutionIdentity({
-		expected: repairRecoveryBinding.identity,
-		actual: repairGenerationEvidence.identity,
-		label: 'Generation verification-repair execution identity'
-	});
-}
-if (repairRecoveryManifest) {
-	const recoveryValidation = validateVerificationRepairRecoveryManifest({
-		manifest: repairRecoveryManifest,
-		manifestPath: repairRecoveryManifestPath,
-		planPath: path.resolve(rootDir, args.plan),
-		generationRoot: path.resolve(rootDir, args.generationRoot)
-	});
-	if (recoveryValidation.status !== 'passed') {
-		throw new Error(
-			`Verification-repair recovery validation failed:\n${recoveryValidation.issues.join('\n')}`
-		);
-	}
-}
-const repairExecutionLedgerSnapshot = repairRecoveryBinding
-	? buildVerificationRepairExecutionLedgerSnapshot({
-			ledgerRoot: repairRecoveryBinding.ledgerRoot,
-			identity: repairRecoveryBinding.identity,
-			outputRoot: generationRoot
-		})
-	: null;
 const sourceById = new Map(
 	sourceSnapshot.questions.map((question) => [
 		question.id,
@@ -231,9 +171,14 @@ const sourceById = new Map(
 const curriculumById = new Map(
 	curriculumEvidence.components.map((component) => [component.componentId, component])
 );
-const existingCatalog = await loadExistingCatalog();
-if (existingCatalog.length !== 92)
-	throw new Error(`Expected 92 existing rounds; found ${existingCatalog.length}.`);
+const existingCatalogSource = await loadExistingCatalog();
+const existingCatalog = existingCatalogSource.definitions;
+if (
+	existingCatalogSource.contentSha256 !== plan.baseCatalogContentSha256 ||
+	existingCatalog.length !== plan.baseCatalogRecordCount
+) {
+	throw new Error('Active challenge catalogue differs from the exact source bound into the plan.');
+}
 const terminalEffectiveCohortManifest = terminalEffectiveCohortManifestPath
 	? readJson(terminalEffectiveCohortManifestPath)
 	: null;
@@ -622,17 +567,13 @@ for (const shardId of [...new Set(plan.rows.map((row) => row.shard))].sort()) {
 					allPlanIds: effectivePlan.rows.map((row) => row.id)
 				});
 	const salvageDirectories = listMultipartPlanSalvageDirectories(shardDir);
-	const continuationDirectories = listMultipartContinuationDirectories(shardDir);
-	requireExclusiveScienceChallengeMultipartRecoveryLineage({
-		shardId,
-		salvageDirectories,
-		continuationDirectories
-	});
+	if (salvageDirectories.length > 1) {
+		throw new Error(`${shardId} contains ambiguous multipart salvage lineage.`);
+	}
 	let salvage = null;
-	let continuation = null;
 	if (
 		(reviewRebaseSourced || infrastructureRecoverySource || (typedRecovery && !successorRepair)) &&
-		(salvageDirectories.length || continuationDirectories.length)
+		salvageDirectories.length
 	) {
 		throw new Error(
 			`${shardId} deterministic exceptional lineage cannot coexist with multipart recovery lineage.`
@@ -643,19 +584,6 @@ for (const shardId of [...new Set(plan.rows.map((row) => row.shard))].sort()) {
 		(typedRecovery && !successorRepair)
 	) {
 		// Exact source evidence is authenticated by review-rebase or typed-recovery replay.
-	} else if (
-		validation.authoringDisposition === 'exhausted-multipart-part-continuation' ||
-		continuationDirectories.length > 0
-	) {
-		continuation = requireMultipartContinuationLineage({
-			shardId,
-			shardDir,
-			candidate,
-			validation,
-			inputs: authoringInputs,
-			rows: shardRows,
-			continuationDirectories
-		});
 	} else if (
 		validation.authoringDisposition === 'deterministic-multipart-plan-drift-salvage' ||
 		salvageDirectories.length > 0
@@ -707,7 +635,6 @@ for (const shardId of [...new Set(plan.rows.map((row) => row.shard))].sort()) {
 		reviewRebaseSource,
 		reviewRebaseInfrastructureRecovery: infrastructureRecoverySource,
 		salvage,
-		continuation,
 		descendantRemap: descendantRemap ? releaseRecoveryLineage(descendantRemap.lineage) : null,
 		difficultyPlanAdjustment: difficultyPlanAdjustment
 			? releaseRecoveryLineage(difficultyPlanAdjustment.lineage)
@@ -834,8 +761,10 @@ if (args.mode === 'release' && effectiveCohort) {
 ) {
 	throw new Error('Content verification contains an unassigned typed-recovery decision.');
 }
-const artManifest = buildArtManifest(existingCatalog, orderedGeneratedEntries);
-const artManifestValidation = validateQuestionArtManifest(artManifest, { expectedCount: 1_000 });
+const artManifest = buildArtManifest(orderedGeneratedEntries);
+const artManifestValidation = validateQuestionArtManifest(artManifest, {
+	expectedCount: orderedGeneratedEntries.length * 2
+});
 if (artManifestValidation.status !== 'passed') {
 	throw new Error(`Art manifest validation failed:\n${artManifestValidation.issues.join('\n')}`);
 }
@@ -854,13 +783,13 @@ const artDelivery =
 const coverage = buildCoverage(effectivePlan);
 const runtimeProjection =
 	args.mode === 'release'
-		? buildRuntimeProjection(
-				effectivePlan.planId,
-				existingCatalog,
-				orderedGeneratedEntries,
+			? buildRuntimeProjection(
+					effectivePlan.planId,
+					orderedGeneratedEntries,
 				curriculumById,
 				artManifest,
-				artDelivery
+				artDelivery,
+				artReview
 			)
 		: null;
 const lineage = {
@@ -917,21 +846,7 @@ const lineage = {
 				decisionSetSha256: effectiveReleaseGate?.difficultyPlanAdjustmentDecisionSetSha256 ?? null
 			}
 		: null,
-	art: artGenerationLineage,
-	recovery: repairRecoveryManifest
-		? {
-				schemaVersion: repairRecoveryManifest.schemaVersion,
-				executionId: repairRecoveryManifest.executionId,
-				objectiveId: repairRecoveryManifest.identity.objectiveId,
-				path: workspaceRelativeMaterializationPath(
-					rootDir,
-					repairRecoveryManifestPath,
-					'Verification-repair recovery manifest path'
-				),
-				sha256: canonicalHash(repairRecoveryManifest),
-				executionLedgerSha256: canonicalHash(repairExecutionLedgerSnapshot)
-			}
-		: null
+	art: artGenerationLineage
 };
 const releaseMaterializedAt = materializedAt(plan, args.materializedAt);
 const releaseBindings = {
@@ -995,8 +910,19 @@ const provenanceBindings =
 
 const outputRoot =
 	args.mode === 'release'
-		? path.resolve(rootDir, 'data/challenges/releases', plan.planId)
+		? path.resolve(rootDir, args.releaseOutput)
 		: path.resolve(rootDir, args.candidateOutput);
+const ignoredRoot = path.resolve(rootDir, 'tmp');
+const relativeOutput = path.relative(ignoredRoot, outputRoot);
+if (
+	!relativeOutput ||
+	relativeOutput.startsWith(`..${path.sep}`) ||
+	path.isAbsolute(relativeOutput)
+) {
+	throw new Error(
+		'Challenge materialization must stay under ignored tmp/, never src/, data/, docs/ or static/.'
+	);
+}
 if (existsSync(outputRoot)) {
 	throw new Error(
 		`Materialization output already exists and is immutable: ${workspaceRelativeMaterializationPath(
@@ -1050,9 +976,7 @@ if (args.mode === 'release') {
 			contentReviewPath: args.contentReview,
 			artGenerationRoot: args.artGenerationRoot,
 			artReviewRoot: path.dirname(args.artReview),
-			artPerceptualAuditPath: args.artPerceptualAudit,
-			repairRecoveryManifestPath,
-			repairExecutionLedgerSnapshot
+			artPerceptualAuditPath: args.artPerceptualAudit
 		});
 	} catch (error) {
 		rmSync(releaseStagingRoot, { recursive: true, force: true });
@@ -1085,7 +1009,7 @@ const release = {
 	challenges: effectivePlan.rows.map((row) => entryById.get(row.id))
 };
 const releaseValidation = validateRelease(release, {
-	expectedCount: 408,
+		expectedCount: effectivePlan.rows.length,
 	forEntry: (entry) => {
 		const row = effectivePlan.rows.find((candidate) => candidate.id === entry.definition.id);
 		const source = sourceById.get(row.calibrationQuestionId);
@@ -1305,26 +1229,11 @@ console.log(
 );
 
 async function loadExistingCatalog() {
-	const server = await createServer({
-		root: rootDir,
-		server: { middlewareMode: true },
-		appType: 'custom',
-		logLevel: 'silent'
-	});
-	try {
-		const module = await server.ssrLoadModule('/src/lib/challenges/catalog.ts');
-		return module.challengeCatalog;
-	} finally {
-		await server.close();
-	}
+	return loadChallengeCatalogSource({ rootDir, sourcePath: args.catalogSource });
 }
 
-function buildArtManifest(existingCatalog, newEntries) {
+function buildArtManifest(newEntries) {
 	const specs = [];
-	for (const challenge of existingCatalog) {
-		specs.push(legacyArtSpec(challenge, 'opening'));
-		specs.push(legacyArtSpec(challenge, 'transfer'));
-	}
 	for (const entry of newEntries) {
 		for (const context of ['opening', 'transfer']) {
 			const art = entry.art[context];
@@ -1351,38 +1260,6 @@ function buildArtManifest(existingCatalog, newEntries) {
 	};
 }
 
-function legacyArtSpec(challenge, context) {
-	const question = context === 'opening' ? challenge.previewQuestion : challenge.transferPromptLead;
-	const id = `${challenge.id}-${context}`;
-	const subjectLabel = challenge.subject[0].toUpperCase() + challenge.subject.slice(1);
-	const conciseQuestion = question.replace(/\s+/g, ' ').trim();
-	return {
-		schemaVersion: 'science-question-art/v1',
-		id,
-		challengeId: challenge.id,
-		context,
-		subject: challenge.subject,
-		question: conciseQuestion,
-		scene: `A single coherent, text-free GCSE ${subjectLabel} scene showing the starting situation in this question before any result or conclusion: ${conciseQuestion}`,
-		visualAnchor: `${challenge.topic}: ${challenge.title.replace(/\?$/, '')}`,
-		altText: truncate(
-			`A text-free ${subjectLabel} illustration showing the starting setup described by: ${conciseQuestion}`,
-			320
-		),
-		approvedMeaning:
-			'The question-specific starting situation is visible, while the result and correct reasoning remain unresolved.',
-		accuracyConstraints: [
-			`Use only scientifically plausible ${subjectLabel} objects, structures or apparatus named or unambiguously required by the question.`,
-			'Keep the depicted state before the measured result, reaction outcome, calculation or explanatory conclusion.'
-		],
-		forbiddenDetails: [
-			'Do not reveal the correct answer, result, causal link, completed sequence, numerical solution or winning choice.',
-			'Do not add text, labels, equations, values, arrows, branding or unrelated apparatus.'
-		],
-		output: outputPaths(id)
-	};
-}
-
 function outputPaths(id) {
 	return {
 		darkPath: scienceQuestionArtLocalPath(plan.planId, id, 'dark'),
@@ -1392,11 +1269,11 @@ function outputPaths(id) {
 
 function buildRuntimeProjection(
 	releaseId,
-	existingCatalog,
 	newEntries,
 	curriculumComponents,
 	artManifest,
-	artDelivery
+	artDelivery,
+	artReview
 ) {
 	const definitions = newEntries.map((entry) => entry.definition);
 	return {
@@ -1424,14 +1301,15 @@ function buildRuntimeProjection(
 				pageEnd: component.pageEnd
 			};
 		}),
-		visuals: buildRuntimeVisuals(existingCatalog, newEntries, artManifest, artDelivery)
+		visuals: buildRuntimeVisuals(newEntries, artManifest, artDelivery, artReview)
 	};
 }
 
-function buildRuntimeVisuals(existingCatalog, newEntries, artManifest, artDelivery) {
+function buildRuntimeVisuals(newEntries, artManifest, artDelivery, artReview) {
 	const specById = new Map(artManifest.specs.map((spec) => [spec.id, spec]));
 	const deliveryById = new Map(artDelivery.objects.map((object) => [object.id, object]));
-	const definitions = [...existingCatalog, ...newEntries.map((entry) => entry.definition)];
+	const reviewById = new Map(artReview.reviews.map((review) => [review.id, review]));
+	const definitions = newEntries.map((entry) => entry.definition);
 	return definitions.map((challenge) => {
 		const opening = specById.get(`${challenge.id}-opening`);
 		const transfer = specById.get(`${challenge.id}-transfer`);
@@ -1444,23 +1322,14 @@ function buildRuntimeVisuals(existingCatalog, newEntries, artManifest, artDelive
 			segments,
 			decisiveIndex: Math.max(0, segments.length - 2),
 			decisiveLabel: challenge.memoryHandle,
-			cardArt: artRecord(opening, deliveryById),
-			transferArt: artRecord(transfer, deliveryById)
+			cardArt: buildReviewedRuntimeArtRecord({ spec: opening, deliveryById, reviewById }),
+			transferArt: buildReviewedRuntimeArtRecord({
+				spec: transfer,
+				deliveryById,
+				reviewById
+			})
 		};
 	});
-}
-
-function artRecord(spec, deliveryById) {
-	const dark = deliveryById.get(`${spec.id}-dark`);
-	const light = deliveryById.get(`${spec.id}-light`);
-	if (!dark || !light) throw new Error(`Missing R2 delivery paths for ${spec.id}.`);
-	return {
-		src: light.publicPath,
-		darkSrc: dark.publicPath,
-		alt: spec.altText,
-		width: 960,
-		height: 540
-	};
 }
 
 function buildArtDeliveryManifest(artManifest, artReview) {
@@ -1504,7 +1373,7 @@ function buildArtDeliveryManifest(artManifest, artReview) {
 	};
 	const validation = validateQuestionArtDeliveryManifest(delivery, {
 		artManifest,
-		expectedCount: 2_000
+		expectedCount: artManifest.specs.length * 2
 	});
 	if (validation.status !== 'passed') {
 		throw new Error(`Art delivery validation failed:\n${validation.issues.join('\n')}`);
@@ -1523,11 +1392,12 @@ function buildCoverage(plan) {
 		'mechanic'
 	];
 	return {
-		schemaVersion: 'science-challenge-coverage/v1',
+		schemaVersion: 'science-challenge-coverage/v2',
+		existingRounds: existingCatalog.length,
 		generatedRounds: plan.rows.length,
 		generatedQuestionContexts: plan.rows.length * 2,
-		finalRounds: 500,
-		finalQuestionContexts: 1_000,
+		finalRounds: existingCatalog.length + plan.rows.length,
+		finalQuestionContexts: (existingCatalog.length + plan.rows.length) * 2,
 		dimensions: Object.fromEntries(
 			dimensions.map((dimension) => [dimension, countsFor(plan.rows, dimension)])
 		)
@@ -1552,6 +1422,7 @@ function readAndRequireContentReview(
 	expectedDifficultyPlanAdjustmentVerifierInput
 ) {
 	const review = readJson(relativePath);
+	const expectedReviewCount = generatedEntries.length;
 	const expectedReviewRebaseSuccessorEmptyRecoveryBinding =
 		buildMaterializerReviewRebaseSuccessorEmptyRecoveryBinding({
 			effectiveCohort,
@@ -1570,7 +1441,7 @@ function readAndRequireContentReview(
 		curriculumEvidence,
 		rootDir,
 		requiredStatus: 'passed',
-		expectedCount: 408
+		expectedCount: expectedReviewCount
 	});
 	if (rawEvidence.status !== 'passed') {
 		throw new Error(`Raw content verification evidence failed:\n${rawEvidence.issues.join('\n')}`);
@@ -1582,12 +1453,16 @@ function readAndRequireContentReview(
 	if (review.schemaVersion !== 'science-challenge-independent-verification-summary/v1') {
 		throw new Error('Content verification summary has an invalid schemaVersion.');
 	}
-	if (review.status !== 'passed' || review.acceptedCount !== 408 || review.rejectedCount !== 0) {
-		throw new Error('All 408 generated challenges must pass independent verification.');
+	if (
+		review.status !== 'passed' ||
+		review.acceptedCount !== expectedReviewCount ||
+		review.rejectedCount !== 0
+	) {
+		throw new Error('Every generated challenge must pass independent verification.');
 	}
 	if (
 		review.assignmentCount !== expectedAssignmentCount ||
-		review.reviewCount !== 408 ||
+		review.reviewCount !== expectedReviewCount ||
 		!Array.isArray(review.assignmentResults) ||
 		review.assignmentResults.length !== expectedAssignmentCount ||
 		review.assignmentResults.some((result) => result.status !== 'passed') ||
@@ -1614,8 +1489,10 @@ function readAndRequireContentReview(
 		throw new Error('Content verification was run against different candidate bytes.');
 	}
 	validateVerifierDispatchForRelease(dispatchLedger, review, expectedAssignmentCount);
-	if (!Array.isArray(review.reviews) || review.reviews.length !== 408) {
-		throw new Error('Content verification must contain exactly 408 review rows.');
+	if (!Array.isArray(review.reviews) || review.reviews.length !== expectedReviewCount) {
+		throw new Error(
+			`Content verification must contain exactly ${expectedReviewCount} review rows.`
+		);
 	}
 	const boundReviewRows = [];
 	for (const assignmentResult of review.assignmentResults) {
@@ -1662,7 +1539,9 @@ function readAndRequireContentReview(
 	const ids = new Set(
 		review.reviews.filter((entry) => entry.accepted === true).map((entry) => entry.id)
 	);
-	if (ids.size !== 408) throw new Error('Content verification ids must be unique and accepted.');
+	if (ids.size !== expectedReviewCount) {
+		throw new Error('Content verification ids must be unique and accepted.');
+	}
 	for (const row of effectivePlan.rows)
 		if (!ids.has(row.id)) throw new Error(`Missing accepting content review for ${row.id}.`);
 	const decisions = rawEvidence.curriculumRemapDecisions ?? [];
@@ -1755,13 +1634,14 @@ function validateVerifierDispatchForRelease(ledger, review, expectedAssignmentCo
 
 function readAndRequireArtReview(relativePath, manifest) {
 	const review = readJson(relativePath);
+	const expectedArtCount = manifest.specs.length;
 	const rawEvidence = requireArtReviewEvidence({
 		review,
 		reviewPath: relativePath,
 		manifest,
 		rootDir,
 		requiredStatus: 'passed',
-		expectedCount: 1_000
+		expectedCount: expectedArtCount
 	});
 	if (rawEvidence.status !== 'passed') {
 		throw new Error(`Raw art review evidence failed:\n${rawEvidence.issues.join('\n')}`);
@@ -1772,18 +1652,22 @@ function readAndRequireArtReview(relativePath, manifest) {
 	if (review.model !== 'gpt-5.6-sol' || review.thinkingLevel !== 'max') {
 		throw new Error('Art review used the wrong model or thinking level.');
 	}
-	if (review.status !== 'passed' || review.acceptedCount !== 1_000 || review.rejectedCount !== 0) {
-		throw new Error('All 1,000 illustration pairs must pass independent visual review.');
+	if (
+		review.status !== 'passed' ||
+		review.acceptedCount !== expectedArtCount ||
+		review.rejectedCount !== 0
+	) {
+		throw new Error('Every generated illustration pair must pass independent visual review.');
 	}
 	if (
-		review.selectedCount !== 1_000 ||
+		review.selectedCount !== expectedArtCount ||
 		review.missingCount !== 0 ||
 		review.invalidBatchCount !== 0 ||
-		review.batchCount !== 250 ||
 		!Array.isArray(review.reviews) ||
-		review.reviews.length !== 1_000 ||
+		review.reviews.length !== expectedArtCount ||
 		!Array.isArray(review.batches) ||
-		review.batches.length !== 250
+		review.batchCount !== review.batches.length ||
+		review.batches.length < 1
 	) {
 		throw new Error('Art review summary is incomplete.');
 	}
@@ -1807,7 +1691,8 @@ function readAndRequireArtReview(relativePath, manifest) {
 			batch.model !== 'gpt-5.6-sol' ||
 			batch.thinkingLevel !== 'max' ||
 			!Array.isArray(batch.ids) ||
-			batch.ids.length !== 4 ||
+			batch.ids.length < 1 ||
+			batch.ids.length > 6 ||
 			batchIds.has(batch.batchId)
 		) {
 			throw new Error('Art review batch lineage is malformed or duplicated.');
@@ -1862,7 +1747,7 @@ function readAndRequireArtReview(relativePath, manifest) {
 		batchReviewRows.push(...(result.reviews ?? []));
 	}
 	if (
-		reviewedArtIds.size !== 1_000 ||
+		reviewedArtIds.size !== expectedArtCount ||
 		canonicalHash(batchReviewRows) !== canonicalHash(review.reviews)
 	) {
 		throw new Error('Art review rows differ from their bound model batch results.');
@@ -1878,7 +1763,9 @@ function readAndRequireArtReview(relativePath, manifest) {
 	const acceptedIds = new Set(
 		review.reviews.filter((entry) => entry.accepted === true).map((entry) => entry.id)
 	);
-	if (acceptedIds.size !== 1_000) throw new Error('Art review ids must be unique and accepted.');
+	if (acceptedIds.size !== expectedArtCount) {
+		throw new Error('Art review ids must be unique and accepted.');
+	}
 	for (const spec of manifest.specs) {
 		if (!acceptedIds.has(spec.id)) throw new Error(`Missing accepting art review for ${spec.id}.`);
 	}
@@ -1898,7 +1785,7 @@ function readAndRequirePerceptualAudit(relativePath, manifest, artReview) {
 	const validation = validatePerceptualAudit(audit, {
 		manifest,
 		assetInventory,
-		expectedRecordCount: 2_000
+		expectedRecordCount: manifest.specs.length * 2
 	});
 	if (validation.status !== 'passed') {
 		throw new Error(`Perceptual duplicate audit failed:\n${validation.issues.join('\n')}`);
@@ -2033,8 +1920,11 @@ function readAndRequireArtGenerationLineage(manifest, relativeRoot) {
 			matchingJobs
 		});
 	}
-	if (lineage.length !== 1_000 || new Set(lineage.map((item) => item.id)).size !== 1_000) {
-		throw new Error('Art generation lineage must bind exactly 1,000 unique question contexts.');
+	if (
+		lineage.length !== manifest.specs.length ||
+		new Set(lineage.map((item) => item.id)).size !== manifest.specs.length
+	) {
+		throw new Error('Art generation lineage must bind every generated question context.');
 	}
 	return lineage;
 }
@@ -2063,17 +1953,6 @@ function listMultipartPlanSalvageDirectories(shardDir) {
 			(entry) =>
 				entry.isDirectory() &&
 				/^verification-repair-[a-f0-9]{12}-multipart-plan-salvage$/.test(entry.name)
-		)
-		.map((entry) => path.join(shardDir, entry.name))
-		.sort();
-}
-
-function listMultipartContinuationDirectories(shardDir) {
-	return readdirSync(shardDir, { withFileTypes: true })
-		.filter(
-			(entry) =>
-				entry.isDirectory() &&
-				/^verification-repair-[a-f0-9]{12}-attempt-04-multipart-continuation$/.test(entry.name)
 		)
 		.map((entry) => path.join(shardDir, entry.name))
 		.sort();
@@ -2135,10 +2014,7 @@ function readDescendantRemapForMaterialization(directory) {
 	if (path.resolve(directory) !== path.resolve(expectedDirectory)) {
 		throw new Error(`${shardId} descendant-remap directory is not objective-bound.`);
 	}
-	if (
-		listMultipartPlanSalvageDirectories(shardDir).length > 0 ||
-		listMultipartContinuationDirectories(shardDir).length > 0
-	) {
+	if (listMultipartPlanSalvageDirectories(shardDir).length > 0) {
 		throw new Error(`${shardId} descendant remap cannot coexist with multipart recovery lineage.`);
 	}
 	const inputs = JSON.parse(readFileSync(path.join(shardDir, 'input.json'), 'utf8'));
@@ -2251,7 +2127,6 @@ function readDifficultyPlanAdjustmentForMaterialization(directory) {
 	}
 	if (
 		listMultipartPlanSalvageDirectories(shardDir).length > 0 ||
-		listMultipartContinuationDirectories(shardDir).length > 0 ||
 		listDescendantRemapDirectories(shardDir).length > 0
 	) {
 		throw new Error(
@@ -2390,190 +2265,6 @@ function validateDescendantRemapCollection({ shardId, candidate, projectedPlan }
 		candidateCount: candidateSet.length,
 		candidateSetSha256: canonicalHash(candidateSet),
 		effectivePlanSha256: canonicalHash(projectedPlan)
-	};
-}
-
-function requireMultipartContinuationLineage({
-	shardId,
-	shardDir,
-	candidate,
-	validation,
-	inputs,
-	rows,
-	continuationDirectories
-}) {
-	const repairSha256 = validation.verificationRepairSha256;
-	if (
-		typeof repairSha256 !== 'string' ||
-		!/^[a-f0-9]{64}$/.test(repairSha256) ||
-		!repairGenerationEvidence.required ||
-		!repairGenerationEvidence.identity ||
-		repairGenerationEvidence.identity.verificationSha256 !== repairSha256
-	) {
-		throw new Error(
-			`${shardId} multipart continuation is not bound to the generation repair objective.`
-		);
-	}
-	const expectedContinuationDir = scienceChallengeMultipartContinuationDirectory({
-		shardDir,
-		repairSha256
-	});
-	if (
-		continuationDirectories.length !== 1 ||
-		path.resolve(continuationDirectories[0]) !== path.resolve(expectedContinuationDir)
-	) {
-		throw new Error(
-			`${shardId} must contain exactly its objective-bound multipart continuation directory.`
-		);
-	}
-	const repairDir = path.join(shardDir, `verification-repair-${repairSha256.slice(0, 12)}`);
-	const verificationSummaryPath = path.join(repairDir, 'verification-summary.json');
-	const priorCandidatePath = path.join(repairDir, 'prior-candidate.json');
-	const priorValidationPath = path.join(repairDir, 'prior-validation.json');
-	const continuationPlanPath = path.join(expectedContinuationDir, 'plan.json');
-	for (const filePath of [
-		verificationSummaryPath,
-		priorCandidatePath,
-		priorValidationPath,
-		continuationPlanPath
-	]) {
-		if (!existsSync(filePath)) {
-			throw new Error(`${shardId} multipart continuation evidence is missing: ${filePath}`);
-		}
-	}
-	const verificationSummary = JSON.parse(readFileSync(verificationSummaryPath, 'utf8'));
-	const priorCandidate = JSON.parse(readFileSync(priorCandidatePath, 'utf8'));
-	const priorValidation = JSON.parse(readFileSync(priorValidationPath, 'utf8'));
-	const continuationPlan = JSON.parse(readFileSync(continuationPlanPath, 'utf8'));
-	const continuationExecutionIdentity = scienceChallengeVerificationRepairExecutionIdentity({
-		planSha256: canonicalHash(plan),
-		verificationSha256: repairSha256,
-		priorCandidateSetSha256: verificationSummary.candidateSetSha256,
-		model: validation.model,
-		transport: validation.transport,
-		responseMode: validation.responseMode,
-		thinkingLevel: validation.thinkingLevel,
-		directPartSize: validation.directPartSize
-	});
-	if (continuationExecutionIdentity.objectiveId !== repairGenerationEvidence.identity.objectiveId) {
-		throw new Error(`${shardId} multipart continuation belongs to another repair objective.`);
-	}
-	const acceptance = validateScienceChallengeMultipartContinuationAcceptance({
-		acceptedCandidate: candidate,
-		acceptedValidation: validation,
-		replayOptions: {
-			resume: true,
-			shardId,
-			shardDir,
-			outputRoot: generationRoot,
-			workspaceRoot: rootDir,
-			repairSha256,
-			expectedPlanSha256: canonicalHash(plan),
-			expectedExecutionIdentity: continuationExecutionIdentity,
-			inputSha256: validation.inputSha256,
-			inputs,
-			rows,
-			priorCandidate,
-			priorValidation,
-			reviews: verificationSummary.reviews,
-			expectedReviewIds: plan.rows.map((row) => row.id),
-			authMode: continuationPlan.invocationPolicy?.authMode,
-			validateBatchCandidate: (replayedCandidate, replayedRows) =>
-				validateMaterializedSalvageCandidate(replayedCandidate, replayedRows, inputs),
-			validateCollectionCandidate: (replayedCandidate) =>
-				validateMaterializedContinuationCollection(shardId, replayedCandidate),
-			reconstructSourceEvidence: ({ attemptDirectory, summary }) => ({
-				expectedPromptBytes: Buffer.from(
-					`${reconstructScienceChallengeAuthoringAttemptPrompt({
-						shardDir,
-						attemptDirectory,
-						rows,
-						inputs,
-						existingChallengeDefinitions: existingCatalog
-					})}\n`
-				),
-				expectedPartPrompts: reconstructScienceChallengeMultipartAttemptParts({
-					shardDir,
-					attemptDirectory,
-					rows,
-					inputs,
-					partSize: summary.partSize,
-					existingChallengeDefinitions: existingCatalog,
-					allPlanIds: plan.rows.map((row) => row.id)
-				}).map((part) => part.prompt)
-			})
-		}
-	});
-	if (acceptance.status !== 'passed') {
-		throw new Error(
-			`${shardId} exhausted multipart continuation replay failed:\n${acceptance.issues.join('\n')}`
-		);
-	}
-	return relativeMultipartContinuationLineage(acceptance.lineage, { rootDir });
-}
-
-function validateMaterializedContinuationCollection(shardId, candidateOverride) {
-	const entries = [];
-	const structuralIssues = [];
-	for (const candidateShardId of [...new Set(plan.rows.map((row) => row.shard))].sort()) {
-		let candidate = candidateShardId === shardId ? candidateOverride : null;
-		if (!candidate) {
-			const candidatePath = path.join(generationRoot, 'shards', candidateShardId, 'candidate.json');
-			if (!existsSync(candidatePath)) {
-				structuralIssues.push(
-					`${candidateShardId}: candidate.json is missing from the complete cohort.`
-				);
-				continue;
-			}
-			try {
-				candidate = JSON.parse(readFileSync(candidatePath, 'utf8'));
-			} catch (error) {
-				structuralIssues.push(
-					`${candidateShardId}: candidate.json is not valid JSON: ${
-						error instanceof Error ? error.message : String(error)
-					}.`
-				);
-				continue;
-			}
-		}
-		if (!Array.isArray(candidate?.challenges)) {
-			structuralIssues.push(`${candidateShardId}: candidate batch has no challenges array.`);
-			continue;
-		}
-		entries.push(...candidate.challenges);
-	}
-	const validation = validateGeneratedChallengeCollection(entries, {
-		existingDefinitions: existingCatalog
-	});
-	const actualIds = entries.map((entry) => entry?.definition?.id);
-	const expectedIds = plan.rows.map((row) => row.id);
-	if (
-		actualIds.length !== expectedIds.length ||
-		new Set(actualIds).size !== expectedIds.length ||
-		expectedIds.some((id) => !actualIds.includes(id))
-	) {
-		structuralIssues.push(
-			`Complete candidate collection must contain exactly ${expectedIds.length} unique planned challenges.`
-		);
-	}
-	const issues = [...structuralIssues, ...validation.issues];
-	const issuesById = new Map();
-	for (const issue of issues) {
-		const challengeId = issue.match(/^([^:]+):/)?.[1];
-		const row = plan.rows.find((candidateRow) => candidateRow.id === challengeId);
-		if (!row) continue;
-		const rowIssues = issuesById.get(challengeId) ?? [];
-		rowIssues.push(issue);
-		issuesById.set(challengeId, rowIssues);
-	}
-	return {
-		status: issues.length ? 'failed' : 'passed',
-		issues,
-		repairTargets: [...issuesById.entries()].map(([challengeId, targetIssues]) => ({
-			challengeId,
-			shardId: plan.rows.find((row) => row.id === challengeId).shard,
-			issues: targetIssues
-		}))
 	};
 }
 
@@ -3429,11 +3120,6 @@ function writeJson(filePath, value) {
 	renameSync(temporaryPath, filePath);
 }
 
-function truncate(value, maximum) {
-	if (value.length <= maximum) return value;
-	return `${value.slice(0, maximum - 1).trimEnd()}…`;
-}
-
 function parseArgs(argv) {
 	const values = new Map();
 	for (const arg of argv) {
@@ -3447,10 +3133,12 @@ function parseArgs(argv) {
 					'mode',
 					'plan',
 					'source',
+					'catalog-source',
 					'evidence',
 					'generation-root',
 					'review-rebase-manifest',
 					'candidate-output',
+					'release-output',
 					'content-review',
 					'verifier-dispatch-ledger',
 					'verification-assignment-index',
@@ -3482,58 +3170,65 @@ function parseArgs(argv) {
 	return {
 		help: Boolean(values.get('help')),
 		mode,
-		plan: String(values.get('plan') ?? 'tmp/science-challenges/science-500-v1/plan.json'),
+		plan: String(values.get('plan') ?? 'tmp/science-challenges/candidate-release/plan.json'),
 		source: String(values.get('source') ?? 'tmp/science-challenge-sources-v1.json'),
+		catalogSource: String(
+			values.get('catalog-source') ?? 'tmp/challenge-catalog/current-source.json'
+		),
 		evidence: String(
-			values.get('evidence') ?? 'tmp/science-challenges/science-500-v1/curriculum-evidence.json'
+			values.get('evidence') ?? 'tmp/science-challenges/candidate-release/curriculum-evidence.json'
 		),
 		generationRoot: String(
-			values.get('generation-root') ?? 'tmp/science-challenges/science-500-v1/generation'
+			values.get('generation-root') ?? 'tmp/science-challenges/candidate-release/generation'
 		),
 		reviewRebaseManifest: values.has('review-rebase-manifest')
 			? String(values.get('review-rebase-manifest'))
 			: null,
 		candidateOutput: String(
-			values.get('candidate-output') ?? 'tmp/science-challenges/science-500-v1/compiled'
+			values.get('candidate-output') ?? 'tmp/science-challenges/candidate-release/compiled'
+		),
+		releaseOutput: String(
+			values.get('release-output') ??
+				'tmp/science-challenges/candidate-release/materialized-release'
 		),
 		contentReview: String(
 			values.get('content-review') ??
-				'tmp/science-challenges/science-500-v1/verification/summary.json'
+				'tmp/science-challenges/candidate-release/verification/summary.json'
 		),
 		verifierDispatchLedger: String(
 			values.get('verifier-dispatch-ledger') ??
-				'tmp/science-challenges/science-500-v1/verification/dispatch-ledger.json'
+				'tmp/science-challenges/candidate-release/verification/dispatch-ledger.json'
 		),
 		verificationAssignmentIndex: String(
 			values.get('verification-assignment-index') ??
-				'tmp/science-challenges/science-500-v1/verification/assignment-index.json'
+				'tmp/science-challenges/candidate-release/verification/assignment-index.json'
 		),
 		artReview: String(
 			values.get('art-review') ??
-				'tmp/science-challenges/science-500-v1/art-review/review-summary.json'
+				'tmp/science-challenges/candidate-release/art-review/review-summary.json'
 		),
 		artGenerationRoot: String(
-			values.get('art-generation-root') ?? 'tmp/science-challenges/science-500-v1/art-generation'
+			values.get('art-generation-root') ?? 'tmp/science-challenges/candidate-release/art-generation'
 		),
 		artPerceptualAudit: String(
 			values.get('art-perceptual-audit') ??
-				'tmp/science-challenges/science-500-v1/art-review/perceptual-audit.json'
+				'tmp/science-challenges/candidate-release/art-review/perceptual-audit.json'
 		),
 		shortRecallCandidate: String(
 			values.get('short-recall-candidate') ??
-				'tmp/science-challenges/science-500-v1/compiled/accepted-challenges.json'
+				'tmp/science-challenges/candidate-release/compiled/accepted-challenges.json'
 		),
 		shortRecallBundle: String(
 			values.get('short-recall-bundle') ??
-				'tmp/science-challenges/science-500-v1/short-recall/review-v1/short-recall-prompts.json'
+				'tmp/science-challenges/candidate-release/short-recall/review/short-recall-prompts.json'
 		),
 		shortRecallAuthoringEvidence: String(
 			values.get('short-recall-authoring-evidence') ??
-				'tmp/science-challenges/science-500-v1/short-recall/authoring-v1/authoring-evidence.json'
+				'tmp/science-challenges/candidate-release/short-recall/authoring/authoring-evidence.json'
 		),
 		shortRecallReview: String(
 			values.get('short-recall-review') ??
-				'tmp/science-challenges/science-500-v1/short-recall/review-v1/review-evidence.json'
+				'tmp/science-challenges/candidate-release/short-recall/review/review-evidence.json'
 		),
 		materializedAt: values.has('materialized-at') ? String(values.get('materialized-at')) : null
 	};
@@ -3546,10 +3241,12 @@ function usage() {
 		'--mode=candidate|release',
 		'--plan=<plan.json>',
 		'--source=<source-snapshot.json>',
+		'--catalog-source=<active-source.json>  Exact D1 catalogue export under ignored tmp/',
 		'--evidence=<curriculum-evidence.json>',
 		'--generation-root=<directory>',
 		'--review-rebase-manifest=<repo-relative review-rebase manifest.json>',
 		'--candidate-output=<fresh-absent-directory>',
+		'--release-output=<fresh-absent-directory>  Ignored workspace output; never src/, data/ or static/',
 		'--content-review=<summary.json>  Required in release mode',
 		'--verifier-dispatch-ledger=<ledger.json>  Required in release mode',
 		'--verification-assignment-index=<index.json>  Required in release mode',
@@ -3557,9 +3254,9 @@ function usage() {
 		'--art-generation-root=<directory>  Required in release mode',
 		'--art-perceptual-audit=<audit.json>  Required in release mode',
 		'--short-recall-candidate=<json>  Exact candidate artifact reviewed by the recall pipeline',
-		'--short-recall-bundle=<json>  Reviewed 408-row prompt bundle; required in release mode',
+		'--short-recall-bundle=<json>  Reviewed prompt bundle for this generated cohort',
 		'--short-recall-authoring-evidence=<json>  Exact passed authoring evidence',
-		'--short-recall-review=<json>  Independent 408/408 review evidence; required in release mode',
+		'--short-recall-review=<json>  Independent full-cohort review evidence',
 		'--materialized-at=<ISO>         Optional reproducible release timestamp; defaults to plan date'
 	].join('\n');
 }

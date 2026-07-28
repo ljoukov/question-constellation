@@ -17,7 +17,6 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import { buildScienceChallengeAuthoringParts } from './lib/science-challenge-authoring-parts.mjs';
 import {
 	buildScienceChallengeAuthoringPrompt,
 	reconstructScienceChallengeAuthoringAttemptPrompt,
@@ -63,7 +62,7 @@ test('direct multipart CLI is explicit, bounded and llm-direct only', () => {
 	}
 });
 
-test('legacy SDK and single-direct help paths remain valid without multipart', () => {
+test('SDK and single-direct help paths remain valid without multipart', () => {
 	assert.equal(run('--help').status, 0);
 	assert.equal(run('--help', '--transport=llm-direct').status, 0);
 });
@@ -96,7 +95,6 @@ test('preflight-only is explicit and llm-direct only', () => {
 
 test('approval prevalidation is ordered before direct preflight and every repair write', () => {
 	const source = readFileSync(generator, 'utf8');
-	const bindingIndex = source.indexOf('const verificationRepairRecovery =');
 	const approvalPrevalidationIndex = source.indexOf(
 		'prevalidateMultipartSalvageSourceApprovals();'
 	);
@@ -109,14 +107,12 @@ test('approval prevalidation is ordered before direct preflight and every repair
 	const generationIndex = source.indexOf(
 		'const gatedGeneration = await runScienceChallengeGenerationBehindPreflight'
 	);
-	assert.notEqual(bindingIndex, -1);
 	assert.notEqual(approvalPrevalidationIndex, -1);
 	assert.notEqual(preflightIndex, -1);
 	assert.notEqual(preflightCallIndex, -1);
 	assert.notEqual(recoveryIndex, -1);
 	assert.notEqual(ledgerInitializationIndex, -1);
 	assert.notEqual(generationIndex, -1);
-	assert.ok(bindingIndex < preflightIndex);
 	assert.ok(preflightIndex < approvalPrevalidationIndex);
 	assert.ok(approvalPrevalidationIndex < preflightCallIndex);
 	assert.ok(approvalPrevalidationIndex < recoveryIndex);
@@ -228,21 +224,20 @@ test('authenticated V2+ review-rebase successor exhaustion is terminal without b
 	const dryRunBranch = source.slice(dryRunStart, dryRunEnd);
 	const dryRunFreshEntry = dryRunBranch.indexOf("if (resumePlan.action === 'run')");
 	const dryRunGuard = dryRunBranch.indexOf('if (exhaustedReviewRebaseRepairIsTerminal)');
-	const dryRunLegacyRecovery = dryRunBranch.indexOf(
-		'const replayOptions = multipartContinuationReplayOptions'
+	const dryRunRecovery = dryRunBranch.indexOf(
+		'const salvage = inspectScienceChallengeMultipartPlanSalvage'
 	);
 	assert.ok(dryRunFreshEntry >= 0);
 	assert.ok(dryRunGuard > dryRunFreshEntry);
-	assert.ok(dryRunLegacyRecovery > dryRunGuard);
-	for (const legacyRecoveryCall of [
-		'const salvage = inspectScienceChallengeMultipartPlanSalvage',
+	assert.ok(dryRunRecovery > dryRunGuard);
+	for (const recoveryCall of [
 		'const difficultyAdjustment = recoverExhaustedScienceChallengeDifficultyPlanAdjustment',
 		'const descendantRemap = recoverExhaustedScienceChallengeDescendantRemap'
 	]) {
-		assert.ok(dryRunBranch.indexOf(legacyRecoveryCall) > dryRunGuard, legacyRecoveryCall);
+		assert.ok(dryRunBranch.indexOf(recoveryCall) > dryRunGuard, recoveryCall);
 	}
 	assert.match(
-		dryRunBranch.slice(dryRunGuard, dryRunLegacyRecovery),
+		dryRunBranch.slice(dryRunGuard, dryRunRecovery),
 		/action: 'refuse-exhausted-review-rebase-repair'/
 	);
 
@@ -255,23 +250,22 @@ test('authenticated V2+ review-rebase successor exhaustion is terminal without b
 		'if (exhaustedReviewRebaseRepairIsTerminal)',
 		generationExhausted
 	);
-	const generationLegacyRecovery = generationBranch.indexOf(
-		'const continuation = readScienceChallengeMultipartContinuation',
+	const generationRecovery = generationBranch.indexOf(
+		'const salvage = stageScienceChallengeMultipartPlanSalvage',
 		generationGuard
 	);
 	assert.ok(generationFreshEntry >= 0);
 	assert.ok(generationExhausted > generationFreshEntry);
 	assert.ok(generationGuard > generationExhausted);
-	assert.ok(generationLegacyRecovery > generationGuard);
-	for (const legacyRecoveryCall of [
-		'const salvage = stageScienceChallengeMultipartPlanSalvage',
+	assert.ok(generationRecovery > generationGuard);
+	for (const recoveryCall of [
 		'const difficultyAdjustment = recoverExhaustedScienceChallengeDifficultyPlanAdjustment',
 		'const descendantRemap = recoverExhaustedScienceChallengeDescendantRemap'
 	]) {
-		assert.ok(generationBranch.indexOf(legacyRecoveryCall) > generationGuard, legacyRecoveryCall);
+		assert.ok(generationBranch.indexOf(recoveryCall) > generationGuard, recoveryCall);
 	}
 	assert.match(
-		generationBranch.slice(generationGuard, generationLegacyRecovery),
+		generationBranch.slice(generationGuard, generationRecovery),
 		/action: 'refuse-exhausted-review-rebase-repair'/
 	);
 
@@ -349,40 +343,11 @@ test('high thinking is explicit and exclusive to llm-direct prompt-json', () => 
 	}
 });
 
-test('exhausted multipart continuation is explicit, single-shard and dry-run compatible', () => {
-	const required = [
-		'--help',
-		'--transport=llm-direct',
-		'--direct-response-mode=prompt-json',
-		'--thinking-level=high',
-		'--direct-part-size=2',
-		'--repair-verification=tmp/review.json',
-		'--resume',
-		'--shard=science-016',
-		'--continue-exhausted-multipart'
-	];
-	const accepted = run(...required);
-	assert.equal(accepted.status, 0, accepted.stderr);
-	assert.match(accepted.stdout, /--continue-exhausted-multipart/);
-	assert.equal(run(...required, '--dry-run').status, 0);
-	for (const omitted of [
-		'--transport=llm-direct',
-		'--direct-response-mode=prompt-json',
-		'--thinking-level=high',
-		'--direct-part-size=2',
-		'--repair-verification=tmp/review.json',
-		'--resume',
-		'--shard=science-016'
-	]) {
-		const rejected = run(...required.filter((argument) => argument !== omitted));
-		assert.notEqual(rejected.status, 0, omitted);
-	}
-	const duplicateShard = run(...required, '--shard=science-017');
-	assert.notEqual(duplicateShard.status, 0);
-	assert.match(duplicateShard.stderr, /exactly one --shard/);
-	const assignment = run(...required, '--continue-exhausted-multipart=true');
-	assert.notEqual(assignment.status, 0);
-	assert.match(assignment.stderr, /boolean flag/);
+test('removed exhausted multipart continuation option is rejected', () => {
+	const rejected = run('--help', '--continue-exhausted-multipart');
+	assert.notEqual(rejected.status, 0);
+	assert.match(rejected.stderr, /Unknown option --continue-exhausted-multipart/);
+	assert.doesNotMatch(run('--help').stdout, /continue-exhausted-multipart/);
 });
 
 test('verification repair always uses the immutable four-attempt ceiling', () => {
@@ -390,8 +355,6 @@ test('verification repair always uses the immutable four-attempt ceiling', () =>
 	assert.equal(defaulted.status, 0, defaulted.stderr);
 	assert.match(defaulted.stdout, /verification repair requires exactly 4 and defaults to 4/);
 	assert.match(defaulted.stdout, /four total attempts/);
-	assert.match(defaulted.stdout, /four-attempt exhaustion/);
-	assert.match(defaulted.stdout, /later full rejected-cohort --resume/);
 
 	const explicit = run('--help', '--repair-verification=review.json', '--max-attempts=4');
 	assert.equal(explicit.status, 0, explicit.stderr);
@@ -453,18 +416,14 @@ test('review-rebase repair mode requires the exact fresh parent-bound authoring 
 	}
 	for (const forbidden of [
 		'--preflight-only',
-		'--continue-exhausted-multipart',
 		'--multipart-salvage-source-approval=approval.json'
 	]) {
-		const extra =
-			forbidden === '--continue-exhausted-multipart'
-				? ['--resume', '--shard=science-001', forbidden]
-				: forbidden.startsWith('--multipart')
-					? ['--resume', forbidden]
-					: [forbidden];
+		const extra = forbidden.startsWith('--multipart')
+			? ['--resume', forbidden]
+			: [forbidden];
 		const rejected = run(...required, ...extra);
 		assert.notEqual(rejected.status, 0, forbidden);
-		assert.match(rejected.stderr, /review-rebase-manifest|preflight|continuation|salvage/i);
+		assert.match(rejected.stderr, /review-rebase-manifest|preflight|salvage/i);
 	}
 });
 
@@ -509,12 +468,6 @@ test('typed review-rebase infrastructure recovery is explicit and full-cohort on
 			/infrastructure-recovery|preflight|salvage|complete rejected cohort/i
 		);
 	}
-	const continuation = run(...required, '--shard=science-008', '--continue-exhausted-multipart');
-	assert.notEqual(continuation.status, 0);
-	assert.match(
-		continuation.stderr,
-		/infrastructure-recovery|review-rebase-manifest|continuation|complete rejected cohort/i
-	);
 });
 
 test('typed recovery evidence and publication roots are separate, non-nested and non-aliased', () => {
@@ -618,34 +571,9 @@ test('typed review-rebase infrastructure recovery uses separate bounded ledgers 
 	assert.doesNotMatch(recoveryGenerator, /verification-repair-\$\{[^}]+\}-attempt-/);
 });
 
-test('typed recovery is pinned to the exact 51-shard mixed-ordinal cohort', () => {
+test('typed recovery derives its exact cohort from the current plan and authenticated state', () => {
 	const source = readFileSync(generator, 'utf8');
-	const start = source.indexOf('const REVIEW_REBASE_INFRASTRUCTURE_RECOVERY_EXPECTED_SHARD_IDS');
-	const end = source.indexOf('const rootDir = process.cwd()', start);
-	assert.ok(start >= 0);
-	assert.ok(end > start);
-	const constants = source.slice(start, end);
-	for (const shardId of [
-		'science-001',
-		'science-007',
-		'science-009',
-		'science-012',
-		'science-013',
-		'science-035',
-		'science-044'
-	]) {
-		assert.match(constants, new RegExp(`'${shardId}'`));
-	}
-	for (const [shardId, ordinal] of [
-		['science-008', 4],
-		['science-010', 3],
-		['science-011', 3],
-		['science-014', 3],
-		['science-015', 2],
-		['science-016', 2]
-	]) {
-		assert.match(constants, new RegExp(`'${shardId}': ${ordinal}`));
-	}
+	assert.doesNotMatch(source, /REVIEW_REBASE_INFRASTRUCTURE_RECOVERY_EXPECTED_SHARD_IDS/);
 
 	const guardStart = source.indexOf(
 		'function requireExactReviewRebaseInfrastructureRecoveryCohort'
@@ -655,12 +583,12 @@ test('typed recovery is pinned to the exact 51-shard mixed-ordinal cohort', () =
 		guardStart
 	);
 	const guard = source.slice(guardStart, guardEnd);
-	assert.match(guard, /plan\.rows\.length !== 408/);
-	assert.match(guard, /passed\.length !== 10/);
-	assert.match(guard, /unresolved\.length !== 39/);
-	assert.match(guard, /frozen\.length !== 2/);
-	assert.match(guard, /planRowCountByShard\.get\(shardId\) !== 8/);
-	assert.match(guard, /invalidUnresolvedOrdinal/);
+	assert.match(guard, /new Set\(plan\.rows\.map\(\(row\) => row\.shard\)\)/);
+	assert.match(guard, /state\.shards\.size !== shardIds\.length/);
+	assert.match(guard, /canonicalHash\(selected\) !== canonicalHash\(mutable\)/);
+	assert.match(guard, /counts\?\.\[SCIENCE_CHALLENGE_REVIEW_REBASE_RECOVERY_STATUS_REPAIR_REQUIRED\]/);
+	assert.match(guard, /shard\.nextLogicalContentOrdinal !== \(repairRequired \? consumed \+ 1 : null\)/);
+	assert.doesNotMatch(guard, /408|passed\.length !== 10|unresolved\.length !== 39/);
 
 	const terminalStart = source.indexOf(
 		'function requireExactReviewRebaseInfrastructureRecoveryTerminal'
@@ -674,11 +602,12 @@ test('typed recovery is pinned to the exact 51-shard mixed-ordinal cohort', () =
 		terminal.match(/inspectScienceChallengeReviewRebaseInfrastructureRecoveryTerminal/g)?.length,
 		2
 	);
-	assert.match(terminal, /first\.finalProposals\.length !== 49/);
-	assert.match(terminal, /first\.frozenShardIds\.length !== 2/);
-	assert.match(terminal, /preserved\.length !== 10/);
-	assert.match(terminal, /recovered\.length !== 39/);
+	assert.match(terminal, /expectedMutableShardIds/);
+	assert.match(terminal, /expectedPreservedShardIds/);
+	assert.match(terminal, /expectedFrozenShardIds/);
+	assert.match(terminal, /expectedRecoveredShardIds/);
 	assert.match(terminal, /first\.finalProposalSetSha256 !== replay\.finalProposalSetSha256/);
+	assert.doesNotMatch(terminal, /length !== (?:49|39|10|2)/);
 
 	const collectionStart = source.indexOf(
 		'if (verificationRepair && failures.length === 0 && reviewPending.length === 0)'
@@ -797,18 +726,6 @@ test('multipart salvage source approvals are repeatable and restricted to full-c
 		],
 		[
 			'--help',
-			'--transport=llm-direct',
-			'--direct-response-mode=prompt-json',
-			'--thinking-level=high',
-			'--direct-part-size=2',
-			'--repair-verification=review.json',
-			'--resume',
-			'--shard=science-028',
-			'--continue-exhausted-multipart',
-			'--multipart-salvage-source-approval=approval.json'
-		],
-		[
-			'--help',
 			'--repair-verification=review.json',
 			'--resume',
 			'--multipart-salvage-source-approval='
@@ -816,63 +733,7 @@ test('multipart salvage source approvals are repeatable and restricted to full-c
 	]) {
 		const rejected = run(...args);
 		assert.notEqual(rejected.status, 0, args.join(' '));
-		assert.match(rejected.stderr, /multipart-salvage-source-approval|preflight|continuation/i);
-	}
-});
-
-test('repair dry-run and actual run refuse an invalid recovery binding before writes', () => {
-	const fixtureRoot = mkdtempSync(path.join(tmpdir(), 'science-generator-dry-run-recovery-'));
-	try {
-		const plan = { planId: 'dry-run-recovery-test', existingRoundCount: 0, rows: [] };
-		const source = { questions: [], sourceDocuments: [] };
-		const evidence = { components: [] };
-		const review = {
-			candidateSetSha256: 'a'.repeat(64),
-			status: 'failed',
-			reviews: []
-		};
-		const planPath = writeJson(fixtureRoot, 'plan.json', plan);
-		const sourcePath = writeJson(fixtureRoot, 'source.json', source);
-		const evidencePath = writeJson(fixtureRoot, 'evidence.json', evidence);
-		const reviewPath = writeJson(fixtureRoot, 'review.json', review);
-		const outputRoot = path.join(fixtureRoot, 'generation');
-		const identity = scienceChallengeVerificationRepairExecutionIdentity({
-			planSha256: canonicalHash(plan),
-			verificationSha256: canonicalHash(review),
-			priorCandidateSetSha256: review.candidateSetSha256,
-			model: 'gpt-5.6-sol',
-			transport: 'codex-sdk',
-			responseMode: null,
-			thinkingLevel: 'max',
-			directPartSize: null
-		});
-		const ledgerRoot = verificationRepairExecutionLedgerRoot(fixtureRoot, identity.objectiveId);
-		mkdirSync(ledgerRoot, { recursive: true });
-		const invalidBindingPath = path.join(ledgerRoot, 'recovery.json');
-		writeFileSync(invalidBindingPath, '{"schemaVersion":"wrong"}\n');
-		mkdirSync(path.join(fixtureRoot, 'src/lib/challenges'), { recursive: true });
-		writeFileSync(
-			path.join(fixtureRoot, 'src/lib/challenges/catalog.ts'),
-			'export const challengeCatalog = [];\n'
-		);
-
-		for (const dryRun of [true, false]) {
-			const result = runInRoot(fixtureRoot, [
-				`--plan=${planPath}`,
-				`--source=${sourcePath}`,
-				`--evidence=${evidencePath}`,
-				`--output-root=${outputRoot}`,
-				`--repair-verification=${reviewPath}`,
-				'--resume',
-				...(dryRun ? ['--dry-run'] : [])
-			]);
-			assert.notEqual(result.status, 0);
-			assert.match(result.stderr, /recovery|execution identity/i);
-			assert.equal(existsSync(outputRoot), false);
-			assert.equal(readFileSync(invalidBindingPath, 'utf8'), '{"schemaVersion":"wrong"}\n');
-		}
-	} finally {
-		rmSync(fixtureRoot, { recursive: true, force: true });
+		assert.match(rejected.stderr, /multipart-salvage-source-approval|preflight/i);
 	}
 });
 
@@ -1245,15 +1106,46 @@ function runInRoot(cwd, args) {
 			...process.env,
 			// Help exits before transport authentication or any authoring input/model work.
 			CLOUDFLARE_API_TOKEN: '',
-			CLOUDFLARE_ACCOUNT_ACCESS_TOKEN: ''
+			CLOUDFLARE_ACCOUNT_ACCESS_TOKEN: '',
+			...(existsSync(path.join(cwd, 'tmp/challenge-catalog-source.json'))
+				? { CHALLENGE_CATALOG_SOURCE: 'tmp/challenge-catalog-source.json' }
+				: {})
 		}
 	});
 }
 
 function writeJson(root, name, value) {
 	const filePath = path.join(root, name);
+	mkdirSync(path.dirname(filePath), { recursive: true });
 	writeFileSync(filePath, `${stableStringify(value)}\n`);
 	return filePath;
+}
+
+const fixtureExistingChallengeDefinitions = [
+	{
+		id: 'existing-fixture-001',
+		slug: 'existing-fixture-001',
+		subject: 'biology'
+	}
+];
+
+function writeCatalogSource(root) {
+	return writeJson(root, 'tmp/challenge-catalog-source.json', fixtureCatalogSource());
+}
+
+function fixtureCatalogSource() {
+	const unsigned = {
+		schemaVersion: 'challenge-catalog-source/v1',
+		release: {
+			id: 'synthetic-test-catalog',
+			contentSha256: 'a'.repeat(64),
+			challengeCount: fixtureExistingChallengeDefinitions.length
+		},
+		records: fixtureExistingChallengeDefinitions.map((definition) => ({ definition })),
+		subjects: [],
+		arcs: []
+	};
+	return { ...unsigned, contentSha256: canonicalHash(unsigned) };
 }
 
 async function buildTerminalApprovalCliFixture() {
@@ -1298,8 +1190,10 @@ async function buildTerminalApprovalCliFixture() {
 		};
 		const curriculumCatalogPath = writeJson(root, 'curriculum-catalog.json', curriculumCatalog);
 		const plan = {
+			schemaVersion: 'science-challenge-plan/v2',
 			planId: 'science-terminal-approval-cli-v1',
-			existingRoundCount: 0,
+			baseCatalogContentSha256: fixtureCatalogSource().contentSha256,
+			baseCatalogRecordCount: 1,
 			curriculumCatalogPath: path.relative(root, curriculumCatalogPath),
 			curriculumCatalogSha256: canonicalHash(curriculumCatalog),
 			rows
@@ -1343,11 +1237,7 @@ async function buildTerminalApprovalCliFixture() {
 		const planPath = writeJson(root, 'plan.json', plan);
 		const sourcePath = writeJson(root, 'source.json', sourceSnapshot);
 		const evidencePath = writeJson(root, 'evidence.json', curriculumEvidence);
-		mkdirSync(path.join(root, 'src/lib/challenges'), { recursive: true });
-		writeFileSync(
-			path.join(root, 'src/lib/challenges/catalog.ts'),
-			'export const challengeCatalog = [];\n'
-		);
+		writeCatalogSource(root);
 
 		const sourceById = new Map(sourceSnapshot.questions.map((question) => [question.id, question]));
 		const curriculumById = new Map(
@@ -1488,7 +1378,7 @@ async function writeOrdinaryFixtureShard({ outputRoot, shardId, inputs, candidat
 	writeBoundJson(path.join(shardDir, 'input.json'), inputs);
 	const prompt = buildScienceChallengeAuthoringPrompt({
 		inputs,
-		existingChallengeDefinitions: []
+		existingChallengeDefinitions: fixtureExistingChallengeDefinitions
 	});
 	writeFileSync(path.join(shardDir, 'prompt-attempt-1.txt'), `${prompt}\n`);
 	await runDirectScienceChallengeJsonTurn({
@@ -1704,7 +1594,6 @@ async function prepareRepairShard({
 	sourceById,
 	curriculumById,
 	priorCandidate,
-	verificationSummary,
 	repairSha256,
 	shardId,
 	sourceAttempts
@@ -1745,7 +1634,7 @@ async function prepareRepairShard({
 			attemptDirectory,
 			rows,
 			inputs,
-			existingChallengeDefinitions: []
+			existingChallengeDefinitions: fixtureExistingChallengeDefinitions
 		});
 		const parts = reconstructScienceChallengeMultipartAttemptParts({
 			shardDir,
@@ -1753,7 +1642,7 @@ async function prepareRepairShard({
 			rows,
 			inputs,
 			partSize: 1,
-			existingChallengeDefinitions: [],
+			existingChallengeDefinitions: fixtureExistingChallengeDefinitions,
 			allPlanIds: plan.rows.map((row) => row.id)
 		});
 		const candidate = {

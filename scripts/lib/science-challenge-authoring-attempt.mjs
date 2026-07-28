@@ -10,7 +10,6 @@ import {
 	sha256
 } from './science-challenge-release.mjs';
 import {
-	isScienceChallengeDirectJsonRunSummary,
 	isScienceChallengeDirectMultipartRunSummary,
 	isScienceChallengeDirectSingleRunSummary,
 	requireScienceChallengeAuthoringRunPolicy
@@ -209,22 +208,13 @@ export function validateScienceChallengeAuthoringAttemptEvidence({
 	) {
 		issues.push('attempt prompt bytes differ from the deterministically reconstructed prompt.');
 	}
-	for (const [owner, record] of [
-		['run summary', summary],
-		['attempt validation', validation]
-	]) {
-		if (record?.promptVersion !== undefined) {
-			if (record.promptVersion !== SCIENCE_CHALLENGE_PROMPT_VERSION) {
-				issues.push(`${owner} uses a stale authoring prompt version.`);
-			}
-		}
-		if (record?.promptSha256 !== undefined) {
-			if (!/^[a-f0-9]{64}$/.test(String(record.promptSha256))) {
-				issues.push(`${owner} promptSha256 must be a lowercase SHA-256 hash.`);
-			} else if (record.promptSha256 !== promptSha256) {
-				issues.push(`${owner} does not bind the attempt prompt bytes.`);
-			}
-		}
+	if (validation?.promptVersion !== SCIENCE_CHALLENGE_PROMPT_VERSION) {
+		issues.push('attempt validation uses a stale or missing authoring prompt version.');
+	}
+	if (!/^[a-f0-9]{64}$/.test(String(validation?.promptSha256 ?? ''))) {
+		issues.push('attempt validation promptSha256 must be a lowercase SHA-256 hash.');
+	} else if (validation.promptSha256 !== promptSha256) {
+		issues.push('attempt validation does not bind the attempt prompt bytes.');
 	}
 	const directTransport =
 		isScienceChallengeDirectSingleRunSummary(summary) ||
@@ -238,10 +228,7 @@ export function validateScienceChallengeAuthoringAttemptEvidence({
 	if (directTransport && validation?.runSummarySha256 !== canonicalHash(summary)) {
 		issues.push('direct attempt validation must bind the persisted run summary.');
 	}
-	if (
-		validation?.transport !== undefined &&
-		validation.transport !== (summary?.transport ?? 'codex-sdk')
-	) {
+	if (validation?.transport !== summary?.transport) {
 		issues.push('attempt validation transport differs from the run summary.');
 	}
 	if (
@@ -251,19 +238,11 @@ export function validateScienceChallengeAuthoringAttemptEvidence({
 		issues.push('attempt validation thinkingLevel differs from the run summary.');
 	}
 	if (directTransport) {
-		if (
-			(isScienceChallengeDirectMultipartRunSummary(summary) ||
-				summary?.responseMode !== undefined ||
-				validation?.transportVersion !== undefined) &&
-			validation?.transportVersion !== summary?.transportVersion
-		) {
+		if (validation?.transportVersion !== summary?.transportVersion) {
 			issues.push('direct attempt validation transportVersion differs from the run summary.');
 		}
 		for (const field of ['responseMode', 'providerSchemaApplied']) {
-			if (
-				(summary?.[field] !== undefined || validation?.[field] !== undefined) &&
-				validation?.[field] !== summary?.[field]
-			) {
+			if (validation?.[field] !== summary?.[field]) {
 				issues.push(`direct attempt validation ${field} differs from the run summary.`);
 			}
 		}
@@ -427,9 +406,8 @@ export function findBoundToolFreeScienceChallengeAuthoringAttempt({
 }
 
 /**
- * Verification objectives may author against a later effective plan while the canonical shard
- * input still belongs to an immutable predecessor objective. Prefer the objective-local input
- * snapshot when it exists, with the canonical shard input retained as a legacy fallback.
+ * Verification repairs author against an objective-local input snapshot. Ordinary attempts use
+ * the shard input; repair attempts use the matching repair-scoped input when one exists.
  */
 export function scienceChallengeAuthoringInputPath({
 	shardDir,
@@ -457,14 +435,7 @@ export function scienceChallengeAuthoringInputPath({
 }
 
 function scienceChallengeAuthoringResponseMode(summary) {
-	if (summary?.responseMode !== undefined) return summary.responseMode;
-	if (
-		isScienceChallengeDirectJsonRunSummary(summary) ||
-		isScienceChallengeDirectMultipartRunSummary(summary)
-	) {
-		return SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON;
-	}
-	return null;
+	return summary?.responseMode ?? null;
 }
 
 function authoringPromptPath(shardDir, attemptDirectory) {

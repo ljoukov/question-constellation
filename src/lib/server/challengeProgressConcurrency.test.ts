@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { ChallengeProgress, ChallengeProgressEntry } from '$lib/challenges/progress';
-import { clearQuestionBindings, setPersonalDb } from './bindings';
+import { clearQuestionBindings, setPersonalDb, setQuestionDb } from './bindings';
 import { getUserChallengeProgress, mergeUserChallengeProgress } from './challengeProgress';
 
 const migration = readFileSync(
@@ -13,6 +13,38 @@ const challengeId = 'biology-data-conclusions';
 
 function progress(entry: ChallengeProgressEntry): ChallengeProgress {
 	return { version: 2, challenges: { [challengeId]: entry } };
+}
+
+function challengeCatalogBinding() {
+	const payload = JSON.stringify({
+		schemaVersion: 'challenge-catalog-route/v1',
+		releaseId: 'concurrency-fixture',
+		challengeIds: [challengeId]
+	});
+	return {
+		prepare() {
+			const statement = {
+				bind() {
+					return statement;
+				},
+				async all<T>() {
+					return {
+						success: true,
+						results: [
+							{
+								payload_json: payload,
+								payload_sha256: 'a'.repeat(64),
+								release_id: 'concurrency-fixture',
+								release_sha256: 'b'.repeat(64)
+							}
+						] as T[],
+						meta: { rows_read: 1 }
+					};
+				}
+			};
+			return statement;
+		}
+	} as never;
 }
 
 function sqliteBinding(db: DatabaseSync, staleReaders: number) {
@@ -98,6 +130,10 @@ function bindingWithDelayedSecondProgressRead(db: DatabaseSync) {
 
 afterEach(() => {
 	clearQuestionBindings();
+});
+
+beforeEach(() => {
+	setQuestionDb(challengeCatalogBinding());
 });
 
 describe('challenge progress concurrent merges', () => {

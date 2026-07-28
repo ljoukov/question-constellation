@@ -696,7 +696,7 @@ test('composes difficulty and curriculum recoveries over one base plan and rejec
 
 function difficultyFixture() {
 	const plan = {
-		schemaVersion: 'science-challenge-plan/v1',
+		schemaVersion: 'science-challenge-plan/v2',
 		planId: 'science-test-v1',
 		rows: [
 			{
@@ -856,7 +856,7 @@ function difficultyFixture() {
 
 function difficultySetFixture() {
 	const plan = {
-		schemaVersion: 'science-challenge-plan/v1',
+		schemaVersion: 'science-challenge-plan/v2',
 		planId: 'science-500-v1',
 		rows: [
 			{

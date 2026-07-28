@@ -40,11 +40,6 @@ Options:
   --reuse-existing-extraction
   --resume-passed-phases            explicitly reuse independently validated passed artifacts
   --rerun-passed-phases             opt out of safe passed-phase reuse on forced paper retries
-  --generate-chain-illustrations       compatibility flag; real D1 imports generate by default
-  --skip-chain-illustrations           opt out of automatic post-import illustration generation
-  --require-chain-illustrations        fail the batch if an accepted chain has no passing pair
-  --chain-illustration-max-chains=20
-  --force-chain-illustrations
   --dry-run
   --continue-on-error
   --allow-dropped-questions  diagnostic only: allow partial import-ready subsets
@@ -98,25 +93,6 @@ const existingChainContextRoot = path.resolve(
 const existingChainMaxExamples = integerArg('existing-chain-max-examples', 4, 0);
 const existingChainMaxMarkItems = integerArg('existing-chain-max-mark-items', 4, 0);
 const existingChainMaxChains = integerArg('existing-chain-max-chains', 0, 0);
-const explicitlyGenerateChainIllustrations =
-	hasArg('generate-chain-illustrations') || hasArg('require-chain-illustrations');
-const skipChainIllustrations = hasArg('skip-chain-illustrations');
-const generateChainIllustrations =
-	!skipChainIllustrations && hasArg('import') && !hasArg('no-import-check');
-const requireChainIllustrations = hasArg('require-chain-illustrations');
-let chainIllustrationResult = null;
-
-if (explicitlyGenerateChainIllustrations && (!hasArg('import') || hasArg('no-import-check'))) {
-	throw new Error(
-		'--generate-chain-illustrations requires a real D1 import: use --import without --no-import-check.'
-	);
-}
-if (skipChainIllustrations && explicitlyGenerateChainIllustrations) {
-	throw new Error(
-		'--skip-chain-illustrations cannot be combined with --generate-chain-illustrations or --require-chain-illustrations.'
-	);
-}
-
 if (!existsSync(manifestPath)) throw new Error(`Missing manifest: ${relative(manifestPath)}`);
 if (!all && !paperArg && subjectArg === 'all') {
 	throw new Error(
@@ -201,14 +177,6 @@ if (dryRun) {
 		skipImported,
 		skippedImported: skippedImportedRows.length,
 		d1ExistingChains: d1ExistingChainsSummary(),
-		chainIllustrations: generateChainIllustrations
-			? {
-					command: [
-						process.execPath,
-						...chainIllustrationBatchCommand(planned.map((paper) => paper.sourceDocumentId))
-					]
-				}
-			: null,
 		missingFiles,
 		planned: planned.map((paper) => ({
 			sourceDocumentId: paper.sourceDocumentId,
@@ -228,29 +196,10 @@ if (dryRun) {
 writeSummary('running');
 await processSelectedPapers();
 const failed = results.filter((result) => result.status === 'failed');
-if (generateChainIllustrations && results.some((result) => result.status === 'passed')) {
-	const importedIds = results
-		.filter((result) => result.status === 'passed')
-		.map((result) => result.sourceDocumentId);
-	try {
-		await runCommand(process.execPath, chainIllustrationBatchCommand(importedIds));
-		const illustrationSummaryPath = path.join(workRoot, 'chain-illustrations', 'summary.json');
-		chainIllustrationResult = existsSync(illustrationSummaryPath)
-			? readJson(illustrationSummaryPath)
-			: { status: 'passed' };
-	} catch (error) {
-		chainIllustrationResult = {
-			status: 'failed',
-			error: error instanceof Error ? error.message : String(error)
-		};
-	}
-}
-const illustrationFailed =
-	requireChainIllustrations && chainIllustrationResult?.status === 'failed';
-const finalStatus = failed.length || illustrationFailed ? 'failed' : 'passed';
+const finalStatus = failed.length ? 'failed' : 'passed';
 writeSummary(finalStatus);
 console.log(JSON.stringify(summary(finalStatus), null, 2));
-if (failed.length > 0 || illustrationFailed) process.exit(1);
+if (failed.length > 0) process.exit(1);
 
 function selectRows(rows) {
 	const excludedPapers = new Set(excludePaperArgs);
@@ -425,32 +374,6 @@ function productionCommand(row, paper) {
 	]) {
 		if (hasArg(flag)) args.push(`--${flag}`);
 	}
-	// The outer batch owns the one deduplicated illustration pass. Prevent each
-	// single-paper child from launching its automatic post-import pass.
-	args.push('--skip-chain-illustrations');
-	return args;
-}
-
-function chainIllustrationBatchCommand(sourceDocumentIds) {
-	const args = [
-		'scripts/generate-chain-illustrations.mjs',
-		`--max-chains=${stringArg('chain-illustration-max-chains', '20')}`,
-		`--work-root=${path.join(workRoot, 'chain-illustrations')}`,
-		`--planner-model=${stringArg('chain-illustration-planner-model', 'gpt-5.6-sol')}`,
-		`--planner-thinking-level=${stringArg('chain-illustration-planner-thinking-level', 'max')}`,
-		`--judge-model=${stringArg('chain-illustration-judge-model', 'gpt-5.6-sol')}`,
-		`--judge-thinking-level=${stringArg('chain-illustration-judge-thinking-level', 'max')}`,
-		`--image-model=${stringArg('chain-illustration-image-model', 'chatgpt-gpt-image-2')}`,
-		`--image-timeout-ms=${stringArg('chain-illustration-image-timeout-ms', stringArg('timeout-ms', '7200000'))}`,
-		`--timeout-ms=${stringArg('chain-illustration-timeout-ms', stringArg('timeout-ms', '7200000'))}`,
-		'--publish'
-	];
-	for (const sourceDocumentId of sourceDocumentIds) {
-		args.push(`--source-document-id=${sourceDocumentId}`);
-	}
-	if (requireChainIllustrations) args.push('--require');
-	args.push('--replace-work-root');
-	if (hasArg('force-chain-illustrations')) args.push('--include-existing');
 	return args;
 }
 
@@ -613,7 +536,6 @@ function summary(status) {
 		skipImported,
 		skippedImported: skippedImportedRows.length,
 		d1ExistingChains: d1ExistingChainsSummary(),
-		chainIllustrations: chainIllustrationResult,
 		results
 	};
 }
@@ -644,7 +566,6 @@ function emptySelectionSummary(status) {
 		skipImported,
 		skippedImported: skippedImportedRows.length,
 		d1ExistingChains: [],
-		chainIllustrations: null,
 		planned: [],
 		results: []
 	};

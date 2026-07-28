@@ -25,8 +25,8 @@
 			description: 'Choose the smallest change that makes the answer stronger.'
 		},
 		{
-			label: 'Apply the method',
-			description: 'Use the same method in a different exam context.'
+			label: 'Try a new question',
+			description: 'Use what you learned in a different exam context.'
 		}
 	] as const;
 </script>

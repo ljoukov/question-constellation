@@ -2,18 +2,23 @@
 
 - Read `docs/subject-content-workflow.md` before adding, extending, repairing, refreshing, or
   improving subject support, paper cohorts, curriculum mappings, or study-card coverage.
-- Read `docs/product-methodology.md` before changing product direction, navigation, data models, onboarding, question-bank surfaces, or retained-chain review behavior.
-- Read `docs/product-flows.md` before changing acquisition paths, public question pages, answer-chain pages, constellation pages, practice/check flows, or mobile UX.
+- Read `docs/product-methodology.md` before changing product direction, navigation, data models, onboarding, question-bank surfaces, or learner review behavior.
+- Read `docs/product-flows.md` before changing acquisition paths, public question pages, practice/check flows, related-question selection, or mobile UX.
 - Read `docs/extraction-spec.md` before building extraction agents, importing papers or mark schemes, changing answer-chain derivation, or changing question-bank storage/schema.
-- Question Constellation should currently feel like a lightweight public GCSE question bank / exam-question atlas organized by answer chains, not a generic chatbot, full GCSE workspace, or dashboard-first revision app.
-- First-use flows should start with a concrete public exam question -> answer chain -> constellation -> practice. Do not expose abstract thinking patterns as the main starting taxonomy.
-- Runtime model use should be optional and lightweight; curated questions, model answers, mark checklists, common weak answers, and static answer-chain structure should carry most product value.
-- Do not expose a `/thinking-memory` route in the current product. The old retained-chain UI was removed; any future retained-chain review surface should be rebuilt from the question -> chain -> constellation -> practice loop rather than restored as a standalone old UI.
-- The D1 database is bound as `QUESTION_DB` for future use, but the current app intentionally uses generated server-side data only.
+- Question Constellation should currently feel like a lightweight public GCSE question bank / exam-question atlas, not a generic chatbot, full GCSE workspace, or dashboard-first revision app.
+- First-use flows should start with a concrete public exam question -> answer -> marking feedback -> improved answer -> related question. Do not expose internal learning taxonomies as the main starting point.
+- Answer-chain, chain-step, constellation, and gap records may remain in D1 as internal matching and grading evidence, but they are not learner-facing product objects or destinations.
+- Learners should see `marking points`, `included`, `missing`, `improve your answer`, and `try another question`. Do not expose `answer chain`, `link`, `missing link`, `constellation`, `Practise this step`, `Repair chain`, or `Close the gap` in the public question journey.
+- Runtime model use should be optional and lightweight; curated questions, model answers, marking points, common weak answers, and reviewed marking evidence should carry most product value.
+- Do not expose `/thinking-memory`, answer-chain, constellation, gap-builder, or per-step practice routes in the current product. Any future review surface should grow from completed question practice rather than restoring an old UI.
+- Challenge content is served from the active immutable `QUESTION_DB` catalogue release, and all
+  challenge image bytes are served from `QUESTION_R2`. Keep production challenge records, prompts,
+  art specs, reviews, and image bytes out of source control; generation and portable release
+  workspaces belong under ignored `tmp/`.
 - Use `scripts/dev-server.sh start|stop|restart|logs [port]` for local development. It follows the Spark tmux/log pattern but serves plain HTTP on localhost.
 - When the user says "push", push the current work to `origin/main` directly. Do not create branches other than `origin/main` unless the user explicitly asks for a separate branch or PR.
 - When the user says "deploy", unless they explicitly say otherwise, they mean push the current work to `origin/main` and then run a manual deploy.
-- The current UI pass has no login flow. Keep public question, chain, constellation, and practice routes usable without auth. If auth is reintroduced later, use this repo's own Firebase identity and allow every verified user; do not add an admin allow-list gate.
+- Keep public question and practice routes reachable without an auth wall. If auth is reintroduced later, use this repo's own Firebase identity and allow every verified user; do not add an admin allow-list gate.
 - This app does not use shadcn components yet. Do not copy shadcn UI assumptions from Observatory Admin unless the project explicitly adopts that component system later.
 - Deployments are expected to run from Cloudflare on pushes to `origin/main`, not from GitHub Actions. Use local `wrangler deploy` when the user explicitly asks to deploy, and otherwise only for diagnostics, first-time setup, or emergency manual repair.
 - Local `.env.local` may contain Cloudflare operator credentials: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ACCOUNT_ACCESS_TOKEN`, and `CLOUDFLARE_API_TOKEN`. Use these only to authenticate Wrangler or API calls; never upload `CLOUDFLARE_*` keys into the Worker runtime.
@@ -58,14 +63,21 @@ This override is gated by SvelteKit `dev`; it is ignored in deployed Workers. Pr
 
 ## English Literature Practice Validation
 
-When changing English Literature step-by-step practice, validate the teaching experience through the real browser flow, not only through unit tests.
+English Literature uses the same whole-answer practice route as every other subject. When changing
+it, validate the real browser flow rather than only unit tests.
 
-- Simulate a capable GCSE Grade 5-6 learner aiming for Grades 8-9. The coach should teach the missing analytical move without writing the learner's answer for them.
-- Inspect at least 10 questions spanning different papers and task shapes: poetry comparison, two-extract comparison, extract plus wider text, whole-text judgement, and single-text analysis. Confirm that stage names, goals, success criteria, and hints fit the exact question.
-- Run at least five realistic inputs, including blank or irrelevant work, plausible-but-vague work, partially successful work, a feedback-driven retry, and secure work. Click through the interface and record the exact input, decision, check feedback, and unlock behavior.
-- Replay representative scenarios four times with slightly varied wording. Decisions may vary at the margin, but the missing skill, pass threshold, and next action should remain educationally consistent.
-- Check every success criterion independently. Feedback must cite what the learner actually wrote, identify only the missing move, avoid moving the goalposts after a retry, and acknowledge a repaired weakness.
-- Ground grading in the imported raw mark-scheme rows. Use examiner-report guidance only when it exists for that question or paper; never invent examiner commentary. Treat indicative content as examples rather than mandatory answers, and do not invent or silently correct quotations.
-- Verify that later stages stay locked until the active step passes, passed stages remain reviewable, reset works, and direct question URLs redirect to the first step-by-step stage.
-- Inspect desktop and mobile layouts for clipping, overflow, unstable heights, and readable feedback. Content quality and task correctness take priority over decorative polish.
-- Use `scripts/dev-server.sh` for local development, then run the relevant unit tests, `pnpm run check`, and the production build before push or deploy.
+- Inspect questions spanning poetry comparison, two-extract comparison, extract plus wider text,
+  whole-text judgement, and single-text analysis.
+- Confirm the complete question and required source material are present before the answer field.
+- Check realistic vague, partial, improved, and secure whole answers. Feedback must be grounded in
+  what the learner wrote and should identify the highest-value improvement without replacing the
+  learner's essay.
+- Ground grading in imported raw mark-scheme rows. Use examiner-report guidance only when it exists
+  for that question or paper; never invent examiner commentary. Treat indicative content as
+  examples rather than mandatory answers, and do not invent or silently correct quotations.
+- Verify the learner can check anonymously, improve the whole response, re-check it, and start a
+  related question with guidance hidden.
+- Inspect desktop and mobile layouts for clipping, overflow, unstable heights, and readable
+  feedback. Content quality and task correctness take priority over decorative polish.
+- Use `scripts/dev-server.sh` for local development, then run the relevant unit tests,
+  `pnpm run check`, and the production build before push or deploy.

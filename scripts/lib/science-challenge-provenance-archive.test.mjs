@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
 	cpSync,
@@ -16,7 +15,6 @@ import {
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
 
 import {
 	SCIENCE_CONTENT_REVIEW_BOOLEAN_FIELDS,
@@ -44,7 +42,6 @@ import {
 } from './science-challenge-review-rebase-evidence.mjs';
 import { SCIENCE_CHALLENGE_REVIEW_REBASE_SPEC_SCHEMA } from './science-challenge-review-rebase.mjs';
 import {
-	relativeMultipartContinuationLineage,
 	relativeMultipartPlanSalvageLineage,
 	scienceChallengeReviewRebaseInfrastructureRecoveryProposalLineage
 } from './science-challenge-materialization-lineage.mjs';
@@ -84,67 +81,6 @@ test('multipart plan salvage materialization does not invent invocation journals
 
 	assert.equal(relative.execution.claims[0].path, 'execution/claims/attempt-04.json');
 	assert.equal(Object.hasOwn(relative.execution.claims[0], 'invocationPath'), false);
-	assert.equal(JSON.stringify(relative).includes(rootDir), false);
-});
-
-test('multipart continuation materialization makes every evidence path release-relative', () => {
-	const rootDir = '/tmp/question-constellation';
-	const absolute = (suffix) => `${rootDir}/${suffix}`;
-	const relative = relativeMultipartContinuationLineage(
-		{
-			manifestPath: absolute('continuation/manifest.json'),
-			planPath: absolute('continuation/plan.json'),
-			candidatePath: absolute('continuation/candidate.json'),
-			validationPath: absolute('continuation/validation.json'),
-			execution: {
-				objectivePath: absolute('execution/objective.json'),
-				claims: [
-					{
-						path: absolute('execution/claims/part-03.json'),
-						invocationPath: absolute('execution/claims/part-03-invocation.json')
-					}
-				]
-			},
-			collectionValidationSnapshot: {
-				path: absolute('continuation/collection-validation.json')
-			},
-			priorCollectionFailureEvidence: {
-				path: absolute('continuation/failure.json')
-			},
-			sourceAttempt: {
-				attemptDir: absolute('generation/science-016/attempt-04'),
-				files: {
-					runSummary: absolute('generation/science-016/attempt-04/run-summary.json')
-				},
-				partFiles: [
-					{
-						paths: {
-							response: absolute('generation/science-016/attempt-04/parts/part-01/response.json')
-						}
-					}
-				]
-			},
-			continuationParts: [
-				{
-					claimPath: absolute('execution/claims/part-03.json'),
-					paths: {
-						response: absolute('continuation/parts/part-03/response.json')
-					}
-				}
-			]
-		},
-		{ rootDir }
-	);
-
-	assert.equal(
-		relative.execution.claims[0].invocationPath,
-		'execution/claims/part-03-invocation.json'
-	);
-	assert.equal(
-		relative.collectionValidationSnapshot.path,
-		'continuation/collection-validation.json'
-	);
-	assert.equal(relative.priorCollectionFailureEvidence.path, 'continuation/failure.json');
 	assert.equal(JSON.stringify(relative).includes(rootDir), false);
 });
 
@@ -249,7 +185,7 @@ test('builds a durable sanitized archive that survives tmp workspace cleanup', (
 	const fixture = buildFixture();
 	const archiveRoot = path.join(
 		fixture.root,
-		'data/challenges/releases/science-test-v1/provenance'
+		'tmp/science-challenges/releases/science-test-v1/provenance'
 	);
 	const built = buildScienceChallengeProvenanceArchive({
 		rootDir: fixture.root,
@@ -353,7 +289,7 @@ test('archives and replays the closed V0/R0/B0/V1/S1/V2 review-rebase chain afte
 		parentIndex.artifactCount
 	);
 
-	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
+	removeFixtureSourceWorkspaces(fixture, archiveRoot);
 	const replay = validateScienceChallengeProvenanceArchive({
 		archiveRoot,
 		expectedBindings: fixture.bindings,
@@ -418,7 +354,7 @@ test('archives repair prompts against their objective-local effective-plan input
 	);
 	const archiveRoot = path.join(
 		fixture.root,
-		'data/challenges/releases/science-test-v1/provenance'
+		'tmp/science-challenges/releases/science-test-v1/provenance'
 	);
 	const built = buildScienceChallengeProvenanceArchive({
 		rootDir: fixture.root,
@@ -446,7 +382,7 @@ test('archives repair prompts against their objective-local effective-plan input
 		),
 		true
 	);
-	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
+	removeFixtureSourceWorkspaces(fixture, archiveRoot);
 	const replay = validateScienceChallengeProvenanceArchive({
 		archiveRoot,
 		expectedBindings: fixture.bindings
@@ -465,7 +401,7 @@ test('general verification-repair attempt five is rejected during archive constr
 	cpSync(sourceAttempt, attemptFive, { recursive: true });
 	const rejectedArchiveRoot = path.join(
 		fixture.root,
-		'data/challenges/releases/science-test-v1/provenance-attempt-five'
+		'tmp/science-challenges/releases/science-test-v1/provenance-attempt-five'
 	);
 	assert.throws(
 		() =>
@@ -520,148 +456,6 @@ test('general verification-repair attempt five is rejected during archive constr
 	rmSync(fixture.root, { recursive: true, force: true });
 });
 
-test('archives and binds exceptional verification-repair recovery evidence', () => {
-	const fixture = buildFixture();
-	const predecessorRoot = path.join(fixture.root, 'tmp/failed-root');
-	const predecessorEvidencePath = path.join(
-		predecessorRoot,
-		'shards/science-001/verification-repair-test-attempt-01/run-summary.json'
-	);
-	const predecessorEventsPath = path.join(
-		predecessorRoot,
-		'shards/science-001/verification-repair-test-attempt-01/events.jsonl'
-	);
-	writeFile(predecessorEventsPath, '');
-	writeJson(predecessorEvidencePath, {
-		status: 'failed',
-		error: 'fetch failed: getaddrinfo ENOTFOUND api.openai.com'
-	});
-	const predecessorBytes = readFileSync(predecessorEvidencePath);
-	const evidenceInventory = [
-		{
-			path: 'shards/science-001/verification-repair-test-attempt-01/events.jsonl',
-			sha256: sha256(readFileSync(predecessorEventsPath)),
-			bytes: 0
-		},
-		{
-			path: 'shards/science-001/verification-repair-test-attempt-01/run-summary.json',
-			sha256: sha256(predecessorBytes),
-			bytes: predecessorBytes.length
-		}
-	];
-	const recovery = {
-		schemaVersion: 'science-challenge-verification-repair-recovery/v2',
-		objectiveId: 'e'.repeat(64),
-		executionId: 'd'.repeat(64),
-		disposition: 'pre-model infrastructure recovery',
-		preModelRoots: [
-			{
-				path: 'failed-root',
-				evidenceFileCount: evidenceInventory.length,
-				evidenceBytes: evidenceInventory.reduce((total, file) => total + file.bytes, 0),
-				evidenceInventorySha256: canonicalHash(evidenceInventory),
-				evidenceInventory
-			}
-		]
-	};
-	const recoveryPath = path.join(fixture.root, 'tmp/verification-repair-recovery.json');
-	writeJson(recoveryPath, recovery);
-	const repairExecutionLedgerSnapshot = {
-		schemaVersion: 'science-challenge-verification-repair-ledger-snapshot/v1',
-		executionId: recovery.executionId,
-		claimCount: 1
-	};
-	fixture.paths.lineage.recovery = {
-		schemaVersion: recovery.schemaVersion,
-		objectiveId: recovery.objectiveId,
-		executionId: recovery.executionId,
-		path: path.relative(fixture.root, recoveryPath),
-		sha256: canonicalHash(recovery),
-		executionLedgerSha256: canonicalHash(repairExecutionLedgerSnapshot)
-	};
-	fixture.bindings.lineageSha256 = canonicalHash(fixture.paths.lineage);
-	fixture.paths.repairRecoveryManifestPath = path.relative(fixture.root, recoveryPath);
-	fixture.paths.repairExecutionLedgerSnapshot = repairExecutionLedgerSnapshot;
-	const mismatchedArchiveRoot = path.join(
-		fixture.root,
-		'data/challenges/releases/science-test-v1/provenance-objective-mismatch'
-	);
-	fixture.paths.lineage.recovery.objectiveId = 'f'.repeat(64);
-	fixture.bindings.lineageSha256 = canonicalHash(fixture.paths.lineage);
-	assert.throws(
-		() =>
-			buildScienceChallengeProvenanceArchive({
-				rootDir: fixture.root,
-				archiveRoot: mismatchedArchiveRoot,
-				releaseId: 'science-test-v1',
-				materializedAt: '2026-07-21T00:00:00.000Z',
-				expectedBindings: fixture.bindings,
-				...fixture.paths
-			}),
-		/does not bind the verification-repair recovery manifest/
-	);
-	rmSync(mismatchedArchiveRoot, { recursive: true, force: true });
-	fixture.paths.lineage.recovery.objectiveId = recovery.objectiveId;
-	fixture.bindings.lineageSha256 = canonicalHash(fixture.paths.lineage);
-	const archiveRoot = path.join(
-		fixture.root,
-		'data/challenges/releases/science-test-v1/provenance'
-	);
-	const built = buildScienceChallengeProvenanceArchive({
-		rootDir: fixture.root,
-		archiveRoot,
-		releaseId: 'science-test-v1',
-		materializedAt: '2026-07-21T00:00:00.000Z',
-		expectedBindings: fixture.bindings,
-		...fixture.paths
-	});
-	assert.equal(built.validation.status, 'passed');
-	assert.equal(
-		readJson(path.join(archiveRoot, 'content/verification-repair-recovery.json')).executionId,
-		recovery.executionId
-	);
-	assert.equal(
-		readJson(path.join(archiveRoot, 'content/verification-repair-execution-ledger.json'))
-			.claimCount,
-		1
-	);
-	assert.ok(
-		readFileSync(
-			path.join(
-				archiveRoot,
-				'content/recovery-predecessors/predecessor-01',
-				evidenceInventory[1].path
-			)
-		).equals(predecessorBytes)
-	);
-	unlinkSync(recoveryPath);
-	rmSync(predecessorRoot, { recursive: true, force: true });
-	assert.equal(
-		validateScienceChallengeProvenanceArchive({
-			archiveRoot,
-			expectedBindings: fixture.bindings
-		}).status,
-		'passed'
-	);
-	const archivedEvidencePath = path.join(
-		archiveRoot,
-		'content/recovery-predecessors/predecessor-01',
-		evidenceInventory[1].path
-	);
-	writeJson(archivedEvidencePath, { status: 'passed' });
-	rebindTrackedArtifact(
-		archiveRoot,
-		path.relative(archiveRoot, archivedEvidencePath).split(path.sep).join('/')
-	);
-	const tampered = validateScienceChallengeProvenanceArchive({
-		archiveRoot,
-		expectedBindings: fixture.bindings
-	});
-	assert.equal(tampered.status, 'failed');
-	assert.match(tampered.issues.join('\n'), /differs from the recovery manifest/);
-	rmSync(fixture.root, { recursive: true, force: true });
-});
-
 test('archives a complete descendant-remap recovery and replays it after source cleanup', () => {
 	const fixture = buildDescendantRemapFixture();
 	const archiveRoot = buildFixtureArchive(fixture);
@@ -672,7 +466,7 @@ test('archives a complete descendant-remap recovery and replays it after source 
 		}).status,
 		'passed'
 	);
-	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
+	removeFixtureSourceWorkspaces(fixture, archiveRoot);
 	const replay = validateScienceChallengeProvenanceArchive({
 		archiveRoot,
 		expectedBindings: fixture.bindings
@@ -717,67 +511,12 @@ test('archives a terminal second-repair cohort with its complete predecessor clo
 		),
 		true
 	);
-	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
+	removeFixtureSourceWorkspaces(fixture, archiveRoot);
 	const replay = validateScienceChallengeProvenanceArchive({
 		archiveRoot,
 		expectedBindings: fixture.bindings
 	});
 	assert.equal(replay.status, 'passed', replay.issues.join('\n'));
-	rmSync(fixture.root, { recursive: true, force: true });
-});
-
-test('uploader CLI dry-run replays the archived effective cohort after source cleanup', () => {
-	const fixture = buildDescendantRemapFixture();
-	const shortRecall = buildPassedScienceChallengeShortRecallArtifactsForTest({
-		candidateEntries: fixture.paths.effectiveCohort.candidateSet
-	});
-	fixture.bindings.shortRecallBundleSha256 = shortRecall.releaseBindings.shortRecallBundleSha256;
-	fixture.bindings.shortRecallReviewSha256 = shortRecall.releaseBindings.shortRecallReviewSha256;
-	const archiveRoot = buildFixtureArchive(fixture);
-	const manifest = readJson(path.join(archiveRoot, 'manifest.json'));
-	const releasePath = path.join(path.dirname(archiveRoot), 'accepted-challenges.json');
-	const release = {
-		release: {
-			...fixture.bindings,
-			...shortRecall.releaseBindings,
-			id: 'science-test-v1',
-			status: 'accepted',
-			materializedAt: '2026-07-21T00:00:00.000Z',
-			provenanceArchiveSha256: canonicalHash(manifest)
-		},
-		challenges: fixture.paths.effectiveCohort.candidateSet
-	};
-	writeJson(releasePath, release);
-	writeJson(path.join(path.dirname(releasePath), 'short-recall-prompts.json'), shortRecall.prompts);
-	writeJson(
-		path.join(path.dirname(releasePath), 'short-recall-authoring-evidence.json'),
-		shortRecall.authoringEvidence
-	);
-	writeJson(
-		path.join(path.dirname(releasePath), 'short-recall-review-evidence.json'),
-		shortRecall.reviewEvidence
-	);
-	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
-
-	const uploaderPath = fileURLToPath(
-		new URL('../upload-science-challenge-art.mjs', import.meta.url)
-	);
-	const result = spawnSync(
-		process.execPath,
-		[uploaderPath, `--release=${releasePath}`, '--release-evidence-only'],
-		{
-			cwd: fixture.root,
-			encoding: 'utf8',
-			env: { ...process.env }
-		}
-	);
-	assert.equal(result.status, 0, result.stderr);
-	const output = JSON.parse(result.stdout);
-	assert.equal(output.status, 'dry-run');
-	assert.equal(output.scope, 'release-evidence');
-	assert.equal(output.effectivePlanSha256, fixture.bindings.effectivePlanSha256);
-	assert.equal(output.candidateSetSha256, fixture.bindings.effectiveCohortCandidateSetSha256);
-	assert.equal(existsSync(path.join(fixture.root, 'tmp')), false);
 	rmSync(fixture.root, { recursive: true, force: true });
 });
 
@@ -990,7 +729,7 @@ test('archives and independently replays exhausted multipart plan salvage proven
 	assert.equal(sanitized.sourceSelectionSha256, canonicalHash(sanitized.sourceSelection));
 	assert.doesNotMatch(JSON.stringify(sanitized), /Path"/);
 
-	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
+	removeFixtureSourceWorkspaces(fixture, archiveRoot);
 	const replay = validateScienceChallengeProvenanceArchive({
 		archiveRoot,
 		expectedBindings: fixture.bindings
@@ -1025,70 +764,6 @@ test('rejects a rehashed sanitized salvage source selection that differs from so
 	rmSync(fixture.root, { recursive: true, force: true });
 });
 
-test('archives every exhausted multipart continuation source, claim and suffix-part byte', () => {
-	const fixture = buildFixture();
-	attachMultipartContinuation(fixture);
-	const archiveRoot = buildFixtureArchive(fixture);
-	const built = readJson(path.join(archiveRoot, 'manifest.json'));
-	const sanitized = readJson(path.join(archiveRoot, 'lineage.json')).content[0].continuation;
-	assert.equal(sanitized.sourceAttempt.attempt, 4);
-	assert.equal(sanitized.sourceAttempt.status, 'failed');
-	assert.deepEqual(
-		sanitized.continuationParts.map((part) => part.partId),
-		['part-03']
-	);
-	for (const relative of [
-		'content/shards/science-001/multipart-continuation/manifest.json',
-		'content/shards/science-001/multipart-continuation/plan.json',
-		'content/shards/science-001/multipart-continuation/candidate.json',
-		'content/shards/science-001/multipart-continuation/validation.json',
-		'content/shards/science-001/multipart-continuation/collection-validation.json',
-		'content/shards/science-001/multipart-continuation/failure.json',
-		'content/shards/science-001/multipart-continuation/execution/objective.json',
-		'content/shards/science-001/multipart-continuation/execution/claims/part-03.json',
-		'content/shards/science-001/multipart-continuation/execution/invocations/part-03.json',
-		'content/shards/science-001/multipart-continuation/parts/part-03/last-message.json',
-		'content/shards/science-001/multipart-continuation/parts/part-03/result-metadata.json',
-		'content/shards/science-001/multipart-continuation/parts/part-03/run-summary.json'
-	]) {
-		assert.ok(
-			built.trackedArtifacts.some((artifact) => artifact.path === relative),
-			relative
-		);
-	}
-	assert.equal(
-		built.externalDependencies.filter((dependency) =>
-			dependency.id.includes('multipart-continuation-part-03')
-		).length,
-		4
-	);
-	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
-	assert.equal(
-		validateScienceChallengeProvenanceArchive({
-			archiveRoot,
-			expectedBindings: fixture.bindings
-		}).status,
-		'passed'
-	);
-	rmSync(fixture.root, { recursive: true, force: true });
-});
-
-test('archives a valid continuation whose source failed on its first multipart call', () => {
-	const fixture = buildFixture();
-	attachMultipartContinuation(fixture, {
-		sourcePartCount: 1,
-		includeCollectionJournals: false
-	});
-	const archiveRoot = buildFixtureArchive(fixture);
-	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
-	const validation = validateScienceChallengeProvenanceArchive({
-		archiveRoot,
-		expectedBindings: fixture.bindings
-	});
-	assert.equal(validation.status, 'passed', validation.issues.join('\n'));
-	rmSync(fixture.root, { recursive: true, force: true });
-});
-
 test('rejects omission of discovered multipart plan salvage from release lineage', () => {
 	const fixture = buildFixture();
 	attachMultipartPlanSalvage(fixture);
@@ -1107,7 +782,7 @@ test('fails closed when one archived salvage claim is omitted after source clean
 	const fixture = buildFixture();
 	attachMultipartPlanSalvage(fixture);
 	const archiveRoot = buildFixtureArchive(fixture);
-	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
+	removeFixtureSourceWorkspaces(fixture, archiveRoot);
 	unlinkSync(
 		path.join(
 			archiveRoot,
@@ -1129,7 +804,7 @@ test('rejects rehashed archived salvage claim, repair snapshot and source-part t
 		const fixture = buildFixture();
 		const salvage = attachMultipartPlanSalvage(fixture);
 		const archiveRoot = buildFixtureArchive(fixture);
-		rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
+		removeFixtureSourceWorkspaces(fixture, archiveRoot);
 		const relativePath =
 			attack === 'claim'
 				? 'content/shards/science-001/multipart-plan-salvage/execution/claims/attempt-02.json'
@@ -1163,7 +838,7 @@ test('archives direct JSON authoring evidence and replays it after source cleanu
 	const direct = convertFixtureContentToDirect(fixture);
 	const archiveRoot = path.join(
 		fixture.root,
-		'data/challenges/releases/science-test-v1/provenance'
+		'tmp/science-challenges/releases/science-test-v1/provenance'
 	);
 	const built = buildScienceChallengeProvenanceArchive({
 		rootDir: fixture.root,
@@ -1263,7 +938,7 @@ test('archives prompt JSON authoring with mode-specific dependencies and replays
 	assert.equal(archivedRun.requestRef.kind, 'direct-prompt-json-request');
 	assert.equal(archivedRun.eventLogRef.kind, 'direct-prompt-json-event-log');
 
-	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
+	removeFixtureSourceWorkspaces(fixture, archiveRoot);
 	const validation = validateScienceChallengeProvenanceArchive({
 		archiveRoot,
 		expectedBindings: fixture.bindings
@@ -1276,7 +951,7 @@ test('rejects a rehashed prompt JSON archive relabel against its accepted source
 	const fixture = buildFixture();
 	convertFixtureContentToDirect(fixture, { responseMode: 'prompt-json' });
 	const archiveRoot = buildFixtureArchive(fixture);
-	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
+	removeFixtureSourceWorkspaces(fixture, archiveRoot);
 
 	const lineagePath = path.join(archiveRoot, 'lineage.json');
 	const lineage = readJson(lineagePath);
@@ -1303,7 +978,7 @@ test('rejects rehashed unsupported thinking levels in prompt JSON archives', () 
 		const fixture = buildFixture();
 		convertFixtureContentToDirect(fixture, { responseMode: 'prompt-json' });
 		const archiveRoot = buildFixtureArchive(fixture);
-		rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
+		removeFixtureSourceWorkspaces(fixture, archiveRoot);
 
 		const lineagePath = path.join(archiveRoot, 'lineage.json');
 		const lineage = readJson(lineagePath);
@@ -1329,7 +1004,7 @@ test('replays a multipart authoring archive after every tmp source is removed', 
 	convertFixtureContentToMultipart(fixture);
 	const archiveRoot = buildFixtureArchive(fixture);
 
-	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
+	removeFixtureSourceWorkspaces(fixture, archiveRoot);
 	const validation = validateScienceChallengeProvenanceArchive({
 		archiveRoot,
 		expectedBindings: fixture.bindings
@@ -1361,7 +1036,7 @@ test('replays prompt JSON multipart lineage with exact root and child mode/versi
 		thinkingLevel: 'high'
 	});
 	const archiveRoot = buildFixtureArchive(fixture);
-	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
+	removeFixtureSourceWorkspaces(fixture, archiveRoot);
 
 	const archivedRun = readJson(path.join(archiveRoot, 'lineage.json')).content[0].runs[0];
 	assert.equal(archivedRun.responseMode, 'prompt-json');
@@ -1397,7 +1072,7 @@ test('rejects rehashed mixed thinking levels inside prompt JSON multipart lineag
 		thinkingLevel: 'high'
 	});
 	const archiveRoot = buildFixtureArchive(fixture);
-	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
+	removeFixtureSourceWorkspaces(fixture, archiveRoot);
 	const lineagePath = path.join(archiveRoot, 'lineage.json');
 	const lineage = readJson(lineagePath);
 	lineage.content[0].runs[0].parts[0].thinkingLevel = 'max';
@@ -1420,7 +1095,7 @@ test('fails multipart replay when archived part evidence is missing', () => {
 	const fixture = buildFixture();
 	convertFixtureContentToMultipart(fixture);
 	const archiveRoot = buildFixtureArchive(fixture);
-	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
+	removeFixtureSourceWorkspaces(fixture, archiveRoot);
 	unlinkSync(
 		path.join(
 			archiveRoot,
@@ -1441,7 +1116,7 @@ test('fails multipart replay when archived part lineage is reordered and rehashe
 	const fixture = buildFixture();
 	convertFixtureContentToMultipart(fixture);
 	const archiveRoot = buildFixtureArchive(fixture);
-	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
+	removeFixtureSourceWorkspaces(fixture, archiveRoot);
 	const lineagePath = path.join(archiveRoot, 'lineage.json');
 	const lineage = readJson(lineagePath);
 	lineage.content[0].runs[0].parts.reverse();
@@ -1461,7 +1136,7 @@ test('fails multipart replay when tracked part bytes are tampered', () => {
 	const fixture = buildFixture();
 	convertFixtureContentToMultipart(fixture);
 	const archiveRoot = buildFixtureArchive(fixture);
-	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
+	removeFixtureSourceWorkspaces(fixture, archiveRoot);
 	const relativePath =
 		'content/shards/science-001/attempts/attempt-01/parts/part-02/last-message.json';
 	writeJson(path.join(archiveRoot, relativePath), {
@@ -1482,7 +1157,7 @@ test('fails multipart replay when one part is substituted and its manifest recor
 	const fixture = buildFixture();
 	convertFixtureContentToMultipart(fixture);
 	const archiveRoot = buildFixtureArchive(fixture);
-	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
+	removeFixtureSourceWorkspaces(fixture, archiveRoot);
 	const partRoot = path.join(archiveRoot, 'content/shards/science-001/attempts/attempt-01/parts');
 	const substitutedRelativePath =
 		'content/shards/science-001/attempts/attempt-01/parts/part-02/last-message.json';
@@ -1505,7 +1180,7 @@ test('rejects a fully rehashed multipart manifest attack against the accepted so
 	const fixture = buildFixture();
 	convertFixtureContentToMultipart(fixture);
 	const archiveRoot = buildFixtureArchive(fixture);
-	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
+	removeFixtureSourceWorkspaces(fixture, archiveRoot);
 	const outputRelativePath =
 		'content/shards/science-001/attempts/attempt-01/parts/part-02/last-message.json';
 	const outputPath = path.join(archiveRoot, outputRelativePath);
@@ -1552,7 +1227,7 @@ test('fails closed when archived bytes change', () => {
 	const fixture = buildFixture();
 	const archiveRoot = path.join(
 		fixture.root,
-		'data/challenges/releases/science-test-v1/provenance'
+		'tmp/science-challenges/releases/science-test-v1/provenance'
 	);
 	buildScienceChallengeProvenanceArchive({
 		rootDir: fixture.root,
@@ -1579,7 +1254,7 @@ test('rejects a tracked artifact replaced by a matching external symlink', () =>
 	const fixture = buildFixture();
 	const archiveRoot = path.join(
 		fixture.root,
-		'data/challenges/releases/science-test-v1/provenance'
+		'tmp/science-challenges/releases/science-test-v1/provenance'
 	);
 	buildScienceChallengeProvenanceArchive({
 		rootDir: fixture.root,
@@ -1615,7 +1290,10 @@ test('rejects a provenance input supplied through a symlink', () => {
 		() =>
 			buildScienceChallengeProvenanceArchive({
 				rootDir: fixture.root,
-				archiveRoot: path.join(fixture.root, 'data/challenges/releases/science-test-v1/provenance'),
+				archiveRoot: path.join(
+					fixture.root,
+					'tmp/science-challenges/releases/science-test-v1/provenance'
+				),
 				releaseId: 'science-test-v1',
 				materializedAt: '2026-07-21T00:00:00.000Z',
 				expectedBindings: fixture.bindings,
@@ -1630,7 +1308,7 @@ test('rejects source-rich fields even when a sanitized index manifest hash is up
 	const fixture = buildFixture();
 	const archiveRoot = path.join(
 		fixture.root,
-		'data/challenges/releases/science-test-v1/provenance'
+		'tmp/science-challenges/releases/science-test-v1/provenance'
 	);
 	buildScienceChallengeProvenanceArchive({
 		rootDir: fixture.root,
@@ -1666,7 +1344,7 @@ test('rejects an untracked raw event stream added to the durable archive', () =>
 	const fixture = buildFixture();
 	const archiveRoot = path.join(
 		fixture.root,
-		'data/challenges/releases/science-test-v1/provenance'
+		'tmp/science-challenges/releases/science-test-v1/provenance'
 	);
 	buildScienceChallengeProvenanceArchive({
 		rootDir: fixture.root,
@@ -1690,7 +1368,7 @@ test('rejects a lineage reference relabelled to unrelated archived bytes', () =>
 	const fixture = buildFixture();
 	const archiveRoot = path.join(
 		fixture.root,
-		'data/challenges/releases/science-test-v1/provenance'
+		'tmp/science-challenges/releases/science-test-v1/provenance'
 	);
 	buildScienceChallengeProvenanceArchive({
 		rootDir: fixture.root,
@@ -1725,7 +1403,7 @@ test('rejects an art manifest relabelled after its tracked hash is updated', () 
 	const fixture = buildFixture();
 	const archiveRoot = path.join(
 		fixture.root,
-		'data/challenges/releases/science-test-v1/provenance'
+		'tmp/science-challenges/releases/science-test-v1/provenance'
 	);
 	buildScienceChallengeProvenanceArchive({
 		rootDir: fixture.root,
@@ -1753,7 +1431,7 @@ test('rejects a changed art review request even when its manifest record is rela
 	const fixture = buildFixture();
 	const archiveRoot = path.join(
 		fixture.root,
-		'data/challenges/releases/science-test-v1/provenance'
+		'tmp/science-challenges/releases/science-test-v1/provenance'
 	);
 	buildScienceChallengeProvenanceArchive({
 		rootDir: fixture.root,
@@ -1782,7 +1460,7 @@ test('rejects a relabelled art review policy attestation after raw tmp evidence 
 	const fixture = buildFixture();
 	const archiveRoot = path.join(
 		fixture.root,
-		'data/challenges/releases/science-test-v1/provenance'
+		'tmp/science-challenges/releases/science-test-v1/provenance'
 	);
 	buildScienceChallengeProvenanceArchive({
 		rootDir: fixture.root,
@@ -1851,7 +1529,10 @@ test('archive construction rejects a fully rehashed art review run that used a t
 		() =>
 			buildScienceChallengeProvenanceArchive({
 				rootDir: fixture.root,
-				archiveRoot: path.join(fixture.root, 'data/challenges/releases/science-test-v1/provenance'),
+				archiveRoot: path.join(
+					fixture.root,
+					'tmp/science-challenges/releases/science-test-v1/provenance'
+				),
 				releaseId: 'science-test-v1',
 				materializedAt: '2026-07-21T00:00:00.000Z',
 				expectedBindings: fixture.bindings,
@@ -1872,7 +1553,10 @@ test('rejects a stale verification assignment index even when its own rows remai
 		() =>
 			buildScienceChallengeProvenanceArchive({
 				rootDir: fixture.root,
-				archiveRoot: path.join(fixture.root, 'data/challenges/releases/science-test-v1/provenance'),
+				archiveRoot: path.join(
+					fixture.root,
+					'tmp/science-challenges/releases/science-test-v1/provenance'
+				),
 				releaseId: 'science-test-v1',
 				materializedAt: '2026-07-21T00:00:00.000Z',
 				expectedBindings: fixture.bindings,
@@ -1935,7 +1619,7 @@ function buildDescendantRemapFixture() {
 		...componentTuple(parentId, '4.1.3', 'Transport in cells', 12)
 	}));
 	const basePlan = {
-		schemaVersion: 'science-challenge-plan/v1',
+		schemaVersion: 'science-challenge-plan/v2',
 		planId: 'science-test-v1',
 		curriculumCatalogPath: 'tmp/curriculum-catalog.json',
 		curriculumCatalogSha256: canonicalHash(curriculumCatalog),
@@ -2728,9 +2412,10 @@ function promoteFixtureToReviewRebaseSuccessor(fixture) {
 		calibrationQuestionSha256: sourceQuestion.contentSha256
 	}));
 	const basePlan = {
-		schemaVersion: 'science-challenge-plan/v1',
+		schemaVersion: 'science-challenge-plan/v2',
 		planId: 'science-test-v1',
-		existingRoundCount: 0,
+		baseCatalogContentSha256: '0'.repeat(64),
+		baseCatalogRecordCount: 0,
 		curriculumCatalogPath: fixture.paths.curriculumCatalogPath,
 		curriculumCatalogSha256: canonicalHash(curriculumCatalog),
 		rows
@@ -3175,7 +2860,7 @@ function buildFixture() {
 		]
 	};
 	const plan = {
-		schemaVersion: 'science-challenge-plan/v1',
+		schemaVersion: 'science-challenge-plan/v2',
 		planId: 'science-test-v1',
 		curriculumCatalogPath: 'tmp/curriculum-catalog.json',
 		curriculumCatalogSha256: canonicalHash(curriculumCatalog),
@@ -3567,7 +3252,7 @@ function buildFixture() {
 
 function convertFixtureContentToDirect(
 	fixture,
-	{ responseMode = null, thinkingLevel = 'max' } = {}
+	{ responseMode = 'structured-json', thinkingLevel = 'max' } = {}
 ) {
 	const run = fixture.paths.lineage.content[0].runSummaries[0];
 	const attemptRoot = path.dirname(path.join(fixture.root, run.path));
@@ -3583,8 +3268,9 @@ function convertFixtureContentToDirect(
 			? 'science-challenge-llm-direct-prompt-json-request/v1'
 			: 'science-challenge-direct-json-request/v1',
 		transport: 'llm-direct',
-		...(responseMode ? { responseMode } : {}),
+		responseMode,
 		transportVersion,
+		providerSchemaApplied: !promptJson,
 		operation: promptJson ? 'streamText' : 'streamJson',
 		provider: 'chatgpt',
 		model: 'chatgpt-gpt-5.6-sol',
@@ -3605,7 +3291,9 @@ function convertFixtureContentToDirect(
 			? 'science-challenge-llm-direct-prompt-json-result/v1'
 			: 'science-challenge-direct-json-result/v1',
 		transport: 'llm-direct',
-		...(responseMode ? { responseMode, transportVersion } : {}),
+		responseMode,
+		transportVersion,
+		providerSchemaApplied: !promptJson,
 		provider: 'chatgpt',
 		model: 'chatgpt-gpt-5.6-sol',
 		modelVersion: 'chatgpt-gpt-5.6-sol-2026-07-23',
@@ -3620,8 +3308,9 @@ function convertFixtureContentToDirect(
 		...readJson(runSummaryPath),
 		error: null,
 		transport: 'llm-direct',
-		...(responseMode ? { responseMode } : {}),
+		responseMode,
 		transportVersion,
+		providerSchemaApplied: !promptJson,
 		provider: 'chatgpt',
 		model: 'chatgpt-gpt-5.6-sol',
 		modelVersion: 'chatgpt-gpt-5.6-sol-2026-07-23',
@@ -3631,8 +3320,9 @@ function convertFixtureContentToDirect(
 	Object.assign(run, {
 		sha256: canonicalHash(runSummary),
 		transport: runSummary.transport,
-		...(responseMode ? { responseMode } : {}),
+		responseMode,
 		transportVersion: runSummary.transportVersion,
+		providerSchemaApplied: runSummary.providerSchemaApplied,
 		provider: runSummary.provider,
 		model: runSummary.model,
 		modelVersion: runSummary.modelVersion,
@@ -3655,7 +3345,7 @@ function convertFixtureContentToDirect(
 
 function convertFixtureContentToMultipart(
 	fixture,
-	{ responseMode = null, thinkingLevel = 'max' } = {}
+	{ responseMode = 'structured-json', thinkingLevel = 'max' } = {}
 ) {
 	const run = fixture.paths.lineage.content[0].runSummaries[0];
 	const attemptRoot = path.dirname(path.join(fixture.root, run.path));
@@ -3682,13 +3372,29 @@ function convertFixtureContentToMultipart(
 			schemaVersion: 'science-challenge-batch/v1',
 			challenges: [{ definition: { id: rowId } }]
 		};
-		const request = { partId, input: `Author ${rowId}.` };
-		const resultMetadata = { partId, modelVersion, blocked: false };
+		const request = {
+			partId,
+			transport: 'llm-direct',
+			transportVersion: partTransportVersion,
+			responseMode,
+			providerSchemaApplied: !promptJson,
+			input: `Author ${rowId}.`
+		};
+		const resultMetadata = {
+			partId,
+			transport: 'llm-direct',
+			transportVersion: partTransportVersion,
+			responseMode,
+			providerSchemaApplied: !promptJson,
+			modelVersion,
+			blocked: false
+		};
 		const partRunSummary = {
 			status: 'passed',
 			transport: 'llm-direct',
-			...(responseMode ? { responseMode } : {}),
+			responseMode,
 			transportVersion: partTransportVersion,
+			providerSchemaApplied: !promptJson,
 			provider: 'chatgpt',
 			model: 'chatgpt-gpt-5.6-sol',
 			modelVersion,
@@ -3730,7 +3436,9 @@ function convertFixtureContentToMultipart(
 			runSummaryPath: `${relativeRoot}/run-summary.json`,
 			runSummarySha256: canonicalHash(partRunSummary),
 			status: 'passed',
-			...(responseMode ? { responseMode, transportVersion: partTransportVersion } : {}),
+			responseMode,
+			transportVersion: partTransportVersion,
+			providerSchemaApplied: !promptJson,
 			provider: 'chatgpt',
 			model: 'chatgpt-gpt-5.6-sol',
 			modelVersion,
@@ -3744,10 +3452,12 @@ function convertFixtureContentToMultipart(
 		schemaVersion: 'science-challenge-llm-direct-json-multipart-summary/v1',
 		status: 'passed',
 		transport: 'llm-direct',
-		...(responseMode ? { responseMode } : {}),
+		responseMode,
 		transportVersion: promptJson
 			? 'science-challenge-llm-direct-prompt-json-multipart/v1'
 			: 'science-challenge-llm-direct-json-multipart/v1',
+		providerSchemaApplied: !promptJson,
+		provider: 'chatgpt',
 		model: 'chatgpt-gpt-5.6-sol',
 		thinkingLevel,
 		partSize: 1,
@@ -3772,8 +3482,9 @@ function convertFixtureContentToMultipart(
 	Object.assign(run, {
 		sha256: canonicalHash(rootRunSummary),
 		transport: rootRunSummary.transport,
-		...(responseMode ? { responseMode } : {}),
+		responseMode,
 		transportVersion: rootRunSummary.transportVersion,
+		providerSchemaApplied: rootRunSummary.providerSchemaApplied,
 		provider: 'chatgpt',
 		model: rootRunSummary.model,
 		modelVersion: null,
@@ -3789,322 +3500,6 @@ function convertFixtureContentToMultipart(
 		resultMetadataSha256: null,
 		parts: records.map(lineagePart)
 	});
-	fixture.bindings.lineageSha256 = canonicalHash(fixture.paths.lineage);
-	fixture.bindings.contentGenerationLineageSha256 = canonicalHash(fixture.paths.lineage.content);
-}
-
-function attachMultipartContinuation(
-	fixture,
-	{ sourcePartCount = 2, includeCollectionJournals = true } = {}
-) {
-	convertFixtureContentToMultipart(fixture, {
-		responseMode: 'prompt-json',
-		thinkingLevel: 'high'
-	});
-	if (![1, 2].includes(sourcePartCount)) {
-		throw new Error('Continuation archive fixture sourcePartCount must be 1 or 2.');
-	}
-	const shard = fixture.paths.lineage.content[0];
-	const workspacePath = (relativePath) => path.join(fixture.root, relativePath);
-	const relativePath = (filePath) => path.relative(fixture.root, filePath);
-	const fileBinding = (filePath, bindingRoot, { json = false } = {}) => {
-		const bytes = readFileSync(filePath);
-		return {
-			path: path.relative(bindingRoot, filePath),
-			byteSha256: sha256(bytes),
-			bytes: bytes.length,
-			...(json ? { canonicalSha256: canonicalHash(JSON.parse(bytes.toString('utf8'))) } : {})
-		};
-	};
-	const run = shard.runSummaries[0];
-	const attemptRoot = path.dirname(workspacePath(run.path));
-	if (sourcePartCount < run.parts.length) {
-		for (const part of run.parts.slice(sourcePartCount)) {
-			rmSync(path.dirname(workspacePath(part.promptPath)), { recursive: true, force: true });
-		}
-		run.parts = run.parts.slice(0, sourcePartCount);
-		run.rowIds = run.rowIds.slice(0, sourcePartCount);
-		const rootSummary = readJson(workspacePath(run.path));
-		rootSummary.parts = rootSummary.parts.slice(0, sourcePartCount);
-		rootSummary.rowIds = rootSummary.rowIds.slice(0, sourcePartCount);
-		rootSummary.partsSha256 = canonicalHash(rootSummary.parts);
-		writeJson(workspacePath(run.path), rootSummary);
-		run.sha256 = canonicalHash(rootSummary);
-	}
-	const sourceFiles = {
-		prompt: workspacePath(run.promptPath),
-		runSummary: workspacePath(run.path),
-		eventLog: workspacePath(run.eventLogPath),
-		lastMessage: workspacePath(run.lastMessagePath),
-		validation: workspacePath(run.validationPath)
-	};
-	const sourceParts = run.parts.map((part) => ({
-		partId: part.partId,
-		recordSha256: canonicalHash(part),
-		prompt: fileBinding(workspacePath(part.promptPath), attemptRoot),
-		request: fileBinding(workspacePath(part.requestPath), attemptRoot, { json: true }),
-		eventLog: fileBinding(workspacePath(part.eventLogPath), attemptRoot),
-		lastMessage: fileBinding(workspacePath(part.rawOutputPath), attemptRoot),
-		thoughts: fileBinding(workspacePath(part.thoughtsPath), attemptRoot),
-		resultMetadata: fileBinding(workspacePath(part.resultMetadataPath), attemptRoot, {
-			json: true
-		}),
-		runSummary: fileBinding(workspacePath(part.runSummaryPath), attemptRoot, { json: true })
-	}));
-	const sourceAttempt = {
-		attempt: 4,
-		directory: path.basename(attemptRoot),
-		status: 'failed',
-		prompt: fileBinding(sourceFiles.prompt, path.dirname(attemptRoot)),
-		runSummary: fileBinding(sourceFiles.runSummary, path.dirname(attemptRoot), { json: true }),
-		eventLog: fileBinding(sourceFiles.eventLog, path.dirname(attemptRoot)),
-		lastMessage: fileBinding(sourceFiles.lastMessage, path.dirname(attemptRoot)),
-		validation: fileBinding(sourceFiles.validation, path.dirname(attemptRoot), { json: true }),
-		parts: sourceParts,
-		partsSha256: canonicalHash(sourceParts)
-	};
-	sourceAttempt.sha256 = canonicalHash(sourceAttempt);
-
-	const repairSha256 = hash('continuation repair summary');
-	const continuationRoot = path.join(
-		fixture.root,
-		fixture.paths.generationRoot,
-		'shards/science-001',
-		`verification-repair-${repairSha256.slice(0, 12)}-attempt-04-multipart-continuation`
-	);
-	const partId = `part-${String(sourcePartCount + 1).padStart(2, '0')}`;
-	const partRoot = path.join(continuationRoot, 'parts', partId);
-	const partPaths = {
-		prompt: path.join(partRoot, 'prompt.txt'),
-		request: path.join(partRoot, 'request.json'),
-		events: path.join(partRoot, 'events.jsonl'),
-		lastMessage: path.join(partRoot, 'last-message.json'),
-		thoughts: path.join(partRoot, 'thoughts.txt'),
-		resultMetadata: path.join(partRoot, 'result-metadata.json'),
-		runSummary: path.join(partRoot, 'run-summary.json')
-	};
-	writeFile(
-		partPaths.prompt,
-		`Continue multipart science content.\n\nINPUT ROWS\n[{"id":"challenge-${String(
-			sourcePartCount + 1
-		).padStart(3, '0')}"}]\n\nReturn science-challenge-batch/v1 JSON only.\n`
-	);
-	writeJson(partPaths.request, { operation: 'streamText', tools: [], maxCalls: 1 });
-	writeFile(partPaths.events, `${JSON.stringify({ type: 'text', partId })}\n`);
-	const candidate = readJson(
-		path.join(fixture.root, fixture.paths.generationRoot, 'shards/science-001/candidate.json')
-	);
-	writeJson(partPaths.lastMessage, candidate);
-	writeFile(partPaths.thoughts, 'Verified the exact continuation partition.');
-	writeJson(partPaths.resultMetadata, {
-		modelVersion: 'chatgpt-gpt-5.6-sol-2026-07-23',
-		blocked: false
-	});
-	writeJson(partPaths.runSummary, {
-		status: 'passed',
-		transport: 'llm-direct',
-		responseMode: 'prompt-json',
-		transportVersion: 'science-challenge-llm-direct-prompt-json/v1',
-		model: 'chatgpt-gpt-5.6-sol',
-		thinkingLevel: 'high'
-	});
-	const claim = {
-		schemaVersion: 'science-challenge-verification-repair-multipart-part-claim/v1',
-		partId,
-		partIndex: sourcePartCount + 1
-	};
-	const claimPath = path.join(
-		fixture.root,
-		`tmp/objective-ledger/shards/science-001/attempt-04/multipart-continuation-parts/${partId}/claim.json`
-	);
-	writeJson(claimPath, claim);
-	const invocation = {
-		schemaVersion: 'science-challenge-verification-repair-multipart-invocation-start/v1',
-		partId,
-		claimSha256: canonicalHash(claim),
-		claimByteSha256: sha256(readFileSync(claimPath))
-	};
-	const invocationPath = path.join(path.dirname(claimPath), 'invocation-started.json');
-	writeJson(invocationPath, invocation);
-	const objective = {
-		schemaVersion: 'science-challenge-verification-repair-objective/v1',
-		objectiveId: hash('continuation objective')
-	};
-	const objectivePath = path.join(fixture.root, 'tmp/objective-ledger/objective.json');
-	writeJson(objectivePath, objective);
-	const continuationPartBinding = {
-		partId,
-		claimSha256: canonicalHash(claim),
-		claimByteSha256: sha256(readFileSync(claimPath)),
-		prompt: fileBinding(partPaths.prompt, continuationRoot),
-		request: fileBinding(partPaths.request, continuationRoot, { json: true }),
-		eventLog: fileBinding(partPaths.events, continuationRoot),
-		lastMessage: fileBinding(partPaths.lastMessage, continuationRoot),
-		thoughts: fileBinding(partPaths.thoughts, continuationRoot),
-		resultMetadata: fileBinding(partPaths.resultMetadata, continuationRoot, { json: true }),
-		runSummary: fileBinding(partPaths.runSummary, continuationRoot, { json: true }),
-		rawCandidateSha256: canonicalHash(candidate)
-	};
-	const planParts = Array.from({ length: sourcePartCount + 1 }, (_, index) => ({
-		partId: `part-${String(index + 1).padStart(2, '0')}`,
-		index: index + 1,
-		inputSha256: hash(`continuation part ${index + 1}`)
-	}));
-	const continuationPlan = {
-		schemaVersion: 'science-challenge-exhausted-multipart-continuation-plan/v1',
-		sourceAttemptedPartCount: sourcePartCount,
-		expectedPartCount: sourcePartCount + 1,
-		parts: planParts
-	};
-	const peerIssue = 'science-099 contains an unrelated first-review duplicate.';
-	const collectionValidation = includeCollectionJournals
-		? {
-				status: 'failed',
-				issues: [peerIssue],
-				repairTargets: [
-					{
-						challengeId: 'biology-peer-collection-issue-01',
-						shardId: 'science-099',
-						issues: [peerIssue]
-					}
-				]
-			}
-		: {
-				status: 'passed',
-				issues: []
-			};
-	const priorCollectionFailure = includeCollectionJournals
-		? {
-				schemaVersion: 'science-challenge-exhausted-multipart-continuation-failure/v1',
-				shardId: 'science-001',
-				attempt: 4,
-				partId: null,
-				claimSha256: canonicalHash([canonicalHash(claim)]),
-				error: `Multipart continuation failed full collection validation.\n${peerIssue}`
-			}
-		: null;
-	const validation = {
-		schemaVersion: 'science-challenge-exhausted-multipart-continuation-validation/v1',
-		status: 'passed',
-		authoringDisposition: 'exhausted-multipart-part-continuation',
-		sourceAttempt: 4,
-		sourceAttemptStatus: 'failed',
-		candidateSha256: canonicalHash(candidate),
-		collectionValidationSha256: canonicalHash(collectionValidation),
-		priorCollectionFailureSha256: priorCollectionFailure
-			? canonicalHash(priorCollectionFailure)
-			: null
-	};
-	const planPath = path.join(continuationRoot, 'plan.json');
-	const candidatePath = path.join(continuationRoot, 'candidate.json');
-	const validationPath = path.join(continuationRoot, 'validation.json');
-	writeJson(planPath, continuationPlan);
-	writeJson(candidatePath, candidate);
-	writeJson(validationPath, validation);
-	const collectionSnapshot = includeCollectionJournals
-		? {
-				schemaVersion: 'science-challenge-exhausted-multipart-continuation-collection-snapshot/v1',
-				shardId: 'science-001',
-				attempt: 4,
-				claimSetSha256: canonicalHash([canonicalHash(claim)]),
-				candidateSha256: canonicalHash(candidate),
-				collectionValidation
-			}
-		: null;
-	const collectionSnapshotPath = path.join(continuationRoot, 'collection-validation.json');
-	const failurePath = path.join(continuationRoot, 'failure.json');
-	if (collectionSnapshot) writeJson(collectionSnapshotPath, collectionSnapshot);
-	if (priorCollectionFailure) writeJson(failurePath, priorCollectionFailure);
-	const manifest = {
-		schemaVersion: 'science-challenge-exhausted-multipart-continuation/v1',
-		attempt: 4,
-		planSha256: canonicalHash(continuationPlan),
-		sourceAttempt,
-		continuationParts: [continuationPartBinding],
-		continuationPartsSha256: canonicalHash([continuationPartBinding]),
-		collectionValidation,
-		priorCollectionFailure,
-		candidateSha256: canonicalHash(candidate),
-		validationSha256: canonicalHash(validation)
-	};
-	const manifestPath = path.join(continuationRoot, 'manifest.json');
-	writeJson(manifestPath, manifest);
-	writeJson(
-		path.join(fixture.root, fixture.paths.generationRoot, 'shards/science-001/validation.json'),
-		validation
-	);
-
-	shard.validationSha256 = canonicalHash(validation);
-	shard.continuation = {
-		schemaVersion: manifest.schemaVersion,
-		manifestPath: relativePath(manifestPath),
-		manifestSha256: canonicalHash(manifest),
-		planPath: relativePath(planPath),
-		planSha256: canonicalHash(continuationPlan),
-		candidatePath: relativePath(candidatePath),
-		candidateSha256: canonicalHash(candidate),
-		validationPath: relativePath(validationPath),
-		validationSha256: canonicalHash(validation),
-		execution: {
-			objectivePath: relativePath(objectivePath),
-			objectiveSha256: canonicalHash(objective),
-			claims: [
-				{
-					partId,
-					path: relativePath(claimPath),
-					sha256: canonicalHash(claim),
-					byteSha256: sha256(readFileSync(claimPath)),
-					invocationPath: relativePath(invocationPath),
-					invocationSha256: canonicalHash(invocation),
-					invocationByteSha256: sha256(readFileSync(invocationPath))
-				}
-			]
-		},
-		sourceAttempt: {
-			...sourceAttempt,
-			attemptDir: relativePath(attemptRoot),
-			files: Object.fromEntries(
-				Object.entries(sourceFiles).map(([name, filePath]) => [name, relativePath(filePath)])
-			),
-			partFiles: run.parts.map((part) => ({
-				partId: part.partId,
-				paths: {
-					prompt: part.promptPath,
-					request: part.requestPath,
-					events: part.eventLogPath,
-					lastMessage: part.rawOutputPath,
-					thoughts: part.thoughtsPath,
-					resultMetadata: part.resultMetadataPath,
-					runSummary: part.runSummaryPath
-				}
-			}))
-		},
-		continuationParts: [
-			{
-				partId,
-				claimPath: relativePath(claimPath),
-				claimSha256: canonicalHash(claim),
-				evidenceSha256: canonicalHash(continuationPartBinding),
-				paths: Object.fromEntries(
-					Object.entries(partPaths).map(([name, filePath]) => [name, relativePath(filePath)])
-				)
-			}
-		],
-		collectionValidationSnapshot: collectionSnapshot
-			? {
-					path: relativePath(collectionSnapshotPath),
-					canonicalSha256: canonicalHash(collectionSnapshot),
-					byteSha256: sha256(readFileSync(collectionSnapshotPath))
-				}
-			: null,
-		priorCollectionFailureEvidence: priorCollectionFailure
-			? {
-					path: relativePath(failurePath),
-					canonicalSha256: canonicalHash(priorCollectionFailure),
-					byteSha256: sha256(readFileSync(failurePath))
-				}
-			: null
-	};
 	fixture.bindings.lineageSha256 = canonicalHash(fixture.paths.lineage);
 	fixture.bindings.contentGenerationLineageSha256 = canonicalHash(fixture.paths.lineage.content);
 }
@@ -4570,7 +3965,7 @@ function attachMultipartPlanSalvage(fixture) {
 function buildFixtureArchive(fixture) {
 	const archiveRoot = path.join(
 		fixture.root,
-		'data/challenges/releases/science-test-v1/provenance'
+		'tmp/science-challenges/releases/science-test-v1/provenance'
 	);
 	buildScienceChallengeProvenanceArchive({
 		rootDir: fixture.root,
@@ -4581,6 +3976,16 @@ function buildFixtureArchive(fixture) {
 		...fixture.paths
 	});
 	return archiveRoot;
+}
+
+function removeFixtureSourceWorkspaces(fixture, archiveRoot) {
+	const preservedRoot = mkdtempSync(path.join(os.tmpdir(), 'science-provenance-preserved-'));
+	const preservedArchive = path.join(preservedRoot, 'provenance');
+	cpSync(archiveRoot, preservedArchive, { recursive: true });
+	rmSync(path.join(fixture.root, 'tmp'), { recursive: true, force: true });
+	mkdirSync(path.dirname(archiveRoot), { recursive: true });
+	cpSync(preservedArchive, archiveRoot, { recursive: true });
+	rmSync(preservedRoot, { recursive: true, force: true });
 }
 
 function writeJson(filePath, value) {

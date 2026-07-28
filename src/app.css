@@ -10786,8 +10786,7 @@ html[data-theme='dark'] .app-shell {
 	gap: 0.32rem;
 }
 
-.qc-public-question-header h1,
-.qc-practice-result-header h2 {
+.qc-public-question-header h1 {
 	margin: 0;
 	color: #123f35;
 	font-size: clamp(1.6rem, 3.2vw, 2.45rem);
@@ -10913,16 +10912,9 @@ html[data-theme='dark'] .app-shell {
 }
 
 .qc-practice-result-header {
-	display: grid;
-	grid-template-areas:
-		'kicker'
-		'title'
-		'meta'
-		'note';
-	gap: 0.28rem;
 	width: min(100%, 980px);
 	box-sizing: border-box;
-	padding: 0.15rem 0 0.35rem;
+	padding: 0.15rem 0;
 }
 
 .qc-practice-result-header:focus,
@@ -10931,54 +10923,10 @@ html[data-theme='dark'] .app-shell {
 }
 
 .qc-practice-result-header p {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.28rem 0.42rem;
 	margin: 0;
 	color: #526778;
 	font-size: 0.94rem;
 	line-height: 1.4;
-}
-
-.qc-practice-result-header .qc-real-kicker {
-	grid-area: kicker;
-}
-
-.qc-practice-result-header h2 {
-	grid-area: title;
-}
-
-.qc-practice-result-meta {
-	grid-area: meta;
-	align-items: baseline;
-}
-
-.qc-practice-result-header .qc-assisted-evidence-note {
-	grid-area: note;
-	margin-top: 0.25rem;
-}
-
-.qc-practice-result-header strong {
-	color: #102033;
-}
-
-@media (min-width: 720px) {
-	.qc-practice-result-header {
-		grid-template-areas:
-			'kicker meta'
-			'title meta'
-			'note note';
-		grid-template-columns: minmax(0, 1fr) minmax(16rem, auto);
-		column-gap: clamp(1.25rem, 3vw, 2.5rem);
-		align-items: end;
-	}
-
-	.qc-practice-result-meta {
-		justify-content: flex-end;
-		justify-self: end;
-		max-width: 30rem;
-		text-align: right;
-	}
 }
 
 .qc-practice-static-checklist {
@@ -11043,15 +10991,19 @@ html[data-theme='dark'] .app-shell {
 }
 
 .qc-marking-result-heading {
-	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: 0.75rem 1.5rem;
+	display: block;
 }
 
 .qc-marking-result-heading > div {
 	display: grid;
 	gap: 0.2rem;
+}
+
+.qc-marking-result-title-row {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 0.75rem;
 }
 
 .qc-marking-result-heading p {
@@ -11064,7 +11016,7 @@ html[data-theme='dark'] .app-shell {
 	line-height: 1.4;
 }
 
-.qc-marking-result-heading > span {
+.qc-marking-result-title-row > span {
 	flex: 0 0 auto;
 	color: #526778;
 	font-size: 0.8rem;
@@ -11081,7 +11033,7 @@ html[data-theme='dark'] .app-shell {
 
 .qc-marking-result li {
 	display: grid;
-	grid-template-columns: auto auto minmax(0, 1fr) auto;
+	grid-template-columns: auto auto minmax(0, 1fr);
 	gap: 0.62rem;
 	align-items: center;
 	min-height: 3rem;
@@ -11112,30 +11064,6 @@ html[data-theme='dark'] .app-shell {
 	font-size: 0.78rem;
 }
 
-.qc-marking-result-status {
-	justify-self: end;
-	min-width: 4.5rem;
-	padding: 0.3rem 0.45rem;
-	border: 1px solid rgba(16, 32, 51, 0.42);
-	color: #526778;
-	font-size: 0.74rem;
-	font-weight: 560;
-	text-align: center;
-	white-space: nowrap;
-}
-
-.qc-marking-result li.present .qc-marking-result-status {
-	border-color: rgba(22, 132, 88, 0.56);
-	background: #edfaf3;
-	color: #0d6948;
-}
-
-.qc-marking-result li.missing .qc-marking-result-status {
-	border-color: color-mix(in srgb, var(--qc-ui-danger) 58%, transparent);
-	background: color-mix(in srgb, var(--qc-ui-danger) 8%, transparent);
-	color: var(--qc-ui-danger);
-}
-
 .qc-practice-improve-card {
 	display: grid;
 	gap: 0.82rem;
@@ -11154,6 +11082,62 @@ html[data-theme='dark'] .app-shell {
 	color: #526778;
 	font-size: 0.9rem;
 	line-height: 1.45;
+}
+
+.qc-choice-result-card {
+	gap: 0.78rem;
+}
+
+.qc-choice-result-card.incorrect {
+	border-color: color-mix(in srgb, var(--qc-ui-danger) 56%, var(--qc-ui-border-subtle));
+	background: color-mix(in srgb, var(--qc-ui-danger) 7%, var(--qc-ui-surface-raised));
+}
+
+.qc-choice-result-heading {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	gap: 0.65rem;
+	align-items: center;
+}
+
+.qc-choice-result-heading > svg {
+	color: var(--qc-ui-accent);
+}
+
+.qc-choice-result-card.incorrect .qc-choice-result-heading > svg,
+.qc-choice-result-card.incorrect .qc-choice-result-heading h2 {
+	color: var(--qc-ui-danger);
+}
+
+.qc-choice-result-heading > div {
+	display: grid;
+	gap: 0.15rem;
+}
+
+.qc-choice-result-heading h2 {
+	margin: 0;
+	color: var(--qc-ui-accent-text);
+	font-size: clamp(1.25rem, 2.1vw, 1.55rem);
+	font-weight: 650;
+	line-height: 1.12;
+}
+
+.qc-choice-result-card.incorrect .qc-checked-answer {
+	border-color: color-mix(in srgb, var(--qc-ui-danger) 36%, var(--qc-ui-border-subtle));
+	background: color-mix(in srgb, var(--qc-ui-danger) 3%, var(--qc-ui-surface));
+}
+
+.qc-choice-result-guidance,
+.qc-practice-answer-card .qc-assisted-evidence-note {
+	margin: 0;
+	color: var(--qc-ui-text-secondary);
+	font-size: 0.88rem;
+	line-height: 1.48;
+}
+
+.qc-practice-answer-card .qc-assisted-evidence-note {
+	padding-top: 0.7rem;
+	border-top: 1px solid var(--qc-ui-border-subtle);
 }
 
 .qc-practice-original-question,
@@ -11232,19 +11216,6 @@ html[data-theme='dark'] .app-shell {
 	outline-offset: 2px;
 }
 
-.qc-practice-reveal-button.primary {
-	border-color: #0d5a3f;
-	background: #0d5a3f;
-	color: #ffffff;
-}
-
-.qc-practice-reveal-button.primary:hover,
-.qc-practice-reveal-button.primary:focus-visible {
-	border-color: #083d2c;
-	background: #083d2c;
-	color: #ffffff;
-}
-
 .qc-practice-reveal-button svg {
 	transition: transform 180ms ease;
 }
@@ -11274,6 +11245,29 @@ html[data-theme='dark'] .app-shell {
 
 .qc-practice-full-mark-reveal {
 	border-color: rgba(22, 132, 88, 0.58);
+}
+
+.qc-choice-correct-reveal {
+	border-color: var(--qc-ui-border);
+}
+
+.qc-choice-correct-reveal .qc-panel-label {
+	color: var(--qc-ui-text);
+}
+
+.qc-choice-correct-reveal .qc-practice-reveal-button:hover,
+.qc-choice-correct-reveal .qc-practice-reveal-button:focus-visible {
+	border-color: var(--qc-ui-border-strong);
+	background: var(--qc-ui-surface-muted);
+	color: var(--qc-ui-text);
+}
+
+.qc-choice-correct-reveal .qc-practice-reveal-button:focus-visible {
+	outline-color: color-mix(in srgb, var(--qc-ui-border-strong) 72%, transparent);
+}
+
+.qc-choice-correct-reveal .qc-practice-model-answer {
+	background: var(--qc-ui-surface-muted);
 }
 
 .qc-practice-model-answer {
@@ -11504,19 +11498,6 @@ html[data-theme='dark'] .app-shell {
 		width: 100%;
 	}
 
-	.qc-marking-result li {
-		grid-template-columns: auto auto minmax(0, 1fr);
-	}
-
-	.qc-marking-result-status {
-		grid-column: 3;
-		justify-self: start;
-	}
-
-	.qc-marking-result-heading {
-		flex-direction: column;
-	}
-
 	.qc-practice-reveal-header {
 		align-items: stretch;
 		flex-direction: column;
@@ -11546,8 +11527,7 @@ html[data-theme='dark'] .app-shell {
 :root[data-theme='dark'] .qc-topic-question,
 :root[data-theme='dark'] .qc-practice-original-question > header,
 :root[data-theme='dark'] .qc-marking-result li,
-:root[data-theme='dark'] .qc-practice-static-checklist li,
-:root[data-theme='dark'] .qc-practice-result-header strong {
+:root[data-theme='dark'] .qc-practice-static-checklist li {
 	color: #eaf4ff;
 }
 
@@ -11567,21 +11547,37 @@ html[data-theme='dark'] .app-shell {
 	color: #b8f7d5;
 }
 
-:root[data-theme='dark'] .qc-practice-reveal-button.primary {
-	border-color: #78dbaa;
-	background: #78dbaa;
-	color: #052d1c;
-}
-
-:root[data-theme='dark'] .qc-practice-reveal-button.primary:hover,
-:root[data-theme='dark'] .qc-practice-reveal-button.primary:focus-visible {
-	border-color: #98f0c5;
-	background: #98f0c5;
-	color: #052d1c;
-}
-
 :root[data-theme='dark'] .qc-practice-model-answer {
 	background: rgba(16, 67, 49, 0.3);
+}
+
+:root[data-theme='dark'] .qc-choice-result-card.incorrect {
+	border-color: color-mix(in srgb, var(--qc-ui-danger) 56%, var(--qc-ui-border-subtle));
+	background: color-mix(in srgb, var(--qc-ui-danger) 7%, var(--qc-ui-surface-raised));
+}
+
+:root[data-theme='dark'] .qc-choice-result-card.incorrect .qc-checked-answer {
+	border-color: color-mix(in srgb, var(--qc-ui-danger) 36%, var(--qc-ui-border-subtle));
+	background: color-mix(in srgb, var(--qc-ui-danger) 3%, var(--qc-ui-surface));
+}
+
+:root[data-theme='dark'] .qc-choice-correct-reveal {
+	border-color: var(--qc-ui-border);
+}
+
+:root[data-theme='dark'] .qc-choice-correct-reveal .qc-panel-label {
+	color: var(--qc-ui-text);
+}
+
+:root[data-theme='dark'] .qc-choice-correct-reveal .qc-practice-reveal-button:hover,
+:root[data-theme='dark'] .qc-choice-correct-reveal .qc-practice-reveal-button:focus-visible {
+	border-color: var(--qc-ui-border-strong);
+	background: var(--qc-ui-surface-muted);
+	color: var(--qc-ui-text);
+}
+
+:root[data-theme='dark'] .qc-choice-correct-reveal .qc-practice-model-answer {
+	background: var(--qc-ui-surface-muted);
 }
 
 :root[data-theme='dark'] .qc-topic-card-head h2,
@@ -11603,8 +11599,7 @@ html[data-theme='dark'] .app-shell {
 	color: #78dbaa;
 }
 
-:root[data-theme='dark'] .qc-public-question-header h1,
-:root[data-theme='dark'] .qc-practice-result-header h2 {
+:root[data-theme='dark'] .qc-public-question-header h1 {
 	color: #eaf7f0;
 }
 
@@ -11614,20 +11609,9 @@ html[data-theme='dark'] .app-shell {
 
 :root[data-theme='dark'] .qc-public-question-choice > p,
 :root[data-theme='dark'] .qc-marking-result-heading > div > p:last-child,
-:root[data-theme='dark'] .qc-marking-result-heading > span,
+:root[data-theme='dark'] .qc-marking-result-title-row > span,
 :root[data-theme='dark'] .qc-practice-improve-copy > p:last-child {
 	color: #a9bbcc;
-}
-
-:root[data-theme='dark'] .qc-marking-result-status {
-	border-color: rgba(226, 232, 240, 0.48);
-	color: #d9e6f5;
-}
-
-:root[data-theme='dark'] .qc-marking-result li.present .qc-marking-result-status {
-	border-color: rgba(86, 216, 148, 0.5);
-	background: rgba(16, 67, 49, 0.62);
-	color: #9af0c2;
 }
 
 :root[data-theme='dark'] .qc-practice-feedback-pending > .qc-practice-feedback-status {
@@ -11654,8 +11638,7 @@ html[data-theme='dark'] .app-shell {
 	:root:not([data-theme='light']) .qc-topic-question,
 	:root:not([data-theme='light']) .qc-practice-original-question > header,
 	:root:not([data-theme='light']) .qc-marking-result li,
-	:root:not([data-theme='light']) .qc-practice-static-checklist li,
-	:root:not([data-theme='light']) .qc-practice-result-header strong {
+	:root:not([data-theme='light']) .qc-practice-static-checklist li {
 		color: #eaf4ff;
 	}
 
@@ -11675,21 +11658,39 @@ html[data-theme='dark'] .app-shell {
 		color: #b8f7d5;
 	}
 
-	:root:not([data-theme='light']) .qc-practice-reveal-button.primary {
-		border-color: #78dbaa;
-		background: #78dbaa;
-		color: #052d1c;
-	}
-
-	:root:not([data-theme='light']) .qc-practice-reveal-button.primary:hover,
-	:root:not([data-theme='light']) .qc-practice-reveal-button.primary:focus-visible {
-		border-color: #98f0c5;
-		background: #98f0c5;
-		color: #052d1c;
-	}
-
 	:root:not([data-theme='light']) .qc-practice-model-answer {
 		background: rgba(16, 67, 49, 0.3);
+	}
+
+	:root:not([data-theme='light']) .qc-choice-result-card.incorrect {
+		border-color: color-mix(in srgb, var(--qc-ui-danger) 56%, var(--qc-ui-border-subtle));
+		background: color-mix(in srgb, var(--qc-ui-danger) 7%, var(--qc-ui-surface-raised));
+	}
+
+	:root:not([data-theme='light']) .qc-choice-result-card.incorrect .qc-checked-answer {
+		border-color: color-mix(in srgb, var(--qc-ui-danger) 36%, var(--qc-ui-border-subtle));
+		background: color-mix(in srgb, var(--qc-ui-danger) 3%, var(--qc-ui-surface));
+	}
+
+	:root:not([data-theme='light']) .qc-choice-correct-reveal {
+		border-color: var(--qc-ui-border);
+	}
+
+	:root:not([data-theme='light']) .qc-choice-correct-reveal .qc-panel-label {
+		color: var(--qc-ui-text);
+	}
+
+	:root:not([data-theme='light']) .qc-choice-correct-reveal .qc-practice-reveal-button:hover,
+	:root:not([data-theme='light'])
+		.qc-choice-correct-reveal
+		.qc-practice-reveal-button:focus-visible {
+		border-color: var(--qc-ui-border-strong);
+		background: var(--qc-ui-surface-muted);
+		color: var(--qc-ui-text);
+	}
+
+	:root:not([data-theme='light']) .qc-choice-correct-reveal .qc-practice-model-answer {
+		background: var(--qc-ui-surface-muted);
 	}
 
 	:root:not([data-theme='light']) .qc-topic-card-head h2,
@@ -11711,8 +11712,7 @@ html[data-theme='dark'] .app-shell {
 		color: #78dbaa;
 	}
 
-	:root:not([data-theme='light']) .qc-public-question-header h1,
-	:root:not([data-theme='light']) .qc-practice-result-header h2 {
+	:root:not([data-theme='light']) .qc-public-question-header h1 {
 		color: #eaf7f0;
 	}
 
@@ -11722,20 +11722,9 @@ html[data-theme='dark'] .app-shell {
 
 	:root:not([data-theme='light']) .qc-public-question-choice > p,
 	:root:not([data-theme='light']) .qc-marking-result-heading > div > p:last-child,
-	:root:not([data-theme='light']) .qc-marking-result-heading > span,
+	:root:not([data-theme='light']) .qc-marking-result-title-row > span,
 	:root:not([data-theme='light']) .qc-practice-improve-copy > p:last-child {
 		color: #a9bbcc;
-	}
-
-	:root:not([data-theme='light']) .qc-marking-result-status {
-		border-color: rgba(226, 232, 240, 0.48);
-		color: #d9e6f5;
-	}
-
-	:root:not([data-theme='light']) .qc-marking-result li.present .qc-marking-result-status {
-		border-color: rgba(86, 216, 148, 0.5);
-		background: rgba(16, 67, 49, 0.62);
-		color: #9af0c2;
 	}
 
 	:root:not([data-theme='light']) .qc-practice-feedback-pending > .qc-practice-feedback-status {

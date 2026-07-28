@@ -2,13 +2,16 @@
 
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-
-import { createServer } from 'vite';
+import { readFileSync } from 'node:fs';
 
 import {
 	SCIENCE_CHALLENGE_REVIEW_REBASE_ATTEMPT_PRE_MODEL_EXEMPT,
 	stageScienceChallengeReviewRebaseInfrastructureRecovery
 } from './lib/science-challenge-review-rebase-infra-recovery.mjs';
+import {
+	normalizeChallengeCatalogSource,
+	resolveChallengeCatalogSourcePath
+} from './lib/challenge-catalog-source.mjs';
 
 if (isMainModule()) {
 	await main();
@@ -20,7 +23,7 @@ export async function main(argv = process.argv.slice(2)) {
 		console.log(usage());
 		return;
 	}
-	const catalog = await loadExistingCatalog(args.catalogRoot);
+	const catalog = loadExistingCatalog(args.catalogSource);
 	const result = stageScienceChallengeReviewRebaseInfrastructureRecovery({
 		workspaceRoot: args.workspaceRoot,
 		reviewRebaseManifestPath: args.reviewRebaseManifest,
@@ -77,7 +80,7 @@ export function parseArgs(argv) {
 	const booleans = new Set(['help', 'dry-run']);
 	const allowedValues = new Set([
 		'workspace-root',
-		'catalog-root',
+		'catalog-source',
 		'review-rebase-manifest',
 		'verification-summary',
 		'repair-verification',
@@ -125,7 +128,9 @@ export function parseArgs(argv) {
 		help: false,
 		dryRun: Boolean(values.get('dry-run')),
 		workspaceRoot: path.resolve(values.get('workspace-root') ?? process.cwd()),
-		catalogRoot: path.resolve(values.get('catalog-root') ?? process.cwd()),
+		catalogSource: path.resolve(
+			values.get('catalog-source') ?? 'tmp/challenge-catalog/current-source.json'
+		),
 		reviewRebaseManifest: values.get('review-rebase-manifest'),
 		verificationSummary,
 		failedRoot: values.get('failed-root'),
@@ -138,7 +143,7 @@ export function usage() {
 		'Usage: node scripts/build-science-challenge-review-rebase-infra-recovery.mjs [options]',
 		'',
 		'--workspace-root=<evidence workspace; defaults to cwd>',
-		'--catalog-root=<repo containing src/lib/challenges/catalog.ts; defaults to cwd>',
+		'--catalog-source=<active D1 catalogue source JSON under ignored tmp/>',
 		'--review-rebase-manifest=<B0 manifest path inside workspace>',
 		'--verification-summary=<V1 summary path inside workspace>',
 		'--failed-root=<failed S1 root inside workspace>',
@@ -148,22 +153,15 @@ export function usage() {
 	].join('\n');
 }
 
-async function loadExistingCatalog(catalogRoot) {
-	const server = await createServer({
-		root: catalogRoot,
-		server: { middlewareMode: true },
-		appType: 'custom',
-		logLevel: 'silent'
+function loadExistingCatalog(catalogSource) {
+	const sourcePath = resolveChallengeCatalogSourcePath({
+		rootDir: process.cwd(),
+		sourcePath: catalogSource
 	});
-	try {
-		const module = await server.ssrLoadModule('/src/lib/challenges/catalog.ts');
-		if (!Array.isArray(module.challengeCatalog)) {
-			throw new Error('Current challenge catalog did not export challengeCatalog.');
-		}
-		return module.challengeCatalog;
-	} finally {
-		await server.close();
-	}
+	const source = normalizeChallengeCatalogSource(JSON.parse(readFileSync(sourcePath, 'utf8')), {
+		source: sourcePath
+	});
+	return source.definitions;
 }
 
 function isMainModule() {

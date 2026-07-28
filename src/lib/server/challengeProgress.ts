@@ -1,20 +1,19 @@
-import { challengeCatalog } from '$lib/challenges/catalog';
 import {
 	mergeChallengeProgress,
 	type ChallengeProgress,
 	type ChallengeProgressEntry
 } from '$lib/challenges/progress';
+import { getActiveChallengeIds } from '$lib/server/challengeCatalog';
 import { executePersonalQuery, queryPersonalRows } from '$lib/server/db';
 import {
 	invalidateUserHomeSnapshotForRepair,
 	updateUserHomeSnapshotChallengeProjection
 } from '$lib/server/homeSnapshot';
+import { updateChallengeLeaderboardProjection } from '$lib/server/challengeLeaderboard';
 
-export const CHALLENGE_PROGRESS_MAX_ENTRIES = challengeCatalog.length;
+export const CHALLENGE_PROGRESS_MAX_ENTRIES = 1_000;
 export const CHALLENGE_PROGRESS_SCORE_VALUES = [400, 425, 450, 475, 500] as const;
 export const CHALLENGE_PROGRESS_FUTURE_TOLERANCE_MS = 5 * 60 * 1000;
-const challengeIds = new Set(challengeCatalog.map((challenge) => challenge.id));
-const challengeIdsJson = JSON.stringify([...challengeIds]);
 const challengeScores = new Set<number>(CHALLENGE_PROGRESS_SCORE_VALUES);
 const challengeStages = new Set<ChallengeProgressEntry['lastStage']>([
 	'showdown',
@@ -140,7 +139,10 @@ function safeEntry(value: unknown, nowMs: number): ChallengeProgressEntry | null
 	};
 }
 
-function safeProgress(value: unknown): ChallengeProgress {
+function safeProgress(
+	value: unknown,
+	recognizedChallengeIds: ReadonlySet<string>
+): ChallengeProgress {
 	if (!value || typeof value !== 'object' || Array.isArray(value)) return emptyProgress();
 	const candidate = value as Partial<ChallengeProgress>;
 	if (
@@ -155,7 +157,7 @@ function safeProgress(value: unknown): ChallengeProgress {
 	const challenges: Record<string, ChallengeProgressEntry> = {};
 	const nowMs = Date.now();
 	for (const [challengeId, value] of Object.entries(candidate.challenges)) {
-		if (!challengeIds.has(challengeId)) continue;
+		if (!recognizedChallengeIds.has(challengeId)) continue;
 		const entry = safeEntry(value, nowMs);
 		if (entry) challenges[challengeId] = entry;
 		if (Object.keys(challenges).length >= CHALLENGE_PROGRESS_MAX_ENTRIES) break;
@@ -163,29 +165,45 @@ function safeProgress(value: unknown): ChallengeProgress {
 	return { version: 2, challenges };
 }
 
-function progressFromRows(rows: ChallengeProgressRow[]): ChallengeProgress {
-	return safeProgress({
-		version: 2,
-		challenges: Object.fromEntries(
-			rows.map((row) => [
-				row.challenge_id,
-				{
-					startedAt: row.started_at,
-					updatedAt: row.updated_at,
-					completedAt: row.completed_at,
-					plays: row.plays,
-					lastStage: row.last_stage,
-					bestScore: row.best_score,
-					bestTimeMs: row.best_time_ms,
-					lastScore: row.last_score,
-					lastTimeMs: row.last_time_ms
-				}
-			])
-		)
-	});
+function progressFromRows(
+	rows: ChallengeProgressRow[],
+	recognizedChallengeIds: ReadonlySet<string>
+): ChallengeProgress {
+	return safeProgress(
+		{
+			version: 2,
+			challenges: Object.fromEntries(
+				rows.map((row) => [
+					row.challenge_id,
+					{
+						startedAt: row.started_at,
+						updatedAt: row.updated_at,
+						completedAt: row.completed_at,
+						plays: row.plays,
+						lastStage: row.last_stage,
+						bestScore: row.best_score,
+						bestTimeMs: row.best_time_ms,
+						lastScore: row.last_score,
+						lastTimeMs: row.last_time_ms
+					}
+				])
+			)
+		},
+		recognizedChallengeIds
+	);
 }
 
 export async function getUserChallengeProgress(userId: string): Promise<ChallengeProgress> {
+	const challengeIds = await getActiveChallengeIds();
+	return await getUserChallengeProgressForIds(userId, challengeIds);
+}
+
+async function getUserChallengeProgressForIds(
+	userId: string,
+	challengeIds: string[]
+): Promise<ChallengeProgress> {
+	if (challengeIds.length === 0) return emptyProgress();
+	const recognizedChallengeIds = new Set(challengeIds);
 	const rows = await queryPersonalRows<ChallengeProgressRow>(
 		`SELECT challenge_id, started_at, updated_at, completed_at, plays, last_stage,
 		        best_score, best_time_ms, last_score, last_time_ms
@@ -197,20 +215,26 @@ export async function getUserChallengeProgress(userId: string): Promise<Challeng
 		    )
 		  ORDER BY updated_at DESC
 		  LIMIT ?`,
-		[userId, challengeIdsJson, CHALLENGE_PROGRESS_MAX_ENTRIES]
+		[
+			userId,
+			JSON.stringify(challengeIds),
+			Math.min(challengeIds.length, CHALLENGE_PROGRESS_MAX_ENTRIES)
+		]
 	);
-	return progressFromRows(rows);
+	return progressFromRows(rows, recognizedChallengeIds);
 }
 
 export async function mergeUserChallengeProgress(
 	userId: string,
 	incoming: ChallengeProgress
 ): Promise<ChallengeProgress> {
-	const safeIncoming = safeProgress(incoming);
+	const challengeIds = await getActiveChallengeIds();
+	const recognizedChallengeIds = new Set(challengeIds);
+	const safeIncoming = safeProgress(incoming, recognizedChallengeIds);
 	const incomingIds = Object.keys(safeIncoming.challenges);
-	if (incomingIds.length === 0) return await getUserChallengeProgress(userId);
+	if (incomingIds.length === 0) return await getUserChallengeProgressForIds(userId, challengeIds);
 
-	const current = await getUserChallengeProgress(userId);
+	const current = await getUserChallengeProgressForIds(userId, challengeIds);
 	const merged = mergeChallengeProgress(current, safeIncoming);
 
 	try {
@@ -309,7 +333,13 @@ export async function mergeUserChallengeProgress(
 		throw error;
 	}
 
-	const stored = await getUserChallengeProgress(userId);
+	const stored = await getUserChallengeProgressForIds(userId, challengeIds);
+	try {
+		await updateChallengeLeaderboardProjection(userId, stored);
+	} catch {
+		// Progress remains authoritative if the derived one-row leaderboard
+		// projection cannot be refreshed. A later successful sync repairs it.
+	}
 	try {
 		await updateUserHomeSnapshotChallengeProjection(userId, stored);
 	} catch {

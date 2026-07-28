@@ -13,17 +13,15 @@ import {
 	SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_REQUEST_SCHEMA,
 	SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_RESULT_SCHEMA,
 	SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_TRANSPORT_VERSION,
-	SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON
+	SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON,
+	SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON
 } from './science-challenge-authoring-transport.mjs';
 import {
 	buildScienceChallengeAuthoringParts,
 	mergeScienceChallengeAuthoringPartBatches,
 	scienceChallengeMultipartPartPaths
 } from './science-challenge-authoring-parts.mjs';
-import {
-	normalizeScienceChallengeAuthoringProviderValue,
-	scienceChallengeAuthoringProviderSchema
-} from './science-challenge-authoring-provider-schema.mjs';
+import { scienceChallengeAuthoringProviderSchema } from './science-challenge-authoring-provider-schema.mjs';
 import { canonicalHash, challengeBatchOutputSchema } from './science-challenge-release.mjs';
 import { buildScienceChallengePromptJsonProviderPrompt } from './science-challenge-direct-prompt-json-runner.mjs';
 
@@ -55,6 +53,8 @@ const DIRECT_SUMMARY_FIELDS = Object.freeze([
 	'error',
 	'transport',
 	'transportVersion',
+	'responseMode',
+	'providerSchemaApplied',
 	'authMode',
 	'provider',
 	'model',
@@ -197,6 +197,9 @@ const DIRECT_PROMPT_JSON_RESULT_METADATA_FIELDS = Object.freeze([
 const DIRECT_RESULT_METADATA_FIELDS = Object.freeze([
 	'schemaVersion',
 	'transport',
+	'transportVersion',
+	'responseMode',
+	'providerSchemaApplied',
 	'provider',
 	'model',
 	'modelVersion',
@@ -339,6 +342,12 @@ export function validateScienceChallengeDirectJsonRunPolicy({
 		if (summary.transportVersion !== SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT_VERSION) {
 			issues.push('run summary direct transportVersion is invalid.');
 		}
+		if (
+			summary.responseMode !== SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON ||
+			summary.providerSchemaApplied !== true
+		) {
+			issues.push('run summary must declare structured JSON with provider schema enforcement.');
+		}
 		if (!['configured-proxy', 'default-chatgpt-profile'].includes(summary.authMode)) {
 			issues.push('run summary authMode is invalid.');
 		}
@@ -395,6 +404,8 @@ export function validateScienceChallengeDirectJsonRunPolicy({
 			'schemaVersion',
 			'transport',
 			'transportVersion',
+			'responseMode',
+			'providerSchemaApplied',
 			'operation',
 			'provider',
 			'model',
@@ -415,6 +426,8 @@ export function validateScienceChallengeDirectJsonRunPolicy({
 			request.schemaVersion !== SCIENCE_CHALLENGE_DIRECT_JSON_REQUEST_SCHEMA ||
 			request.transport !== SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT ||
 			request.transportVersion !== SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT_VERSION ||
+			request.responseMode !== SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON ||
+			request.providerSchemaApplied !== true ||
 			request.operation !== 'streamJson' ||
 			request.provider !== SCIENCE_CHALLENGE_DIRECT_JSON_PROVIDER ||
 			request.model !== SCIENCE_CHALLENGE_DIRECT_JSON_MODEL ||
@@ -500,9 +513,11 @@ export function validateScienceChallengeDirectJsonRunPolicy({
 	let parsedLastMessage = null;
 	if (lastMessage !== null) {
 		try {
-			parsedLastMessage = normalizeScienceChallengeAuthoringProviderValue(JSON.parse(lastMessage));
+			parsedLastMessage = scienceChallengeAuthoringProviderSchema(
+				expectedResponseJsonSchema
+			).parse(JSON.parse(lastMessage));
 		} catch {
-			issues.push('raw last message is not valid JSON.');
+			issues.push('raw last message is not exact schema-valid JSON.');
 		}
 	}
 	if (
@@ -587,6 +602,9 @@ export function validateScienceChallengeDirectJsonRunPolicy({
 		if (
 			resultMetadata.schemaVersion !== SCIENCE_CHALLENGE_DIRECT_JSON_RESULT_SCHEMA ||
 			resultMetadata.transport !== SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT ||
+			resultMetadata.transportVersion !== SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT_VERSION ||
+			resultMetadata.responseMode !== SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON ||
+			resultMetadata.providerSchemaApplied !== true ||
 			resultMetadata.provider !== SCIENCE_CHALLENGE_DIRECT_JSON_PROVIDER ||
 			resultMetadata.model !== SCIENCE_CHALLENGE_DIRECT_JSON_MODEL ||
 			!nonEmpty(resultMetadata.modelVersion) ||
@@ -985,17 +1003,20 @@ export function validateScienceChallengeDirectMultipartRunPolicy({
 		);
 	}
 	const promptJsonMode =
-		summary.transportVersion === SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_MULTIPART_TRANSPORT_VERSION;
+		summary.responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON;
+	const structuredJsonMode =
+		summary.responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON;
 	if (
 		summary.schemaVersion !== SCIENCE_CHALLENGE_DIRECT_MULTIPART_SUMMARY_SCHEMA ||
 		summary.transport !== SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT ||
-		(!promptJsonMode &&
-			summary.transportVersion !== SCIENCE_CHALLENGE_DIRECT_MULTIPART_TRANSPORT_VERSION) ||
+		(!promptJsonMode && !structuredJsonMode) ||
 		(promptJsonMode &&
-			(summary.responseMode !== SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON ||
+			(summary.transportVersion !==
+				SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_MULTIPART_TRANSPORT_VERSION ||
 				summary.providerSchemaApplied !== false)) ||
-		(!promptJsonMode &&
-			(summary.responseMode !== undefined || summary.providerSchemaApplied !== undefined))
+		(structuredJsonMode &&
+			(summary.transportVersion !== SCIENCE_CHALLENGE_DIRECT_MULTIPART_TRANSPORT_VERSION ||
+				summary.providerSchemaApplied !== true))
 	) {
 		issues.push('multipart run summary transport schema is invalid.');
 	}
@@ -1125,14 +1146,14 @@ export function validateScienceChallengeDirectMultipartRunPolicy({
 			record.start !== expected?.start ||
 			record.end !== expected?.end ||
 			canonicalHash(record.rowIds ?? null) !== canonicalHash(expected?.rowIds ?? []) ||
-			record.inputSha256 !== expected?.inputSha256 ||
-			(promptJsonMode
-				? record.transportVersion !== SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_TRANSPORT_VERSION ||
-					record.responseMode !== SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON ||
-					record.providerSchemaApplied !== false
-				: record.transportVersion !== undefined ||
-					record.responseMode !== undefined ||
-					record.providerSchemaApplied !== undefined) ||
+				record.inputSha256 !== expected?.inputSha256 ||
+				(promptJsonMode
+					? record.transportVersion !== SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_TRANSPORT_VERSION ||
+						record.responseMode !== SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON ||
+						record.providerSchemaApplied !== false
+					: record.transportVersion !== SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT_VERSION ||
+						record.responseMode !== SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON ||
+						record.providerSchemaApplied !== true) ||
 			record.responseSchemaSha256 !==
 				canonicalHash(challengeBatchOutputSchema(expected?.rowIds?.length ?? 0))
 		) {
@@ -1210,10 +1231,13 @@ export function validateScienceChallengeDirectMultipartRunPolicy({
 			(record.rawCandidateSha256 !== canonicalHash(batch) ||
 				record.status !== 'passed' ||
 				record.provider !== evidence.summary.provider ||
-				record.model !== evidence.summary.model ||
-				record.modelVersion !== evidence.summary.modelVersion ||
-				record.thinkingLevel !== evidence.summary.thinkingLevel ||
-				record.thinkingLevel !== summary.thinkingLevel ||
+					record.model !== evidence.summary.model ||
+					record.modelVersion !== evidence.summary.modelVersion ||
+					record.thinkingLevel !== evidence.summary.thinkingLevel ||
+					record.transportVersion !== evidence.summary.transportVersion ||
+					record.responseMode !== evidence.summary.responseMode ||
+					record.providerSchemaApplied !== evidence.summary.providerSchemaApplied ||
+					record.thinkingLevel !== summary.thinkingLevel ||
 				canonicalHash(record.usage ?? null) !== canonicalHash(evidence.summary.usage ?? null) ||
 				record.costUsd !== evidence.summary.costUsd)
 		) {
@@ -1275,29 +1299,24 @@ export function validateScienceChallengeDirectMultipartRunPolicy({
 		index: record.index,
 		status: record.status,
 		promptSha256: record.promptSha256,
-		runSummarySha256: record.runSummarySha256,
-		rawOutputSha256: record.rawOutputSha256,
-		eventLogSha256: record.eventLogSha256
-	}));
-	if (promptJsonMode) {
-		for (const event of expectedEvents) {
-			event.responseMode = SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON;
-			event.transportVersion = SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_TRANSPORT_VERSION;
-		}
-	}
+			runSummarySha256: record.runSummarySha256,
+			rawOutputSha256: record.rawOutputSha256,
+			eventLogSha256: record.eventLogSha256,
+			responseMode: summary.responseMode,
+			providerSchemaApplied: summary.providerSchemaApplied,
+			transportVersion: record.transportVersion
+		}));
 	if (merge.candidate) {
 		const completedEvent = {
 			schemaVersion: SCIENCE_CHALLENGE_DIRECT_MULTIPART_EVENT_SCHEMA,
 			type: 'multipart.completed',
 			partCount: summary.expectedPartCount,
 			rowIds: expectedRowIds,
-			mergedCandidateSha256: canonicalHash(merge.candidate)
+			mergedCandidateSha256: canonicalHash(merge.candidate),
+			responseMode: summary.responseMode,
+			providerSchemaApplied: summary.providerSchemaApplied,
+			transportVersion: summary.transportVersion
 		};
-		if (promptJsonMode) {
-			completedEvent.responseMode = SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON;
-			completedEvent.transportVersion =
-				SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_MULTIPART_TRANSPORT_VERSION;
-		}
 		expectedEvents.push(completedEvent);
 	}
 	if (canonicalHash(eventLog.events) !== canonicalHash(expectedEvents)) {
@@ -1397,25 +1416,19 @@ export function validateScienceChallengeModelRunPolicy({
 	};
 	if (isRecord(summary)) {
 		for (const [field, label] of SUMMARY_HASH_FIELDS) {
-			if (summary[field] === null || summary[field] === undefined) continue;
 			const expected =
 				field === 'eventLogSha256' ? hashes.eventLogSha256 : hashes.lastMessageSha256;
 			if (!isSha256(summary[field])) {
-				issues.push(`run summary ${field} must be a SHA-256 hash when supplied.`);
+				issues.push(`run summary ${field} must be a SHA-256 hash.`);
 			} else if (summary[field] !== expected) {
 				issues.push(`run summary ${field} does not match the supplied ${label} bytes.`);
 			}
 		}
-		if (
-			summary.events !== null &&
-			summary.events !== undefined &&
-			summary.events !== events.length
-		) {
+		if (!Number.isInteger(summary.events) || summary.events !== events.length) {
 			issues.push('run summary events does not match the parsed event count.');
 		}
 		if (
-			summary.agentMessages !== null &&
-			summary.agentMessages !== undefined &&
+			!Number.isInteger(summary.agentMessages) ||
 			summary.agentMessages !== agentMessages.length
 		) {
 			issues.push('run summary agentMessages does not match the parsed agent-message count.');
@@ -1613,15 +1626,11 @@ export function validateScienceChallengeAuthoringRunPolicy(input) {
 	if (isScienceChallengeDirectJsonRunSummary(input?.summary)) {
 		return validateScienceChallengeDirectJsonRunPolicy(input);
 	}
-	if (
-		isRecord(input?.summary) &&
-		input.summary.transport !== undefined &&
-		input.summary.transport !== 'codex-sdk'
-	) {
+	if (!isRecord(input?.summary) || input.summary.transport !== 'codex-sdk') {
 		return {
 			status: 'failed',
 			issues: [
-				`Unsupported science challenge authoring transport ${String(input.summary.transport)}.`
+				`Unsupported science challenge authoring transport ${String(input?.summary?.transport)}.`
 			]
 		};
 	}
@@ -1664,14 +1673,10 @@ export function requireScienceChallengeAuthoringRunPolicy(input) {
 		}
 		return validation;
 	}
-	if (
-		isRecord(input?.summary) &&
-		input.summary.transport !== undefined &&
-		input.summary.transport !== 'codex-sdk'
-	) {
+	if (!isRecord(input?.summary) || input.summary.transport !== 'codex-sdk') {
 		throw new Error(
 			`Science challenge authoring run violates policy:\n- Unsupported science challenge authoring transport ${String(
-				input.summary.transport
+				input?.summary?.transport
 			)}.`
 		);
 	}
@@ -1687,7 +1692,9 @@ export function isScienceChallengeDirectJsonRunSummary(summary) {
 	return (
 		isRecord(summary) &&
 		summary.transport === SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT &&
-		summary.transportVersion === SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT_VERSION
+		summary.transportVersion === SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT_VERSION &&
+		summary.responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON &&
+		summary.providerSchemaApplied === true
 	);
 }
 
@@ -1712,7 +1719,9 @@ export function isScienceChallengeDirectMultipartRunSummary(summary) {
 	return (
 		isRecord(summary) &&
 		summary.transport === SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT &&
-		(summary.transportVersion === SCIENCE_CHALLENGE_DIRECT_MULTIPART_TRANSPORT_VERSION ||
+		((summary.transportVersion === SCIENCE_CHALLENGE_DIRECT_MULTIPART_TRANSPORT_VERSION &&
+			summary.responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON &&
+			summary.providerSchemaApplied === true) ||
 			(summary.transportVersion ===
 				SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_MULTIPART_TRANSPORT_VERSION &&
 				summary.responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON &&

@@ -35,12 +35,6 @@ import {
 	SCIENCE_CHALLENGE_MULTIPART_PLAN_SALVAGE_VALIDATION_SCHEMA
 } from './science-challenge-multipart-plan-salvage-evidence.mjs';
 import { SCIENCE_CHALLENGE_MULTIPART_PLAN_SALVAGE_SCHEMA } from './science-challenge-multipart-plan-salvage.mjs';
-import {
-	SCIENCE_CHALLENGE_MULTIPART_CONTINUATION_PLAN_SCHEMA,
-	SCIENCE_CHALLENGE_MULTIPART_CONTINUATION_SCHEMA,
-	SCIENCE_CHALLENGE_MULTIPART_CONTINUATION_VALIDATION_SCHEMA
-} from './science-challenge-multipart-continuation.mjs';
-import { SCIENCE_CHALLENGE_VERIFICATION_REPAIR_MULTIPART_INVOCATION_SCHEMA } from './science-challenge-verification-repair-lineage.mjs';
 import { validateScienceChallengeDescendantRemapManifest } from './science-challenge-descendant-remap.mjs';
 import {
 	findScienceChallengeCurriculumRemapDurableLeaks,
@@ -176,7 +170,6 @@ const REQUIRED_INFRASTRUCTURE_RECOVERY_TRACKED_KINDS = Object.freeze([
 const CONTENT_PARENT_CHAIN_INDEX_SCHEMA =
 	'science-challenge-content-parent-chain-provenance-index/v1';
 const REVIEW_REBASE_SUCCESSOR_PARENT_KIND = 'review-rebase-successor';
-const REVIEW_REBASE_PARENT_KIND = 'review-rebase';
 const CONTENT_PARENT_CHAIN_REFERENCE_ROOT = 'content/parent-chain/repository';
 const INFRASTRUCTURE_RECOVERY_INDEX_SCHEMA =
 	'science-challenge-review-rebase-infrastructure-recovery-provenance-index/v1';
@@ -239,8 +232,6 @@ const PROVENANCE_BINDING_FIELDS = Object.freeze([
 
 const MULTIPART_PLAN_SALVAGE_DIRECTORY =
 	/^verification-repair-[a-f0-9]{12}-multipart-plan-salvage$/;
-const MULTIPART_CONTINUATION_DIRECTORY =
-	/^verification-repair-[a-f0-9]{12}-attempt-04-multipart-continuation$/;
 const VERIFICATION_REPAIR_ATTEMPT_DIRECTORY =
 	/^verification-repair-([a-f0-9]{12})-attempt-(\d{2})$/;
 const VERIFICATION_REPAIR_MAX_ATTEMPTS = 4;
@@ -358,9 +349,7 @@ function buildScienceChallengeProvenanceArchiveIntoPreparedRoot({
 	contentReviewPath,
 	artGenerationRoot,
 	artReviewRoot,
-	artPerceptualAuditPath,
-	repairRecoveryManifestPath = null,
-	repairExecutionLedgerSnapshot = null
+	artPerceptualAuditPath
 }) {
 	const workspaceRoot = path.resolve(rootDir);
 	const outputRoot = resolveArchiveRoot(workspaceRoot, archiveRoot);
@@ -653,21 +642,19 @@ function buildScienceChallengeProvenanceArchiveIntoPreparedRoot({
 	) {
 		throw new Error('Non-cohort provenance bindings must use null effective-cohort hashes.');
 	}
-	let curriculumCatalogFile = null;
-	if (curriculumCatalogPath) {
-		curriculumCatalogFile = requiredWorkspaceFile(
-			workspaceRoot,
-			curriculumCatalogPath,
-			'curriculum catalog'
-		);
-		assertBinding(
-			'curriculumCatalogSha256',
-			canonicalHash(readJson(curriculumCatalogFile)),
-			expectedBindings.curriculumCatalogSha256
-		);
-	} else {
+	if (!curriculumCatalogPath) {
 		throw new Error('curriculumCatalogPath is required for the bound curriculum catalog.');
 	}
+	const curriculumCatalogFile = requiredWorkspaceFile(
+		workspaceRoot,
+		curriculumCatalogPath,
+		'curriculum catalog'
+	);
+	assertBinding(
+		'curriculumCatalogSha256',
+		canonicalHash(readJson(curriculumCatalogFile)),
+		expectedBindings.curriculumCatalogSha256
+	);
 	assertBinding(
 		'sourceSnapshotSha256',
 		canonicalHash(sourceSnapshot),
@@ -837,7 +824,6 @@ function buildScienceChallengeProvenanceArchiveIntoPreparedRoot({
 			effectiveCohort,
 			effectiveCohortArchive,
 			descendantRemapRecoveries,
-			contentReview,
 			addTracked,
 			writeTrackedJson,
 			writeTrackedText,
@@ -859,42 +845,6 @@ function buildScienceChallengeProvenanceArchiveIntoPreparedRoot({
 			addExternal
 		});
 	}
-	if (repairRecoveryManifestPath) {
-		const recoverySource = requiredWorkspaceFile(
-			workspaceRoot,
-			repairRecoveryManifestPath,
-			'content repair recovery'
-		);
-		const recoveryManifest = readJson(recoverySource);
-		const recovery = addTracked(
-			'content-repair-recovery',
-			recoverySource,
-			'content/verification-repair-recovery.json'
-		);
-		if (
-			lineage.recovery?.sha256 !== recovery.canonicalSha256 ||
-			lineage.recovery?.objectiveId !== recoveryManifest.objectiveId ||
-			lineage.recovery?.executionId !== recoveryManifest.executionId ||
-			lineage.recovery?.executionLedgerSha256 !== canonicalHash(repairExecutionLedgerSnapshot)
-		) {
-			throw new Error('Release lineage does not bind the verification-repair recovery manifest.');
-		}
-		archiveVerificationRepairPredecessorEvidence({
-			workspaceRoot,
-			planFile,
-			recoveryManifest,
-			addTracked,
-			writeTrackedJson
-		});
-		writeTrackedJson(
-			'content-repair-execution-ledger',
-			'content/verification-repair-execution-ledger.json',
-			repairExecutionLedgerSnapshot
-		);
-	} else if (lineage.recovery !== null && lineage.recovery !== undefined) {
-		throw new Error('Release lineage claims recovery evidence that was not supplied.');
-	}
-
 	const contentReviewRecord = addTracked(
 		'content-review-summary',
 		contentReviewFile,
@@ -941,8 +891,7 @@ function buildScienceChallengeProvenanceArchiveIntoPreparedRoot({
 		workspaceRoot,
 		lineage,
 		addTracked,
-		addExternal,
-		writeTrackedText
+		addExternal
 	});
 	writeTrackedJson('source-lineage', 'source-lineage.json', lineage);
 	writeTrackedJson(
@@ -1052,12 +1001,9 @@ export function validateScienceChallengeProvenanceArchive({
 		) {
 			issues.push(`${prefix} records a verification-repair attempt after four.`);
 		}
-		const approvedPreModelRecoveryEvent =
-			artifact.kind === 'content-repair-predecessor-evidence' &&
-			archivePath.startsWith('content/recovery-predecessors/');
 		if (
-			(/\.(?:jsonl|ndjson)$/i.test(archivePath) || /(^|\/)events(?:\.|\/)/i.test(archivePath)) &&
-			!approvedPreModelRecoveryEvent
+			/\.(?:jsonl|ndjson)$/i.test(archivePath) ||
+			/(^|\/)events(?:\.|\/)/i.test(archivePath)
 		) {
 			issues.push(`${prefix} must not track a raw event stream.`);
 		}
@@ -1309,19 +1255,7 @@ export function validateScienceChallengeProvenanceArchive({
 		external,
 		issues
 	});
-	validateArchivedVerificationRepairPredecessorEvidence({
-		archiveRoot: outputRoot,
-		tracked,
-		issues
-	});
 	validateArchivedMultipartPlanSalvageEvidence({
-		archiveRoot: outputRoot,
-		sourceLineage,
-		tracked,
-		external,
-		issues
-	});
-	validateArchivedMultipartContinuationEvidence({
 		archiveRoot: outputRoot,
 		sourceLineage,
 		tracked,
@@ -1771,30 +1705,6 @@ function assertMultipartPlanSalvageLineageCoverage({
 		if (path.dirname(manifestPath) !== expectedDirectory) {
 			throw new Error(`${shardId} multipart plan-drift salvage lineage selects another directory.`);
 		}
-	}
-
-	const discoveredContinuations = sortedDirectories(shardRoot).filter((name) =>
-		MULTIPART_CONTINUATION_DIRECTORY.test(name)
-	);
-	const continuation = sourceShard?.continuation ?? null;
-	if (discoveredContinuations.length > 1) {
-		throw new Error(`${shardId} has multiple exhausted multipart continuation directories.`);
-	}
-	if (discoveredContinuations.length === 0 && continuation) {
-		throw new Error(`${shardId} claims multipart continuation whose evidence is missing.`);
-	}
-	if (discoveredContinuations.length === 1 && !continuation) {
-		throw new Error(`${shardId} omits discovered multipart continuation from release lineage.`);
-	}
-	if (!continuation) return;
-	const continuationManifestPath = requiredWorkspaceFile(
-		workspaceRoot,
-		continuation.manifestPath,
-		`${shardId} multipart continuation manifest`
-	);
-	const expectedContinuationDirectory = path.join(shardRoot, discoveredContinuations[0]);
-	if (path.dirname(continuationManifestPath) !== expectedContinuationDirectory) {
-		throw new Error(`${shardId} multipart continuation lineage selects another directory.`);
 	}
 }
 
@@ -2574,7 +2484,6 @@ function archiveDescendantRemapEvidence({
 	effectiveCohort,
 	effectiveCohortArchive,
 	descendantRemapRecoveries,
-	contentReview,
 	addTracked,
 	writeTrackedJson,
 	writeTrackedText,
@@ -3233,152 +3142,11 @@ function archiveArtReview({
 	}
 }
 
-function archiveVerificationRepairPredecessorEvidence({
-	workspaceRoot,
-	planFile,
-	recoveryManifest,
-	addTracked,
-	writeTrackedJson
-}) {
-	const index = verificationRepairPredecessorArchiveIndex(recoveryManifest);
-	const planRoot = path.dirname(planFile);
-	const realPlanRoot = realpathSync(planRoot);
-	for (const [rootIndex, predecessor] of recoveryManifest.preModelRoots.entries()) {
-		const sourceRoot = requiredWorkspaceDirectory(
-			workspaceRoot,
-			path.resolve(planRoot, predecessor.path),
-			`verification-repair predecessor ${rootIndex + 1}`
-		);
-		if (!isWithin(realPlanRoot, realpathSync(sourceRoot))) {
-			throw new Error(
-				`Verification-repair predecessor ${rootIndex + 1} escapes the plan directory.`
-			);
-		}
-		for (const [fileIndex, evidence] of predecessor.evidenceInventory.entries()) {
-			const relativeEvidencePath = safeArchivePath(evidence.path);
-			const sourcePath = path.resolve(sourceRoot, relativeEvidencePath);
-			if (!isWithin(sourceRoot, sourcePath)) {
-				throw new Error(
-					`Verification-repair predecessor ${rootIndex + 1} evidence ${fileIndex + 1} escapes its root.`
-				);
-			}
-			const sourceFile = requiredWorkspaceFile(
-				workspaceRoot,
-				sourcePath,
-				`verification-repair predecessor ${rootIndex + 1} evidence ${fileIndex + 1}`
-			);
-			const bytes = readFileSync(sourceFile);
-			if (sha256(bytes) !== evidence.sha256 || bytes.length !== evidence.bytes) {
-				throw new Error(
-					`Verification-repair predecessor ${rootIndex + 1} evidence ${evidence.path} differs from the recovery manifest.`
-				);
-			}
-			const record = addTracked(
-				'content-repair-predecessor-evidence',
-				sourceFile,
-				recoveryPredecessorArchivePath(rootIndex, relativeEvidencePath)
-			);
-			if (record.sha256 !== evidence.sha256 || record.bytes !== evidence.bytes) {
-				throw new Error(
-					`Archived verification-repair predecessor evidence ${evidence.path} lost its immutable byte binding.`
-				);
-			}
-		}
-	}
-	writeTrackedJson(
-		'content-repair-predecessor-index',
-		'content/verification-repair-predecessors.json',
-		index
-	);
-}
-
-function verificationRepairPredecessorArchiveIndex(recoveryManifest) {
-	if (
-		!Array.isArray(recoveryManifest?.preModelRoots) ||
-		recoveryManifest.preModelRoots.length === 0
-	) {
-		throw new Error('Recovery manifest has no predecessor evidence to archive.');
-	}
-	const roots = recoveryManifest.preModelRoots.map((predecessor, rootIndex) => {
-		if (
-			!nonEmpty(predecessor?.path) ||
-			!Array.isArray(predecessor.evidenceInventory) ||
-			predecessor.evidenceInventory.length === 0
-		) {
-			throw new Error(`Recovery predecessor ${rootIndex + 1} evidence inventory is invalid.`);
-		}
-		const seenPaths = new Set();
-		const files = predecessor.evidenceInventory.map((evidence, fileIndex) => {
-			const evidencePath = safeArchivePath(evidence?.path);
-			if (
-				evidencePath === '.' ||
-				seenPaths.has(evidencePath) ||
-				!sha256String(evidence?.sha256) ||
-				!Number.isInteger(evidence?.bytes) ||
-				evidence.bytes < 0
-			) {
-				throw new Error(
-					`Recovery predecessor ${rootIndex + 1} evidence ${fileIndex + 1} is invalid.`
-				);
-			}
-			seenPaths.add(evidencePath);
-			return {
-				path: evidencePath,
-				archivePath: recoveryPredecessorArchivePath(rootIndex, evidencePath),
-				sha256: evidence.sha256,
-				bytes: evidence.bytes
-			};
-		});
-		if (
-			predecessor.evidenceFileCount !== files.length ||
-			predecessor.evidenceBytes !== files.reduce((total, file) => total + file.bytes, 0) ||
-			predecessor.evidenceInventorySha256 !==
-				canonicalHash(
-					files.map(({ path: filePath, sha256: fileSha256, bytes }) => ({
-						path: filePath,
-						sha256: fileSha256,
-						bytes
-					}))
-				)
-		) {
-			throw new Error(`Recovery predecessor ${rootIndex + 1} inventory binding is invalid.`);
-		}
-		return {
-			ordinal: rootIndex + 1,
-			sourcePath: predecessor.path,
-			archiveRoot: recoveryPredecessorArchiveRoot(rootIndex),
-			evidenceInventorySha256: predecessor.evidenceInventorySha256,
-			evidenceFileCount: predecessor.evidenceFileCount,
-			evidenceBytes: predecessor.evidenceBytes,
-			files
-		};
-	});
-	return {
-		schemaVersion: 'science-challenge-verification-repair-predecessor-archive/v1',
-		recoveryManifestSha256: canonicalHash(recoveryManifest),
-		rootCount: roots.length,
-		fileCount: roots.reduce((total, root) => total + root.evidenceFileCount, 0),
-		bytes: roots.reduce((total, root) => total + root.evidenceBytes, 0),
-		roots
-	};
-}
-
-function recoveryPredecessorArchiveRoot(rootIndex) {
-	return `content/recovery-predecessors/predecessor-${String(rootIndex + 1).padStart(2, '0')}`;
-}
-
-function recoveryPredecessorArchivePath(rootIndex, evidencePath) {
-	return safeArchivePath(
-		`${recoveryPredecessorArchiveRoot(rootIndex)}/${safeArchivePath(evidencePath)}`
-	);
-}
-
 function archiveLineageArtifacts({
 	workspaceRoot,
 	lineage,
 	addTracked,
-	addExternal,
-	writeTrackedText
+	addExternal
 }) {
 	for (const shard of lineage.content ?? []) {
 		const shardId = safeFilename(shard.shardId);
@@ -3413,16 +3181,6 @@ function archiveLineageArtifacts({
 				shardId,
 				salvage: shard.salvage,
 				addTracked
-			});
-		}
-		if (shard.continuation) {
-			archiveMultipartContinuationArtifacts({
-				workspaceRoot,
-				shardId,
-				continuation: shard.continuation,
-				addTracked,
-				addExternal,
-				writeTrackedText
 			});
 		}
 	}
@@ -3570,291 +3328,12 @@ function archiveMultipartPlanSalvageArtifacts({ workspaceRoot, shardId, salvage,
 	}
 }
 
-function archiveMultipartContinuationArtifacts({
-	workspaceRoot,
-	shardId,
-	continuation,
-	addTracked,
-	addExternal,
-	writeTrackedText
-}) {
-	if (
-		!continuation ||
-		continuation.schemaVersion !== SCIENCE_CHALLENGE_MULTIPART_CONTINUATION_SCHEMA
-	) {
-		throw new Error(`${shardId} multipart continuation lineage schema is invalid.`);
-	}
-	const destinationRoot = `content/shards/${shardId}/multipart-continuation`;
-	const manifestPath = requiredWorkspaceFile(
-		workspaceRoot,
-		continuation.manifestPath,
-		`${shardId} multipart continuation manifest`
-	);
-	const planPath = requiredWorkspaceFile(
-		workspaceRoot,
-		continuation.planPath,
-		`${shardId} multipart continuation plan`
-	);
-	const candidatePath = requiredWorkspaceFile(
-		workspaceRoot,
-		continuation.candidatePath,
-		`${shardId} multipart continuation candidate`
-	);
-	const validationPath = requiredWorkspaceFile(
-		workspaceRoot,
-		continuation.validationPath,
-		`${shardId} multipart continuation validation`
-	);
-	const manifest = readJson(manifestPath);
-	const continuationPlan = readJson(planPath);
-	const candidate = readJson(candidatePath);
-	const validation = readJson(validationPath);
-	if (
-		manifest.schemaVersion !== SCIENCE_CHALLENGE_MULTIPART_CONTINUATION_SCHEMA ||
-		continuationPlan.schemaVersion !== SCIENCE_CHALLENGE_MULTIPART_CONTINUATION_PLAN_SCHEMA ||
-		validation.schemaVersion !== SCIENCE_CHALLENGE_MULTIPART_CONTINUATION_VALIDATION_SCHEMA ||
-		canonicalHash(manifest) !== continuation.manifestSha256 ||
-		canonicalHash(continuationPlan) !== continuation.planSha256 ||
-		canonicalHash(candidate) !== continuation.candidateSha256 ||
-		canonicalHash(validation) !== continuation.validationSha256 ||
-		manifest.planSha256 !== continuation.planSha256 ||
-		manifest.candidateSha256 !== continuation.candidateSha256 ||
-		manifest.validationSha256 !== continuation.validationSha256 ||
-		validation.collectionValidationSha256 !== canonicalHash(manifest.collectionValidation) ||
-		validation.priorCollectionFailureSha256 !==
-			(manifest.priorCollectionFailure ? canonicalHash(manifest.priorCollectionFailure) : null)
-	) {
-		throw new Error(`${shardId} multipart continuation final evidence is not internally bound.`);
-	}
-	for (const [kind, sourcePath, destination] of [
-		['content-multipart-continuation-manifest', manifestPath, 'manifest.json'],
-		['content-multipart-continuation-plan', planPath, 'plan.json'],
-		['content-multipart-continuation-candidate', candidatePath, 'candidate.json'],
-		['content-multipart-continuation-validation', validationPath, 'validation.json']
-	]) {
-		addTracked(kind, sourcePath, `${destinationRoot}/${destination}`);
-	}
-
-	const execution = continuation.execution;
-	if (
-		!execution ||
-		!nonEmpty(execution.objectivePath) ||
-		!Array.isArray(execution.claims) ||
-		execution.claims.length !== continuation.continuationParts.length
-	) {
-		throw new Error(`${shardId} multipart continuation execution lineage is incomplete.`);
-	}
-	if (continuation.collectionValidationSnapshot) {
-		const snapshotPath = requiredWorkspaceFile(
-			workspaceRoot,
-			continuation.collectionValidationSnapshot.path,
-			`${shardId} multipart continuation collection snapshot`
-		);
-		const snapshot = readJson(snapshotPath);
-		if (
-			canonicalHash(snapshot) !== continuation.collectionValidationSnapshot.canonicalSha256 ||
-			sha256(readFileSync(snapshotPath)) !== continuation.collectionValidationSnapshot.byteSha256 ||
-			snapshot.candidateSha256 !== continuation.candidateSha256 ||
-			snapshot.claimSetSha256 !== canonicalHash(execution.claims.map((claim) => claim.sha256)) ||
-			canonicalHash(snapshot.collectionValidation) !== canonicalHash(manifest.collectionValidation)
-		) {
-			throw new Error(`${shardId} multipart continuation collection snapshot binding is invalid.`);
-		}
-		addTracked(
-			'content-multipart-continuation-collection-snapshot',
-			snapshotPath,
-			`${destinationRoot}/collection-validation.json`
-		);
-	}
-	if (continuation.priorCollectionFailureEvidence) {
-		const failurePath = requiredWorkspaceFile(
-			workspaceRoot,
-			continuation.priorCollectionFailureEvidence.path,
-			`${shardId} multipart continuation prior collection failure`
-		);
-		const failure = readJson(failurePath);
-		if (
-			manifest.priorCollectionFailure === null ||
-			canonicalHash(failure) !== continuation.priorCollectionFailureEvidence.canonicalSha256 ||
-			sha256(readFileSync(failurePath)) !==
-				continuation.priorCollectionFailureEvidence.byteSha256 ||
-			canonicalHash(failure) !== canonicalHash(manifest.priorCollectionFailure)
-		) {
-			throw new Error(
-				`${shardId} multipart continuation prior collection failure binding is invalid.`
-			);
-		}
-		addTracked(
-			'content-multipart-continuation-prior-collection-failure',
-			failurePath,
-			`${destinationRoot}/failure.json`
-		);
-	}
-	const objectivePath = requiredWorkspaceFile(
-		workspaceRoot,
-		execution.objectivePath,
-		`${shardId} multipart continuation objective`
-	);
-	if (
-		canonicalHash(readJson(objectivePath)) !== execution.objectiveSha256 ||
-		sha256(readFileSync(objectivePath)) !==
-			(execution.objectiveByteSha256 ?? sha256(readFileSync(objectivePath)))
-	) {
-		throw new Error(`${shardId} multipart continuation objective binding is invalid.`);
-	}
-	addTracked(
-		'content-multipart-continuation-objective',
-		objectivePath,
-		`${destinationRoot}/execution/objective.json`
-	);
-	for (const claim of execution.claims) {
-		const claimPath = requiredWorkspaceFile(
-			workspaceRoot,
-			claim.path,
-			`${shardId} multipart continuation ${claim.partId} claim`
-		);
-		const claimValue = readJson(claimPath);
-		if (
-			canonicalHash(claimValue) !== claim.sha256 ||
-			sha256(readFileSync(claimPath)) !== claim.byteSha256
-		) {
-			throw new Error(`${shardId} multipart continuation ${claim.partId} claim is invalid.`);
-		}
-		addTracked(
-			'content-multipart-continuation-claim',
-			claimPath,
-			`${destinationRoot}/execution/claims/${safeFilename(claim.partId)}.json`
-		);
-		const invocationPath = requiredWorkspaceFile(
-			workspaceRoot,
-			claim.invocationPath,
-			`${shardId} multipart continuation ${claim.partId} invocation journal`
-		);
-		const invocationValue = readJson(invocationPath);
-		if (
-			invocationValue.schemaVersion !==
-				SCIENCE_CHALLENGE_VERIFICATION_REPAIR_MULTIPART_INVOCATION_SCHEMA ||
-			invocationValue.partId !== claim.partId ||
-			invocationValue.claimSha256 !== canonicalHash(claimValue) ||
-			invocationValue.claimByteSha256 !== sha256(readFileSync(claimPath)) ||
-			canonicalHash(invocationValue) !== claim.invocationSha256 ||
-			sha256(readFileSync(invocationPath)) !== claim.invocationByteSha256
-		) {
-			throw new Error(
-				`${shardId} multipart continuation ${claim.partId} invocation journal is invalid.`
-			);
-		}
-		addTracked(
-			'content-multipart-continuation-invocation',
-			invocationPath,
-			`${destinationRoot}/execution/invocations/${safeFilename(claim.partId)}.json`
-		);
-	}
-
-	const manifestParts = new Map(
-		(manifest.continuationParts ?? []).map((part) => [part.partId, part])
-	);
-	const plannedParts = new Map((continuationPlan.parts ?? []).map((part) => [part.partId, part]));
-	for (const part of continuation.continuationParts) {
-		const binding = manifestParts.get(part.partId);
-		const planned = plannedParts.get(part.partId);
-		if (
-			!binding ||
-			!planned ||
-			canonicalHash(binding) !== part.evidenceSha256 ||
-			binding.claimSha256 !== part.claimSha256
-		) {
-			throw new Error(`${shardId} multipart continuation ${part.partId} lineage is invalid.`);
-		}
-		const destination = `${destinationRoot}/parts/${safeFilename(part.partId)}`;
-		const promptDependency = addExternal(
-			'full-content-prompt',
-			`content-${shardId}-multipart-continuation-${part.partId}-prompt`,
-			part.paths.prompt
-		);
-		if (promptDependency.sha256 !== binding.prompt?.byteSha256) {
-			throw new Error(
-				`${shardId} multipart continuation ${part.partId} prompt binding is invalid.`
-			);
-		}
-		writeTrackedText(
-			'content-prompt',
-			`${destination}/prompt.txt`,
-			sanitizeContentPrompt(
-				readFileSync(
-					requiredWorkspaceFile(workspaceRoot, part.paths.prompt, 'continuation prompt'),
-					'utf8'
-				),
-				planned.inputSha256
-			),
-			{
-				sourceSha256: promptDependency.sha256,
-				externalDependencyId: promptDependency.id,
-				redaction: 'official-authoring-input'
-			}
-		);
-		for (const [pathKey, bindingKey, kind, id, options] of [
-			[
-				'request',
-				'request',
-				'direct-prompt-json-request',
-				`content-${shardId}-multipart-continuation-${part.partId}-request`,
-				{ json: true }
-			],
-			[
-				'events',
-				'eventLog',
-				'direct-prompt-json-event-log',
-				`content-${shardId}-multipart-continuation-${part.partId}-events`,
-				{ eventLog: true }
-			],
-			[
-				'thoughts',
-				'thoughts',
-				'model-thought-log',
-				`content-${shardId}-multipart-continuation-${part.partId}-thoughts`,
-				{}
-			]
-		]) {
-			const dependency = addExternal(kind, id, part.paths[pathKey], options);
-			if (dependency.sha256 !== binding[bindingKey]?.byteSha256) {
-				throw new Error(
-					`${shardId} multipart continuation ${part.partId} ${pathKey} binding is invalid.`
-				);
-			}
-		}
-		for (const [pathKey, bindingKey, kind, filename] of [
-			['lastMessage', 'lastMessage', 'content-part-final-message', 'last-message.json'],
-			[
-				'resultMetadata',
-				'resultMetadata',
-				'content-part-run-result-metadata',
-				'result-metadata.json'
-			],
-			['runSummary', 'runSummary', 'content-part-run-summary', 'run-summary.json']
-		]) {
-			const sourcePath = requiredWorkspaceFile(
-				workspaceRoot,
-				part.paths[pathKey],
-				`${shardId} multipart continuation ${part.partId} ${pathKey}`
-			);
-			if (sha256(readFileSync(sourcePath)) !== binding[bindingKey]?.byteSha256) {
-				throw new Error(
-					`${shardId} multipart continuation ${part.partId} ${pathKey} binding is invalid.`
-				);
-			}
-			addTracked(kind, sourcePath, `${destination}/${filename}`);
-		}
-	}
-}
-
 function buildSanitizedLineage(workspaceRoot, lineage, sourceBindings, trackedArtifacts) {
 	return {
 		schemaVersion: 'science-challenge-sanitized-lineage/v1',
 		sourceLineageSha256: canonicalHash(lineage),
 		sourceContentLineageSha256: canonicalHash(lineage.content),
 		sourceArtLineageSha256: canonicalHash(lineage.art),
-		recovery: lineage.recovery ?? null,
 		effectiveCohort: lineage.effectiveCohort ?? null,
 		curriculumRemap: lineage.curriculumRemap ?? null,
 		difficultyPlanAdjustment: lineage.difficultyPlanAdjustment ?? null,
@@ -3903,15 +3382,6 @@ function buildSanitizedLineage(workspaceRoot, lineage, sourceBindings, trackedAr
 						trackedArtifacts,
 						shardId: shard.shardId,
 						salvage: shard.salvage
-					})
-				: null,
-			continuation: shard.continuation
-				? sanitizedMultipartContinuation({
-						workspaceRoot,
-						sourceBindings,
-						trackedArtifacts,
-						shardId: shard.shardId,
-						continuation: shard.continuation
 					})
 				: null,
 			descendantRemap: shard.descendantRemap
@@ -3996,8 +3466,9 @@ function buildSanitizedLineage(workspaceRoot, lineage, sourceBindings, trackedAr
 					inputSha256: run.inputSha256,
 					rawCandidateSha256: run.rawCandidateSha256,
 					normalizationVersion: run.normalizationVersion,
-					transport: run.transport ?? 'codex-sdk',
+					transport: run.transport,
 					responseMode: run.responseMode ?? null,
+					providerSchemaApplied: run.providerSchemaApplied ?? null,
 					transportVersion: run.transportVersion ?? null,
 					provider: run.provider ?? null,
 					model: run.model,
@@ -4254,242 +3725,6 @@ function sanitizedDifficultyPlanAdjustment({ workspaceRoot, sourceBindings, shar
 				ref: ref(claim.path, claim.sha256, `claim ${claim.attempt}`)
 			}))
 		}
-	};
-}
-
-function sanitizedMultipartContinuation({
-	workspaceRoot,
-	sourceBindings,
-	trackedArtifacts,
-	shardId,
-	continuation
-}) {
-	const ref = (sourcePath, expectedSha256, label) =>
-		referenceFor(
-			workspaceRoot,
-			sourceBindings,
-			sourcePath,
-			expectedSha256,
-			`${shardId} multipart continuation ${label}`
-		);
-	const manifest = readJson(
-		requiredWorkspaceFile(workspaceRoot, continuation.manifestPath, 'manifest')
-	);
-	const manifestParts = new Map(
-		(manifest.continuationParts ?? []).map((part) => [part.partId, part])
-	);
-	const optionalEvidence = (evidence, label) =>
-		evidence
-			? {
-					canonicalSha256: evidence.canonicalSha256,
-					byteSha256: evidence.byteSha256,
-					ref: ref(evidence.path, evidence.canonicalSha256, label)
-				}
-			: null;
-	const sanitizedPromptReference = (sourcePath, sourceSha256, label) => {
-		const rawRef = ref(sourcePath, sourceSha256, label);
-		const sanitized = trackedArtifacts.find(
-			(artifact) =>
-				artifact.kind === 'content-prompt' &&
-				artifact.sourceSha256 === sourceSha256 &&
-				artifact.externalDependencyId === rawRef.id
-		);
-		if (!sanitized) {
-			throw new Error(`${shardId} multipart continuation ${label} has no sanitized prompt.`);
-		}
-		return { rawRef, sanitizedRef: artifactReference(sanitized) };
-	};
-	const sourceAttempt = continuation.sourceAttempt;
-	const sourcePrompt = sanitizedPromptReference(
-		sourceAttempt.files.prompt,
-		sourceAttempt.prompt.byteSha256,
-		'source orchestration prompt'
-	);
-	const sourcePartById = new Map(
-		(sourceAttempt.partFiles ?? []).map((part) => [part.partId, part])
-	);
-	return {
-		schemaVersion: continuation.schemaVersion,
-		manifestSha256: continuation.manifestSha256,
-		manifestRef: ref(continuation.manifestPath, continuation.manifestSha256, 'manifest'),
-		planSha256: continuation.planSha256,
-		planRef: ref(continuation.planPath, continuation.planSha256, 'plan'),
-		candidateSha256: continuation.candidateSha256,
-		candidateRef: ref(continuation.candidatePath, continuation.candidateSha256, 'candidate'),
-		validationSha256: continuation.validationSha256,
-		validationRef: ref(continuation.validationPath, continuation.validationSha256, 'validation'),
-		collectionValidationSnapshot: optionalEvidence(
-			continuation.collectionValidationSnapshot,
-			'collection validation snapshot'
-		),
-		priorCollectionFailureEvidence: optionalEvidence(
-			continuation.priorCollectionFailureEvidence,
-			'prior collection failure'
-		),
-		execution: {
-			objectiveSha256: continuation.execution.objectiveSha256,
-			objectiveRef: ref(
-				continuation.execution.objectivePath,
-				continuation.execution.objectiveSha256,
-				'execution objective'
-			),
-			claims: continuation.execution.claims.map((claim) => ({
-				partId: claim.partId,
-				sha256: claim.sha256,
-				byteSha256: claim.byteSha256,
-				ref: ref(claim.path, claim.sha256, `${claim.partId} execution claim`),
-				invocationSha256: claim.invocationSha256,
-				invocationByteSha256: claim.invocationByteSha256,
-				invocationRef: ref(
-					claim.invocationPath,
-					claim.invocationSha256,
-					`${claim.partId} invocation journal`
-				)
-			}))
-		},
-		sourceAttempt: {
-			attempt: sourceAttempt.attempt,
-			status: sourceAttempt.status,
-			sha256: sourceAttempt.sha256,
-			partsSha256: sourceAttempt.partsSha256,
-			promptSha256: sourceAttempt.prompt.byteSha256,
-			promptRef: sourcePrompt.rawRef,
-			sanitizedPromptRef: sourcePrompt.sanitizedRef,
-			runSummarySha256: sourceAttempt.runSummary.byteSha256,
-			runSummaryRef: ref(
-				sourceAttempt.files.runSummary,
-				sourceAttempt.runSummary.byteSha256,
-				'source run summary'
-			),
-			eventLogSha256: sourceAttempt.eventLog.byteSha256,
-			eventLogRef: ref(
-				sourceAttempt.files.eventLog,
-				sourceAttempt.eventLog.byteSha256,
-				'source event log'
-			),
-			lastMessageSha256: sourceAttempt.lastMessage.byteSha256,
-			lastMessageRef: ref(
-				sourceAttempt.files.lastMessage,
-				sourceAttempt.lastMessage.byteSha256,
-				'source final message'
-			),
-			validationSha256: sourceAttempt.validation.byteSha256,
-			validationRef: ref(
-				sourceAttempt.files.validation,
-				sourceAttempt.validation.byteSha256,
-				'source validation'
-			),
-			parts: sourceAttempt.parts.map((part) => {
-				const files = sourcePartById.get(part.partId);
-				if (!files) {
-					throw new Error(
-						`${shardId} multipart continuation source ${part.partId} file lineage is missing.`
-					);
-				}
-				const prompt = sanitizedPromptReference(
-					files.paths.prompt,
-					part.prompt.byteSha256,
-					`source ${part.partId} prompt`
-				);
-				return {
-					partId: part.partId,
-					recordSha256: part.recordSha256,
-					promptSha256: part.prompt.byteSha256,
-					promptRef: prompt.rawRef,
-					sanitizedPromptRef: prompt.sanitizedRef,
-					requestSha256: part.request.byteSha256,
-					requestRef: ref(
-						files.paths.request,
-						part.request.byteSha256,
-						`source ${part.partId} request`
-					),
-					eventLogSha256: part.eventLog.byteSha256,
-					eventLogRef: ref(
-						files.paths.events,
-						part.eventLog.byteSha256,
-						`source ${part.partId} event log`
-					),
-					lastMessageSha256: part.lastMessage.byteSha256,
-					lastMessageRef: ref(
-						files.paths.lastMessage,
-						part.lastMessage.byteSha256,
-						`source ${part.partId} final message`
-					),
-					thoughtsSha256: part.thoughts.byteSha256,
-					thoughtsRef: ref(
-						files.paths.thoughts,
-						part.thoughts.byteSha256,
-						`source ${part.partId} thoughts`
-					),
-					resultMetadataSha256: part.resultMetadata.byteSha256,
-					resultMetadataRef: ref(
-						files.paths.resultMetadata,
-						part.resultMetadata.byteSha256,
-						`source ${part.partId} result metadata`
-					),
-					runSummarySha256: part.runSummary.byteSha256,
-					runSummaryRef: ref(
-						files.paths.runSummary,
-						part.runSummary.byteSha256,
-						`source ${part.partId} run summary`
-					)
-				};
-			})
-		},
-		continuationParts: continuation.continuationParts.map((part) => {
-			const binding = manifestParts.get(part.partId);
-			if (!binding || canonicalHash(binding) !== part.evidenceSha256) {
-				throw new Error(
-					`${shardId} multipart continuation ${part.partId} manifest binding is missing.`
-				);
-			}
-			const prompt = sanitizedPromptReference(
-				part.paths.prompt,
-				binding.prompt.byteSha256,
-				`${part.partId} prompt`
-			);
-			return {
-				partId: part.partId,
-				claimSha256: part.claimSha256,
-				claimRef: ref(part.claimPath, part.claimSha256, `${part.partId} claim`),
-				evidenceSha256: part.evidenceSha256,
-				promptSha256: binding.prompt.byteSha256,
-				promptRef: prompt.rawRef,
-				sanitizedPromptRef: prompt.sanitizedRef,
-				requestSha256: binding.request.byteSha256,
-				requestRef: ref(part.paths.request, binding.request.byteSha256, `${part.partId} request`),
-				eventLogSha256: binding.eventLog.byteSha256,
-				eventLogRef: ref(
-					part.paths.events,
-					binding.eventLog.byteSha256,
-					`${part.partId} event log`
-				),
-				lastMessageSha256: binding.lastMessage.byteSha256,
-				lastMessageRef: ref(
-					part.paths.lastMessage,
-					binding.lastMessage.byteSha256,
-					`${part.partId} final message`
-				),
-				thoughtsSha256: binding.thoughts.byteSha256,
-				thoughtsRef: ref(
-					part.paths.thoughts,
-					binding.thoughts.byteSha256,
-					`${part.partId} thoughts`
-				),
-				resultMetadataSha256: binding.resultMetadata.byteSha256,
-				resultMetadataRef: ref(
-					part.paths.resultMetadata,
-					binding.resultMetadata.byteSha256,
-					`${part.partId} result metadata`
-				),
-				runSummarySha256: binding.runSummary.byteSha256,
-				runSummaryRef: ref(
-					part.paths.runSummary,
-					binding.runSummary.byteSha256,
-					`${part.partId} run summary`
-				)
-			};
-		})
 	};
 }
 
@@ -4959,76 +4194,6 @@ function validateReviewPayloadBindings(archiveRoot, tracked, external, issues) {
 	}
 }
 
-function validateArchivedVerificationRepairPredecessorEvidence({ archiveRoot, tracked, issues }) {
-	const recoveryArtifact = tracked.find(
-		(artifact) => artifact?.path === 'content/verification-repair-recovery.json'
-	);
-	const indexArtifact = tracked.find(
-		(artifact) => artifact?.path === 'content/verification-repair-predecessors.json'
-	);
-	const predecessorArtifacts = tracked.filter(
-		(artifact) =>
-			artifact?.kind === 'content-repair-predecessor-evidence' ||
-			String(artifact?.path ?? '').startsWith('content/recovery-predecessors/')
-	);
-	if (!recoveryArtifact) {
-		if (indexArtifact || predecessorArtifacts.length > 0) {
-			issues.push('Predecessor evidence is archived without a recovery manifest.');
-		}
-		return;
-	}
-	try {
-		const recoveryManifest = readJson(
-			path.join(archiveRoot, 'content/verification-repair-recovery.json')
-		);
-		const expectedIndex = verificationRepairPredecessorArchiveIndex(recoveryManifest);
-		if (recoveryArtifact.canonicalSha256 !== canonicalHash(recoveryManifest)) {
-			throw new Error('Archived recovery manifest canonical hash is invalid.');
-		}
-		if (
-			!indexArtifact ||
-			indexArtifact.kind !== 'content-repair-predecessor-index' ||
-			indexArtifact.canonicalSha256 !== canonicalHash(expectedIndex)
-		) {
-			throw new Error(
-				'Archived verification-repair predecessor index does not bind the recovery manifest.'
-			);
-		}
-		const archivedIndex = readJson(
-			path.join(archiveRoot, 'content/verification-repair-predecessors.json')
-		);
-		if (canonicalHash(archivedIndex) !== canonicalHash(expectedIndex)) {
-			throw new Error(
-				'Archived verification-repair predecessor index differs from its manifest inventory.'
-			);
-		}
-		const expectedFiles = expectedIndex.roots.flatMap((root) => root.files);
-		for (const file of expectedFiles) {
-			const artifact = tracked.find((candidate) => candidate?.path === file.archivePath);
-			if (
-				!artifact ||
-				artifact.kind !== 'content-repair-predecessor-evidence' ||
-				artifact.sha256 !== file.sha256 ||
-				artifact.bytes !== file.bytes
-			) {
-				throw new Error(
-					`Archived verification-repair predecessor evidence ${file.archivePath} differs from the recovery manifest.`
-				);
-			}
-		}
-		const expectedPaths = new Set(expectedFiles.map((file) => file.archivePath));
-		for (const artifact of predecessorArtifacts) {
-			if (!expectedPaths.has(artifact.path)) {
-				throw new Error(
-					`Unexpected verification-repair predecessor evidence is archived at ${artifact.path}.`
-				);
-			}
-		}
-	} catch (error) {
-		issues.push(error instanceof Error ? error.message : String(error));
-	}
-}
-
 function validateArchivedMultipartPlanSalvageEvidence({
 	archiveRoot,
 	sourceLineage,
@@ -5084,259 +4249,6 @@ function validateArchivedMultipartPlanSalvageEvidence({
 				tracked,
 				external
 			});
-		} catch (error) {
-			issues.push(error instanceof Error ? error.message : String(error));
-		}
-	}
-}
-
-function validateArchivedMultipartContinuationEvidence({
-	archiveRoot,
-	sourceLineage,
-	tracked,
-	external,
-	issues
-}) {
-	let sanitizedLineage;
-	try {
-		sanitizedLineage = readJson(path.join(archiveRoot, 'lineage.json'));
-	} catch {
-		return;
-	}
-	const sourceShards = Array.isArray(sourceLineage?.content) ? sourceLineage.content : [];
-	const sanitizedShards = Array.isArray(sanitizedLineage?.content) ? sanitizedLineage.content : [];
-	const sourceContinuations = sourceShards.filter((shard) => shard?.continuation);
-	const archived = tracked.filter(
-		(artifact) =>
-			String(artifact?.kind ?? '').startsWith('content-multipart-continuation-') ||
-			/(^|\/)multipart-continuation\//.test(String(artifact?.path ?? ''))
-	);
-	if (sourceContinuations.length === 0) {
-		if (archived.length > 0) {
-			issues.push('Multipart continuation evidence is archived without source lineage.');
-		}
-		for (const shard of sanitizedShards) {
-			if (shard?.continuation) {
-				issues.push(`${shard.shardId} sanitized continuation has no source lineage.`);
-			}
-		}
-		return;
-	}
-	for (const sourceShard of sourceShards) {
-		const sanitizedShard = sanitizedShards.find(
-			(candidate) => candidate?.shardId === sourceShard?.shardId
-		);
-		if (!sourceShard?.continuation) {
-			if (sanitizedShard?.continuation) {
-				issues.push(`${sourceShard?.shardId} sanitized continuation has no source lineage.`);
-			}
-			continue;
-		}
-		if (!sanitizedShard?.continuation) {
-			issues.push(
-				`${sourceShard.shardId} archived continuation is omitted from sanitized lineage.`
-			);
-			continue;
-		}
-		try {
-			const shardId = safeFilename(sourceShard.shardId);
-			const source = sourceShard.continuation;
-			const sanitized = sanitizedShard.continuation;
-			const root = `content/shards/${shardId}/multipart-continuation`;
-			const readTracked = (
-				relative,
-				kind,
-				expectedCanonicalSha256,
-				label,
-				expectedByteSha256 = null
-			) =>
-				archivedTrackedJson({
-					archiveRoot,
-					tracked,
-					path: `${root}/${relative}`,
-					kind,
-					expectedCanonicalSha256,
-					expectedByteSha256,
-					label
-				});
-			const manifest = readTracked(
-				'manifest.json',
-				'content-multipart-continuation-manifest',
-				source.manifestSha256,
-				`${shardId} multipart continuation manifest`
-			);
-			const continuationPlan = readTracked(
-				'plan.json',
-				'content-multipart-continuation-plan',
-				source.planSha256,
-				`${shardId} multipart continuation plan`
-			);
-			const candidate = readTracked(
-				'candidate.json',
-				'content-multipart-continuation-candidate',
-				source.candidateSha256,
-				`${shardId} multipart continuation candidate`
-			);
-			const validation = readTracked(
-				'validation.json',
-				'content-multipart-continuation-validation',
-				source.validationSha256,
-				`${shardId} multipart continuation validation`
-			);
-			if (
-				validation.collectionValidationSha256 !== canonicalHash(manifest.collectionValidation) ||
-				validation.priorCollectionFailureSha256 !==
-					(manifest.priorCollectionFailure ? canonicalHash(manifest.priorCollectionFailure) : null)
-			) {
-				throw new Error(
-					`${shardId} archived multipart continuation collection bindings are invalid.`
-				);
-			}
-			if (source.collectionValidationSnapshot) {
-				const snapshot = readTracked(
-					'collection-validation.json',
-					'content-multipart-continuation-collection-snapshot',
-					source.collectionValidationSnapshot.canonicalSha256,
-					`${shardId} multipart continuation collection snapshot`,
-					source.collectionValidationSnapshot.byteSha256
-				);
-				if (
-					sanitized.collectionValidationSnapshot?.canonicalSha256 !==
-						source.collectionValidationSnapshot.canonicalSha256 ||
-					sanitized.collectionValidationSnapshot?.byteSha256 !==
-						source.collectionValidationSnapshot.byteSha256 ||
-					snapshot.candidateSha256 !== source.candidateSha256 ||
-					snapshot.claimSetSha256 !==
-						canonicalHash(source.execution.claims.map((claim) => claim.sha256)) ||
-					canonicalHash(snapshot.collectionValidation) !==
-						canonicalHash(manifest.collectionValidation)
-				) {
-					throw new Error(
-						`${shardId} archived multipart continuation collection snapshot is invalid.`
-					);
-				}
-			} else if (sanitized.collectionValidationSnapshot !== null) {
-				throw new Error(`${shardId} sanitized continuation invents a collection snapshot.`);
-			}
-			if (source.priorCollectionFailureEvidence) {
-				const failure = readTracked(
-					'failure.json',
-					'content-multipart-continuation-prior-collection-failure',
-					source.priorCollectionFailureEvidence.canonicalSha256,
-					`${shardId} multipart continuation prior collection failure`,
-					source.priorCollectionFailureEvidence.byteSha256
-				);
-				if (
-					sanitized.priorCollectionFailureEvidence?.canonicalSha256 !==
-						source.priorCollectionFailureEvidence.canonicalSha256 ||
-					sanitized.priorCollectionFailureEvidence?.byteSha256 !==
-						source.priorCollectionFailureEvidence.byteSha256 ||
-					manifest.priorCollectionFailure === null ||
-					canonicalHash(failure) !== canonicalHash(manifest.priorCollectionFailure)
-				) {
-					throw new Error(`${shardId} archived multipart continuation prior failure is invalid.`);
-				}
-			} else if (sanitized.priorCollectionFailureEvidence !== null) {
-				throw new Error(`${shardId} sanitized continuation invents prior failure evidence.`);
-			}
-			const missingCount =
-				continuationPlan.expectedPartCount - continuationPlan.sourceAttemptedPartCount;
-			if (
-				source.schemaVersion !== SCIENCE_CHALLENGE_MULTIPART_CONTINUATION_SCHEMA ||
-				sanitized.schemaVersion !== source.schemaVersion ||
-				manifest.schemaVersion !== source.schemaVersion ||
-				continuationPlan.schemaVersion !== SCIENCE_CHALLENGE_MULTIPART_CONTINUATION_PLAN_SCHEMA ||
-				validation.schemaVersion !== SCIENCE_CHALLENGE_MULTIPART_CONTINUATION_VALIDATION_SCHEMA ||
-				validation.authoringDisposition !== 'exhausted-multipart-part-continuation' ||
-				validation.sourceAttempt !== VERIFICATION_REPAIR_MAX_ATTEMPTS ||
-				validation.sourceAttemptStatus !== 'failed' ||
-				source.sourceAttempt?.attempt !== VERIFICATION_REPAIR_MAX_ATTEMPTS ||
-				source.sourceAttempt?.status !== 'failed' ||
-				!Number.isInteger(missingCount) ||
-				missingCount < 1 ||
-				source.continuationParts?.length !== missingCount ||
-				source.execution?.claims?.length !== missingCount ||
-				manifest.continuationParts?.length !== missingCount ||
-				canonicalHash(candidate) !== manifest.candidateSha256 ||
-				canonicalHash(validation) !== manifest.validationSha256 ||
-				canonicalHash(continuationPlan) !== manifest.planSha256 ||
-				canonicalHash(manifest.continuationParts) !== manifest.continuationPartsSha256
-			) {
-				throw new Error(`${shardId} archived multipart continuation envelope is invalid.`);
-			}
-			for (const [index, part] of source.continuationParts.entries()) {
-				const expectedPart =
-					continuationPlan.parts[continuationPlan.sourceAttemptedPartCount + index];
-				const binding = manifest.continuationParts[index];
-				const claim = source.execution.claims[index];
-				if (
-					part.partId !== expectedPart?.partId ||
-					binding?.partId !== part.partId ||
-					claim?.partId !== part.partId ||
-					canonicalHash(binding) !== part.evidenceSha256 ||
-					binding.claimSha256 !== part.claimSha256 ||
-					claim.sha256 !== part.claimSha256
-				) {
-					throw new Error(
-						`${shardId} archived multipart continuation part ${index + 1} is reordered or unbound.`
-					);
-				}
-				for (const [relative, kind, expected, expectedBytes] of [
-					[
-						`execution/claims/${part.partId}.json`,
-						'content-multipart-continuation-claim',
-						part.claimSha256,
-						claim.byteSha256
-					],
-					[
-						`execution/invocations/${part.partId}.json`,
-						'content-multipart-continuation-invocation',
-						claim.invocationSha256,
-						claim.invocationByteSha256
-					],
-					[
-						`parts/${part.partId}/last-message.json`,
-						'content-part-final-message',
-						binding.rawCandidateSha256,
-						binding.lastMessage.byteSha256
-					],
-					[
-						`parts/${part.partId}/result-metadata.json`,
-						'content-part-run-result-metadata',
-						binding.resultMetadata.canonicalSha256,
-						binding.resultMetadata.byteSha256
-					],
-					[
-						`parts/${part.partId}/run-summary.json`,
-						'content-part-run-summary',
-						binding.runSummary.canonicalSha256,
-						binding.runSummary.byteSha256
-					]
-				]) {
-					readTracked(
-						relative,
-						kind,
-						expected,
-						`${shardId} multipart continuation ${part.partId} ${relative}`,
-						expectedBytes
-					);
-				}
-				const requiredExternalHashes = [
-					binding.prompt.byteSha256,
-					binding.request.byteSha256,
-					binding.eventLog.byteSha256,
-					binding.thoughts.byteSha256
-				];
-				if (
-					requiredExternalHashes.some(
-						(expectedSha256) => !external.some((dependency) => dependency.sha256 === expectedSha256)
-					)
-				) {
-					throw new Error(
-						`${shardId} multipart continuation ${part.partId} omits raw external evidence.`
-					);
-				}
-			}
 		} catch (error) {
 			issues.push(error instanceof Error ? error.message : String(error));
 		}
@@ -5895,8 +4807,7 @@ function validateArchivedDescendantRemapEvidence({
 				source.schemaVersion !==
 					'science-challenge-verifier-directed-descendant-remap-evidence/v1' ||
 				source.disposition !== 'deterministic-verifier-directed-descendant-remap' ||
-				sourceShard.salvage ||
-				sourceShard.continuation
+				sourceShard.salvage
 			) {
 				throw new Error(`${shardId} source descendant-remap lineage is invalid.`);
 			}
@@ -6250,17 +5161,15 @@ function validateArchivedDifficultyPlanAdjustmentEvidence({
 			}
 			const source = sourceShard.difficultyPlanAdjustment;
 			const shardId = safeFilename(sourceShard.shardId);
-			const root = `content/shards/${shardId}/difficulty-plan-adjustment`;
 			if (
 				source.schemaVersion !==
 					'science-challenge-verifier-directed-difficulty-plan-adjustment-evidence/v1' ||
 				![
 					'deterministic-verifier-directed-difficulty-plan-adjustment',
 					'deterministic-verifier-directed-difficulty-plan-adjustment-set'
-				].includes(source.disposition) ||
-				sourceShard.salvage ||
-				sourceShard.continuation ||
-				sourceShard.descendantRemap ||
+					].includes(source.disposition) ||
+					sourceShard.salvage ||
+					sourceShard.descendantRemap ||
 				recovery.manifestSha256 !== source.manifestSha256 ||
 				recovery.adjustmentSha256 !== (source.adjustmentSha256 ?? null) ||
 				recovery.adjustmentSetSha256 !== (source.adjustmentSetSha256 ?? null) ||
@@ -6399,8 +5308,7 @@ function validateOneArchivedMultipartPlanSalvage({
 	const root = `content/shards/${shardId}/multipart-plan-salvage`;
 	const pathways = new Set([
 		'failed-merge-id-and-difficulty',
-		'merged-candidate-plan-difficulty',
-		'raw-question-presentation-null-default'
+		'merged-candidate-plan-difficulty'
 	]);
 	if (
 		source.schemaVersion !== SCIENCE_CHALLENGE_MULTIPART_PLAN_SALVAGE_EVIDENCE_SCHEMA ||
@@ -6771,8 +5679,7 @@ function validateArchivedSalvageSourceAttempt({
 		validation.promptSha256 !== manifestSource.prompt?.sha256 ||
 		summary.model !== executionIdentity?.model ||
 		summary.transport !== executionIdentity?.transport ||
-		(summary.responseMode ?? SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON) !==
-			executionIdentity?.responseMode ||
+			summary.responseMode !== executionIdentity?.responseMode ||
 		summary.thinkingLevel !== executionIdentity?.thinkingLevel ||
 		summary.partSize !== executionIdentity?.directPartSize
 	) {
@@ -6988,9 +5895,7 @@ function validateArchivedSalvageCorrections({
 	const pathwayKindsValid =
 		pathway === 'failed-merge-id-and-difficulty'
 			? canonicalHash(kinds) === canonicalHash(['definition.difficulty', 'definition.id'])
-			: pathway === 'merged-candidate-plan-difficulty'
-				? kinds.every((kind) => kind === 'definition.difficulty')
-				: kinds.every((kind) => kind === 'definition.questionPresentation');
+			: kinds.every((kind) => kind === 'definition.difficulty');
 	if (!pathwayKindsValid) {
 		throw new Error(`${shardId} archived salvage corrections differ from its pathway.`);
 	}
@@ -7017,10 +5922,7 @@ function validateArchivedSalvageCorrections({
 		if (!recovered || !raw || correction.sourceChallengeSha256 !== canonicalHash(raw)) {
 			throw new Error(`${shardId} archived salvage correction challenge hashes are invalid.`);
 		}
-		if (
-			pathway !== 'raw-question-presentation-null-default' &&
-			correction.recoveredChallengeSha256 !== canonicalHash(recovered)
-		) {
+		if (correction.recoveredChallengeSha256 !== canonicalHash(recovered)) {
 			throw new Error(`${shardId} archived salvage recovered challenge hash is invalid.`);
 		}
 		if (correction.kind === 'definition.id') {
@@ -7041,21 +5943,6 @@ function validateArchivedSalvageCorrections({
 				recovered.definition?.difficulty !== correction.to
 			) {
 				throw new Error(`${shardId} archived salvage difficulty correction is invalid.`);
-			}
-		} else if (correction.kind === 'definition.questionPresentation') {
-			const recoveredRawChallenge = structuredClone(raw);
-			recoveredRawChallenge.definition.questionPresentation = null;
-			if (
-				pathway !== 'raw-question-presentation-null-default' ||
-				correction.path !==
-					`challenges[${correction.absoluteRowIndex}].definition.questionPresentation` ||
-				Object.hasOwn(raw.definition ?? {}, 'questionPresentation') ||
-				correction.from !== 'omitted' ||
-				correction.to !== null ||
-				recovered.definition?.questionPresentation !== null ||
-				correction.recoveredRawChallengeSha256 !== canonicalHash(recoveredRawChallenge)
-			) {
-				throw new Error(`${shardId} archived salvage question-presentation correction is invalid.`);
 			}
 		} else {
 			throw new Error(`${shardId} archived salvage correction kind is invalid.`);
@@ -7153,9 +6040,6 @@ function validateSanitizedLineageArchive({
 	if (!Array.isArray(lineage.art) || lineage.art.length === 0) {
 		issues.push('Sanitized lineage has no art jobs.');
 	}
-	if (canonicalHash(lineage.recovery ?? null) !== canonicalHash(sourceLineage?.recovery ?? null)) {
-		issues.push('Sanitized recovery lineage differs from source lineage.');
-	}
 	for (const field of ['effectiveCohort', 'curriculumRemap', 'difficultyPlanAdjustment']) {
 		if (canonicalHash(lineage[field] ?? null) !== canonicalHash(sourceLineage?.[field] ?? null)) {
 			issues.push(`Sanitized ${field} binding differs from source lineage.`);
@@ -7189,23 +6073,6 @@ function validateSanitizedLineageArchive({
 		canonicalHash(expectedDifficultyAdjustments)
 	) {
 		issues.push('Sanitized difficulty-plan adjustment summary differs from source lineage.');
-	}
-	if (lineage.recovery) {
-		const recoveryArtifact = tracked.find(
-			(artifact) => artifact.path === 'content/verification-repair-recovery.json'
-		);
-		if (!recoveryArtifact || recoveryArtifact.canonicalSha256 !== lineage.recovery.sha256) {
-			issues.push('Recovery lineage is not bound to the archived recovery manifest.');
-		}
-		const ledgerArtifact = tracked.find(
-			(artifact) => artifact.path === 'content/verification-repair-execution-ledger.json'
-		);
-		if (
-			!ledgerArtifact ||
-			ledgerArtifact.canonicalSha256 !== lineage.recovery.executionLedgerSha256
-		) {
-			issues.push('Recovery lineage is not bound to the archived execution ledger.');
-		}
 	}
 	validateSanitizedContentAgainstSource(lineage.content, sourceLineage?.content, issues);
 	validateSanitizedDirectResponseModeLineage(lineage.content, issues);
@@ -7247,26 +6114,22 @@ function validateSanitizedDirectResponseModeLineage(content, issues) {
 				continue;
 			}
 			const multipart = Array.isArray(run.parts);
-			const legacyStructured =
-				(run.responseMode === null || run.responseMode === undefined) &&
-				run.transportVersion ===
-					(multipart
-						? SCIENCE_CHALLENGE_DIRECT_MULTIPART_TRANSPORT_VERSION
-						: SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT_VERSION);
 			const explicitStructured =
 				run.responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON &&
+				run.providerSchemaApplied === true &&
 				run.transportVersion ===
 					(multipart
 						? SCIENCE_CHALLENGE_DIRECT_MULTIPART_TRANSPORT_VERSION
 						: SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT_VERSION);
 			const promptJson =
 				run.responseMode === SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON &&
+				run.providerSchemaApplied === false &&
 				run.transportVersion ===
 					(multipart
 						? SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_MULTIPART_TRANSPORT_VERSION
 						: SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_TRANSPORT_VERSION);
 			const prefix = `${shard?.shardId ?? 'unknown shard'} direct run`;
-			if (!legacyStructured && !explicitStructured && !promptJson) {
+			if (!explicitStructured && !promptJson) {
 				issues.push(`${prefix} has an invalid responseMode/transportVersion tuple.`);
 				continue;
 			}
@@ -7285,14 +6148,13 @@ function validateSanitizedDirectResponseModeLineage(content, issues) {
 					issues.push(`${prefix} archive references do not match its multipart response mode.`);
 				}
 				for (const [index, part] of run.parts.entries()) {
-					const exactPartMode = legacyStructured
-						? (part?.responseMode === null || part?.responseMode === undefined) &&
-							(part?.transportVersion === null || part?.transportVersion === undefined)
-						: part?.responseMode === run.responseMode &&
-							part?.transportVersion ===
-								(promptJson
-									? SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_TRANSPORT_VERSION
-									: SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT_VERSION);
+					const exactPartMode =
+						part?.responseMode === run.responseMode &&
+						part?.providerSchemaApplied === run.providerSchemaApplied &&
+						part?.transportVersion ===
+							(promptJson
+								? SCIENCE_CHALLENGE_DIRECT_PROMPT_JSON_TRANSPORT_VERSION
+								: SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT_VERSION);
 					if (
 						!exactPartMode ||
 						part?.thinkingLevel !== run.thinkingLevel ||
@@ -7339,14 +6201,6 @@ function validateSanitizedContentAgainstSource(sanitizedContent, sourceContent, 
 			);
 		}
 		if (
-			canonicalHash(sanitizedContinuationProjection(sanitizedShard?.continuation)) !==
-			canonicalHash(sourceContinuationProjection(sourceShard?.continuation))
-		) {
-			issues.push(
-				`${sourceShard.shardId} sanitized multipart continuation differs from source lineage.`
-			);
-		}
-		if (
 			canonicalHash(sanitizedDescendantRemapProjection(sanitizedShard?.descendantRemap)) !==
 			canonicalHash(sourceDescendantRemapProjection(sourceShard?.descendantRemap))
 		) {
@@ -7384,6 +6238,7 @@ function validateSanitizedContentAgainstSource(sanitizedContent, sourceContent, 
 				normalizationVersion: sanitizedRun?.normalizationVersion,
 				transport: sanitizedRun?.transport,
 				responseMode: sanitizedRun?.responseMode ?? null,
+				providerSchemaApplied: sanitizedRun?.providerSchemaApplied ?? null,
 				transportVersion: sanitizedRun?.transportVersion,
 				provider: sanitizedRun?.provider,
 				model: sanitizedRun?.model,
@@ -7417,8 +6272,9 @@ function validateSanitizedContentAgainstSource(sanitizedContent, sourceContent, 
 				inputSha256: sourceRun.inputSha256,
 				rawCandidateSha256: sourceRun.rawCandidateSha256,
 				normalizationVersion: sourceRun.normalizationVersion,
-				transport: sourceRun.transport ?? 'codex-sdk',
+				transport: sourceRun.transport,
 				responseMode: sourceRun.responseMode ?? null,
+				providerSchemaApplied: sourceRun.providerSchemaApplied ?? null,
 				transportVersion: sourceRun.transportVersion ?? null,
 				provider: sourceRun.provider ?? null,
 				model: sourceRun.model,
@@ -7644,70 +6500,6 @@ function sourceSalvageProjection(salvage) {
 		sourceSelectionSha256: salvage.sourceSelectionSha256,
 		corrections: salvage.corrections,
 		salvageSourceSha256: salvage.salvageSourceSha256
-	};
-}
-
-function sanitizedContinuationProjection(continuation) {
-	if (!continuation) return null;
-	return {
-		schemaVersion: continuation.schemaVersion,
-		manifestSha256: continuation.manifestSha256,
-		planSha256: continuation.planSha256,
-		candidateSha256: continuation.candidateSha256,
-		validationSha256: continuation.validationSha256,
-		execution: {
-			objectiveSha256: continuation.execution?.objectiveSha256,
-			claims: (continuation.execution?.claims ?? []).map((claim) => ({
-				partId: claim.partId,
-				sha256: claim.sha256,
-				byteSha256: claim.byteSha256,
-				invocationSha256: claim.invocationSha256,
-				invocationByteSha256: claim.invocationByteSha256
-			}))
-		},
-		sourceAttempt: {
-			attempt: continuation.sourceAttempt?.attempt,
-			status: continuation.sourceAttempt?.status,
-			sha256: continuation.sourceAttempt?.sha256,
-			partsSha256: continuation.sourceAttempt?.partsSha256
-		},
-		continuationParts: (continuation.continuationParts ?? []).map((part) => ({
-			partId: part.partId,
-			claimSha256: part.claimSha256,
-			evidenceSha256: part.evidenceSha256
-		}))
-	};
-}
-
-function sourceContinuationProjection(continuation) {
-	if (!continuation) return null;
-	return {
-		schemaVersion: continuation.schemaVersion,
-		manifestSha256: continuation.manifestSha256,
-		planSha256: continuation.planSha256,
-		candidateSha256: continuation.candidateSha256,
-		validationSha256: continuation.validationSha256,
-		execution: {
-			objectiveSha256: continuation.execution?.objectiveSha256,
-			claims: (continuation.execution?.claims ?? []).map((claim) => ({
-				partId: claim.partId,
-				sha256: claim.sha256,
-				byteSha256: claim.byteSha256,
-				invocationSha256: claim.invocationSha256,
-				invocationByteSha256: claim.invocationByteSha256
-			}))
-		},
-		sourceAttempt: {
-			attempt: continuation.sourceAttempt?.attempt,
-			status: continuation.sourceAttempt?.status,
-			sha256: continuation.sourceAttempt?.sha256,
-			partsSha256: continuation.sourceAttempt?.partsSha256
-		},
-		continuationParts: (continuation.continuationParts ?? []).map((part) => ({
-			partId: part.partId,
-			claimSha256: part.claimSha256,
-			evidenceSha256: part.evidenceSha256
-		}))
 	};
 }
 

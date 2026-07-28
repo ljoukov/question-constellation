@@ -42,7 +42,7 @@ import { canonicalHash, sha256, stableStringify } from './science-challenge-rele
 function candidates(count) {
 	return {
 		schemaVersion: 'science-challenge-accepted-set/test',
-		challenges: Array.from({ length: count }, (_unused, index) => {
+		records: Array.from({ length: count }, (_unused, index) => {
 			const suffix = String(index + 1).padStart(3, '0');
 			return {
 				definition: {
@@ -75,6 +75,17 @@ function candidates(count) {
 			};
 		})
 	};
+}
+
+function authenticatedCandidates(count) {
+	const candidateValue = candidates(count);
+	const unsigned = {
+		schemaVersion: 'challenge-catalog-candidate-set/v1',
+		releaseId: `science-dynamic-${count}`,
+		sourceContentSha256: 'a'.repeat(64),
+		records: candidateValue.records
+	};
+	return { ...unsigned, contentSha256: canonicalHash(unsigned) };
 }
 
 function mockTransport({ rejectedIds = new Set() } = {}) {
@@ -254,15 +265,17 @@ function rebindCompletionJournal(outputRoot) {
 	writeFileSync(completionPath, `${stableStringify(completion)}\n`);
 }
 
-test('release CLIs fix model, thinking, 8-row batches, four attempts, and concurrency six', () => {
-	assert.equal(
-		parseGenerateScienceChallengeShortRecallArgs([]).candidateSet,
-		'tmp/science-challenges/science-179-v1/accepted-subset-evidence/accepted-subset.json'
+test('release CLIs require explicit evidence paths and fix model, thinking, attempts, and concurrency', () => {
+	assert.throws(
+		() => parseGenerateScienceChallengeShortRecallArgs([]),
+		/--candidate-set is required/
 	);
-	assert.equal(
-		parseReviewScienceChallengeShortRecallArgs([]).candidateSet,
-		'tmp/science-challenges/science-179-v1/accepted-subset-evidence/accepted-subset.json'
+	assert.throws(
+		() => parseReviewScienceChallengeShortRecallArgs([]),
+		/--candidate-set is required/
 	);
+	assert.equal(parseGenerateScienceChallengeShortRecallArgs(['--help']).help, true);
+	assert.equal(parseReviewScienceChallengeShortRecallArgs(['--help']).help, true);
 	assert.throws(
 		() => parseGenerateScienceChallengeShortRecallArgs(['--concurrency=5']),
 		/must be exactly 6/
@@ -285,14 +298,14 @@ test('release CLIs fix model, thinking, 8-row batches, four attempts, and concur
 	);
 });
 
-test('public pipeline entry points cannot bypass the authenticated 179-row release geometry', async () => {
+test('public pipeline derives arbitrary release geometry from authenticated evidence', async () => {
 	await assert.rejects(
 		runScienceChallengeShortRecallAuthoring({
 			candidateValue: candidates(8),
 			expectedCount: 8,
 			outputRoot: '/unused'
 		}),
-		/always requires exactly 179 authenticated candidates/
+		/derives its count from the authenticated candidate set/
 	);
 	await assert.rejects(
 		runScienceChallengeShortRecallReview({
@@ -302,54 +315,62 @@ test('public pipeline entry points cannot bypass the authenticated 179-row relea
 			authoringEvidence: {},
 			outputRoot: '/unused'
 		}),
-		/always requires exactly 179 authenticated candidates/
+		/derives its count from the authenticated candidate set/
 	);
 	await assert.rejects(
 		runScienceChallengeShortRecallAuthoring({
-			candidateValue: candidates(179).challenges,
+			candidateValue: candidates(8).records,
 			outputRoot: '/unused',
 			dryRun: true
 		}),
-		/authenticated accepted-subset object, not a bare candidate array/
+		/authenticated candidate-set object, not a bare array/
 	);
 	await assert.rejects(
 		runScienceChallengeShortRecallAuthoring({
-			candidateValue: candidates(179),
+			candidateValue: candidates(8),
 			outputRoot: '/unused',
 			dryRun: true
 		}),
-		/must use science-challenge-accepted-subset\/v1/
+		/must use challenge-catalog-candidate-set\/v1/
 	);
+	const planned = await runScienceChallengeShortRecallAuthoring({
+		candidateValue: authenticatedCandidates(9),
+		outputRoot: '/unused',
+		dryRun: true
+	});
+	assert.equal(planned.status, 'planned');
+	assert.equal(planned.candidateCount, 9);
+	assert.equal(planned.batchCount, 2);
 });
 
-test('runs 179-row authoring and independent review as 22x8 plus 3, and resumes without calls', async (t) => {
-	const temporaryRoot = mkdtempSync(path.join(os.tmpdir(), 'science-short-recall-179-'));
+test('runs an arbitrary candidate set in derived batches and resumes without calls', async (t) => {
+	const temporaryRoot = mkdtempSync(path.join(os.tmpdir(), 'science-short-recall-dynamic-'));
 	t.after(() => rmSync(temporaryRoot, { recursive: true, force: true }));
-	const candidateValue = candidates(179);
+	const candidateValue = candidates(17);
 	const candidatePath = path.join(temporaryRoot, 'candidates.json');
 	writeFileSync(candidatePath, `${JSON.stringify(candidateValue)}\n`);
 	const authorRoot = path.join(temporaryRoot, 'nested', 'author');
 	const authorMock = mockTransport();
 	const author = await runScienceChallengeShortRecallAuthoringForTest({
 		candidateValue,
-		expectedCount: 179,
+		expectedCount: 17,
 		outputRoot: authorRoot,
 		transport: authorMock.transport,
 		now: () => '2026-07-24T00:00:00.000Z'
 	});
 	assert.equal(author.status, 'passed');
-	assert.equal(author.authoredCount, 179);
-	assert.equal(author.executedBatchCount, 23);
-	assert.equal(authorMock.state.calls, 23);
-	assert.equal(authorMock.state.maximumActive, 6);
+	assert.equal(author.authoredCount, 17);
+	assert.equal(author.executedBatchCount, 3);
+	assert.equal(authorMock.state.calls, 3);
+	assert.equal(authorMock.state.maximumActive, 3);
 	assert.deepEqual(
 		authorMock.state.batches.map((batch) => batch.rowCount),
-		[...Array.from({ length: 22 }, () => 8), 3]
+		[8, 8, 1]
 	);
 
 	const prompts = readJson(path.join(authorRoot, 'candidate-prompts.json'));
 	const authoringEvidence = readJson(path.join(authorRoot, 'authoring-evidence.json'));
-	assert.equal(prompts.length, 179);
+	assert.equal(prompts.length, 17);
 	assert.ok(
 		prompts.every(
 			(prompt) =>
@@ -359,7 +380,7 @@ test('runs 179-row authoring and independent review as 22x8 plus 3, and resumes 
 	);
 	const resumed = await runScienceChallengeShortRecallAuthoringForTest({
 		candidateValue,
-		expectedCount: 179,
+		expectedCount: 17,
 		outputRoot: authorRoot,
 		resume: true,
 		transport: async () => {
@@ -384,7 +405,7 @@ test('runs 179-row authoring and independent review as 22x8 plus 3, and resumes 
 				throw new Error('dry-run configured transport');
 			}
 		}),
-		/must use science-challenge-accepted-subset\/v1/
+		/must use challenge-catalog-candidate-set\/v1/
 	);
 	assert.equal(configured, false);
 	assert.equal(existsSync(dryAuthorRoot), false);
@@ -393,7 +414,7 @@ test('runs 179-row authoring and independent review as 22x8 plus 3, and resumes 
 	const reviewMock = mockTransport();
 	const review = await runScienceChallengeShortRecallReviewForTest({
 		candidateValue,
-		expectedCount: 179,
+		expectedCount: 17,
 		prompts,
 		authoringEvidence,
 		outputRoot: reviewRoot,
@@ -401,13 +422,13 @@ test('runs 179-row authoring and independent review as 22x8 plus 3, and resumes 
 		now: () => '2026-07-24T00:01:00.000Z'
 	});
 	assert.equal(review.status, 'passed');
-	assert.equal(review.reviewCount, 179);
-	assert.equal(review.acceptedCount, 179);
-	assert.equal(reviewMock.state.calls, 23);
-	assert.equal(reviewMock.state.maximumActive, 6);
+	assert.equal(review.reviewCount, 17);
+	assert.equal(review.acceptedCount, 17);
+	assert.equal(reviewMock.state.calls, 3);
+	assert.equal(reviewMock.state.maximumActive, 3);
 	assert.deepEqual(
 		reviewMock.state.batches.map((batch) => batch.rowCount),
-		[...Array.from({ length: 22 }, () => 8), 3]
+		[8, 8, 1]
 	);
 	const finalPrompts = readJson(path.join(reviewRoot, 'short-recall-prompts.json'));
 	const reviewEvidence = readJson(path.join(reviewRoot, 'review-evidence.json'));
@@ -445,7 +466,7 @@ test('runs 179-row authoring and independent review as 22x8 plus 3, and resumes 
 				throw new Error('dry-run configured transport');
 			}
 		}),
-		/must use science-challenge-accepted-subset\/v1/
+		/must use challenge-catalog-candidate-set\/v1/
 	);
 	assert.equal(configured, false);
 	assert.equal(existsSync(reviewDryRoot), false);

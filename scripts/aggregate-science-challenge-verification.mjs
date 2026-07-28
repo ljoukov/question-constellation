@@ -2,7 +2,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { createServer } from 'vite';
+import { loadChallengeCatalogSource } from './lib/challenge-catalog-source.mjs';
 
 import { canonicalHash, stableStringify } from './lib/science-challenge-release.mjs';
 import {
@@ -54,6 +54,9 @@ if (!/^[a-f0-9]{64}$/.test(String(index.planSha256 ?? ''))) {
 }
 if (!/^[a-f0-9]{64}$/.test(String(index.candidateSetSha256 ?? ''))) {
 	throw new Error('Verification assignment index does not bind its candidate set.');
+}
+if (!Number.isInteger(index.candidateCount) || index.candidateCount < 1) {
+	throw new Error('Verification assignment index does not bind a positive candidate count.');
 }
 for (const field of ['sourceSnapshotSha256', 'curriculumEvidenceSha256']) {
 	if (!/^[a-f0-9]{64}$/.test(String(index[field] ?? ''))) {
@@ -608,7 +611,9 @@ if (indexedRemapProposalCount > 0) {
 		);
 	}
 }
-if (reviews.length !== 408) issues.push(`Expected 408 validated reviews; found ${reviews.length}.`);
+if (reviews.length !== index.candidateCount) {
+	issues.push(`Expected ${index.candidateCount} validated reviews; found ${reviews.length}.`);
+}
 const summary = {
 	schemaVersion: 'science-challenge-independent-verification-summary/v1',
 	planId: index.planId,
@@ -965,21 +970,7 @@ function buildReviewRebaseBindings(reviewRebase, candidateSetSha256) {
 }
 
 async function loadExistingCatalog() {
-	const server = await createServer({
-		root: rootDir,
-		server: { middlewareMode: true },
-		appType: 'custom',
-		logLevel: 'silent'
-	});
-	try {
-		const module = await server.ssrLoadModule('/src/lib/challenges/catalog.ts');
-		if (!Array.isArray(module.challengeCatalog)) {
-			throw new Error('Current challenge catalog did not export challengeCatalog.');
-		}
-		return module.challengeCatalog;
-	} finally {
-		await server.close();
-	}
+	return (await loadChallengeCatalogSource({ rootDir })).definitions;
 }
 
 function readJson(relativePath) {
@@ -1024,17 +1015,17 @@ function parseArgs(argv) {
 		help: Boolean(values.get('help')),
 		index: String(
 			values.get('index') ??
-				'tmp/science-challenges/science-500-v1/verification/assignment-index.json'
+				'tmp/science-challenges/candidate-release/verification/assignment-index.json'
 		),
 		reviewRoot: String(
-			values.get('review-root') ?? 'tmp/science-challenges/science-500-v1/verification/reviews'
+			values.get('review-root') ?? 'tmp/science-challenges/candidate-release/verification/reviews'
 		),
 		output: String(
-			values.get('output') ?? 'tmp/science-challenges/science-500-v1/verification/summary.json'
+			values.get('output') ?? 'tmp/science-challenges/candidate-release/verification/summary.json'
 		),
 		dispatchLedger: String(
 			values.get('dispatch-ledger') ??
-				'tmp/science-challenges/science-500-v1/verification/dispatch-ledger.json'
+				'tmp/science-challenges/candidate-release/verification/dispatch-ledger.json'
 		),
 		packetManifest: values.has('packet-manifest')
 			? String(values.get('packet-manifest'))
@@ -1046,11 +1037,11 @@ function parseArgs(argv) {
 		difficultyPlanAdjustmentInputProvided: values.has('difficulty-plan-adjustment-input'),
 		curriculumRemapInput: String(
 			values.get('curriculum-remap-input') ??
-				'tmp/science-challenges/science-500-v1/verification/curriculum-remap-verifier-input.json'
+				'tmp/science-challenges/candidate-release/verification/curriculum-remap-verifier-input.json'
 		),
 		difficultyPlanAdjustmentInput: String(
 			values.get('difficulty-plan-adjustment-input') ??
-				'tmp/science-challenges/science-500-v1/verification/difficulty-plan-adjustment-verifier-input.json'
+				'tmp/science-challenges/candidate-release/verification/difficulty-plan-adjustment-verifier-input.json'
 		)
 	};
 }

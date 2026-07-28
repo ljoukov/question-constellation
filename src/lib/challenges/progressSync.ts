@@ -1,5 +1,4 @@
 import { clearBackgroundSyncIssue, reportBackgroundSyncIssue } from '$lib/backgroundSync';
-import { challengeIds } from '$lib/challenges/catalogIdentity';
 import {
 	classifyRequestFailure,
 	fetchWithResponseTimeout,
@@ -30,7 +29,6 @@ export type ChallengeProgressStorage = Pick<Storage, 'getItem' | 'setItem' | 're
 
 const syncQueues = new Map<string, Promise<void>>();
 const confirmedProgressByUser = new Map<string, ChallengeProgress>();
-const recognizedChallengeIds = new Set<string>(challengeIds);
 
 function browserStorage(): ChallengeProgressStorage | undefined {
 	if (typeof window === 'undefined') return undefined;
@@ -63,7 +61,9 @@ function recognizedProgress(progress: ChallengeProgress): ChallengeProgress {
 	return {
 		version: 2,
 		challenges: Object.fromEntries(
-			Object.entries(progress.challenges).filter(([id]) => recognizedChallengeIds.has(id))
+			Object.entries(progress.challenges)
+				.filter(([id]) => /^[a-z0-9][a-z0-9-]{0,159}$/u.test(id))
+				.slice(0, 1_000)
 		)
 	};
 }
@@ -238,7 +238,25 @@ function unconfirmedProgress(
 	};
 }
 
-async function responseProgress(response: Response): Promise<ChallengeProgress> {
+type ChallengeProgressResponse = {
+	progress: ChallengeProgress;
+	rejectedChallengeIds: string[];
+};
+
+function withoutChallengeIds(
+	progress: ChallengeProgress,
+	challengeIds: ReadonlySet<string>
+): ChallengeProgress {
+	if (challengeIds.size === 0) return progress;
+	return {
+		version: 2,
+		challenges: Object.fromEntries(
+			Object.entries(progress.challenges).filter(([challengeId]) => !challengeIds.has(challengeId))
+		)
+	};
+}
+
+async function responseProgress(response: Response): Promise<ChallengeProgressResponse> {
 	if (!response.ok) {
 		throw await requestErrorFromResponse(response, 'Challenge progress sync failed.');
 	}
@@ -250,7 +268,21 @@ async function responseProgress(response: Response): Promise<ChallengeProgress> 
 	if (!progress) {
 		throw new Error('Challenge progress sync returned an invalid progress document.');
 	}
-	return recognizedProgress(progress);
+	const rejectedValue = (body as { rejectedChallengeIds?: unknown }).rejectedChallengeIds;
+	if (
+		rejectedValue !== undefined &&
+		(!Array.isArray(rejectedValue) ||
+			rejectedValue.some(
+				(id) => typeof id !== 'string' || !/^[a-z0-9][a-z0-9-]{0,159}$/u.test(id)
+			) ||
+			new Set(rejectedValue).size !== rejectedValue.length)
+	) {
+		throw new Error('Challenge progress sync returned invalid rejected challenge ids.');
+	}
+	return {
+		progress: recognizedProgress(progress),
+		rejectedChallengeIds: rejectedValue ?? []
+	};
 }
 
 async function postAndCacheProgress(
@@ -278,10 +310,24 @@ async function postAndCacheProgress(
 				body: progressRequestBody(chunk)
 			});
 			const responseState = await responseProgress(response);
-			if (!progressConfirms(responseState, chunk)) {
+			const rejectedIds = new Set(responseState.rejectedChallengeIds);
+			const confirmedChunk = withoutChallengeIds(chunk, rejectedIds);
+			if (!progressConfirms(responseState.progress, confirmedChunk)) {
 				throw new Error('Challenge progress sync did not confirm every submitted result.');
 			}
-			remote = recognizedProgress(mergeChallengeProgress(remote, responseState));
+			if (rejectedIds.size > 0) {
+				outgoing = withoutChallengeIds(outgoing, rejectedIds);
+				writeChallengeProgress(
+					withoutChallengeIds(readChallengeProgress(storage, userId), rejectedIds),
+					storage,
+					userId
+				);
+				writeChallengeProgress(
+					withoutChallengeIds(readChallengeProgress(storage), rejectedIds),
+					storage
+				);
+			}
+			remote = recognizedProgress(mergeChallengeProgress(remote, responseState.progress));
 		}
 		if (!progressConfirms(remote, outgoing)) {
 			throw new Error('Challenge progress sync did not confirm every submitted result.');

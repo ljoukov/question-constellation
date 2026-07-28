@@ -9,7 +9,6 @@
 
 	const filterOptions = [
 		{ label: 'All', value: 'all' },
-		{ label: 'Comparisons', value: 'Comparison' },
 		{ label: 'Revision research', value: 'Revision research' },
 		{ label: 'Exam technique', value: 'Exam technique' }
 	] as const;
@@ -21,9 +20,9 @@
 			: data.articles.filter((article) => article.category === selectedFilter)
 	);
 	const canonicalUrl = 'https://constellation.eviworld.com/blog';
-	const pageTitle = 'Question Constellation Blog | GCSE Revision Comparisons and Exam Technique';
+	const pageTitle = 'Question Constellation Blog | GCSE Revision and Exam Technique';
 	const pageDescription =
-		'Comparisons, GCSE revision guides and revision-research notes from Question Constellation, a public collection of real questions and mark-scoring methods.';
+		'GCSE revision guides and research notes from Question Constellation, a public collection of real questions with marking feedback.';
 	const jsonLd = $derived.by(() =>
 		JSON.stringify([
 			{
@@ -102,8 +101,8 @@
 				<p class="blog-kicker">GCSE revision notes</p>
 				<h1 id="blog-title">Question Constellation Blog</h1>
 				<p>
-					Comparisons, exam-technique guides and revision-research notes for students who want
-					questions, mark checklists and methods to do more of the work.
+					Exam-technique guides and revision-research notes for students who want real questions
+					and useful marking feedback.
 				</p>
 				<a class="blog-hero-link" href={resolve('/past-papers/gcse')}>
 					Open GCSE past papers
@@ -137,8 +136,8 @@
 				<p class="blog-kicker">Latest</p>
 				<h2 id="latest-title">GCSE revision articles</h2>
 				<p>
-					Comparisons and revision-method notes, ordered by publication date. Use the filters to
-					narrow the list without leaving the page.
+					Practical revision notes, ordered by publication date. Use the filters to narrow the
+					list without leaving the page.
 				</p>
 			</div>
 

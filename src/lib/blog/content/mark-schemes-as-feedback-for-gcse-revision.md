@@ -3,7 +3,7 @@
   'slug': 'mark-schemes-as-feedback-for-gcse-revision',
   'title': 'Using Mark Schemes For GCSE Feedback',
   'shortTitle': 'Mark schemes as feedback',
-  'description': 'How GCSE students can use mark schemes as feedback, and why answer chains make that feedback easier to act on.',
+  'description': 'How GCSE students can turn mark schemes into feedback they can use in a better second answer.',
   'standfirst': 'The mark scheme is often treated as the answer. Used well, it is a map of what the examiner wanted to see.',
   'category': 'Exam technique',
   'publishedAt': '2026-06-24',
@@ -28,8 +28,7 @@
   'relatedSlugs':
     [
       'retrieval-practice-with-gcse-exam-questions',
-      'why-model-answers-do-not-fix-exam-technique-alone',
-      'question-constellation-vs-save-my-exams'
+      'why-model-answers-do-not-fix-exam-technique-alone'
     ],
   'faqs':
     [
@@ -42,8 +41,8 @@
         'answer': 'It is a student-facing version of mark criteria, written as things the answer must include.'
       },
       {
-        'question': 'Why add an answer chain?',
-        'answer': 'The chain turns the checklist into an order of reasoning that can transfer to another question.'
+        'question': 'Why rewrite the whole answer?',
+        'answer': 'A full rewrite makes the student use the feedback in context instead of merely recognising what was missing.'
       }
     ]
 }
@@ -53,22 +52,22 @@
 
 Students often read a mark scheme after the question and think, yes, I understand that. The problem is that recognition is easier than producing the answer alone.
 
-A better use of a mark scheme is to turn it into a checklist. Which mark-scoring idea was present? Which one was implied but never written? Which link was missing entirely?
+A better use of a mark scheme is to turn it into a checklist. Which mark-scoring idea was present? Which one was implied but never written? Which point was missing entirely?
 
-## Why answer chains help
+## Why marking points help
 
-Answer chains convert the checklist into a short order. They help the student see that the missing mark was not random. It was a missing link in the explanation.
+Marking points make the feedback concrete. They help the student see that a lost mark was not random: the answer omitted or underdeveloped a specific idea.
 
-That is useful because the next question may use a different organism, circuit, graph or context. The student can carry the chain forward without memorising the old wording.
+That is useful because the next question may use a different organism, circuit, graph or context. The student can practise recognising which ideas the new prompt needs without memorising the old wording.
 
 ## What better feedback sounds like
 
-Useful feedback should help the student act. A score alone says how the answer performed. A checklist says why. A chain says what to rebuild next time.
+Useful feedback should help the student act. A score alone says how the answer performed. A marking-point checklist says why and gives the rewrite a clear target.
 
-This is why Question Constellation pages put the model answer, checklist, weak-answer pattern and related questions close together.
+This is why Question Constellation keeps the question, marking feedback, improved answer and next related question in one short flow.
 
 ## A practical way to mark your own answer
 
-Read the answer once without the mark scheme. Then mark it link by link. If a link is missing, rewrite the answer rather than only adding a note in the margin.
+Read the answer once without the mark scheme. Then check it point by point. If a point is missing, rewrite the answer rather than only adding a note in the margin.
 
 The rewrite matters because it turns feedback into a new attempt.

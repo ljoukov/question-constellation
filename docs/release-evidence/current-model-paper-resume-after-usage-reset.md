@@ -164,8 +164,7 @@ node scripts/run-codex-production-import-pipeline.mjs \
   --allow-unpublishable-source-drops \
   --resume-passed-phases \
   --reuse-existing-extraction \
-  --import \
-  --skip-chain-illustrations
+  --import
 ```
 
 ### Resume `ocr-j351-01-qp-jun24`
@@ -197,8 +196,7 @@ node scripts/run-codex-production-import-pipeline.mjs \
   --allow-unpublishable-source-drops \
   --resume-passed-phases \
   --reuse-existing-extraction \
-  --import \
-  --skip-chain-illustrations
+  --import
 ```
 
 ### Resume `ocr-j351-02-qp-jun24`
@@ -230,6 +228,5 @@ node scripts/run-codex-production-import-pipeline.mjs \
   --allow-unpublishable-source-drops \
   --resume-passed-phases \
   --reuse-existing-extraction \
-  --import \
-  --skip-chain-illustrations
+  --import
 ```

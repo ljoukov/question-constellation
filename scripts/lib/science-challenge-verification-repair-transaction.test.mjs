@@ -351,7 +351,7 @@ test('collection-only mutation authority requires typed rebase bindings and cann
 			{ id: 'collection-preferred', accepted: true }
 		]
 	});
-	const legacySummary = {
+	const ordinarySummary = {
 		...fixture.summary,
 		reviews: fixture.summary.reviews,
 		rejectedCount: 0
@@ -366,11 +366,11 @@ test('collection-only mutation authority requires typed rebase bindings and cann
 		'reviewRebaseCollectionRemediationTargetIds',
 		'reviewRebaseCollectionRemediationTargetSetSha256'
 	]) {
-		delete legacySummary[field];
+		delete ordinarySummary[field];
 	}
 	assert.equal(
 		buildScienceChallengeVerificationRepairAuthority({
-			verificationSummary: legacySummary
+			verificationSummary: ordinarySummary
 		}),
 		null
 	);

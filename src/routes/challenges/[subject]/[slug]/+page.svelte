@@ -2,9 +2,7 @@
 	import { browser } from '$app/environment';
 	import ChallengeGame from '$lib/challenges/ChallengeGame.svelte';
 	import {
-		CHALLENGE_PROGRESS_GUEST_STORAGE_KEY,
 		CHALLENGE_PROGRESS_STORAGE_KEY,
-		LEGACY_CHALLENGE_PROGRESS_STORAGE_KEY,
 		challengeProgressStorageKey,
 		emptyChallengeProgress,
 		mergeChallengeProgress,
@@ -16,12 +14,6 @@
 		type ChallengeProgressUpdatedDetail
 	} from '$lib/challenges/progressEvents';
 	import { challengePath, challengeSubjectLabel } from '$lib/challenges/routing';
-	import {
-		challengeSocialImage,
-		challengeSocialImageAlt,
-		challengeSocialImageHeight,
-		challengeSocialImageWidth
-	} from '$lib/challenges/seo';
 	import ChallengeRouteShell from '$lib/challenges/ui/ChallengeRouteShell.svelte';
 	import { onMount } from 'svelte';
 	import type { PageProps } from './$types';
@@ -143,8 +135,6 @@
 		return (
 			key === null ||
 			key === CHALLENGE_PROGRESS_STORAGE_KEY ||
-			key === CHALLENGE_PROGRESS_GUEST_STORAGE_KEY ||
-			key === LEGACY_CHALLENGE_PROGRESS_STORAGE_KEY ||
 			key === challengeProgressStorageKey(userId)
 		);
 	}
@@ -159,15 +149,15 @@
 	<meta property="og:title" content={pageTitle} />
 	<meta property="og:description" content={publicDescription} />
 	<meta property="og:url" content={canonicalUrl} />
-	<meta property="og:image" content={challengeSocialImage} />
-	<meta property="og:image:width" content={challengeSocialImageWidth} />
-	<meta property="og:image:height" content={challengeSocialImageHeight} />
-	<meta property="og:image:alt" content={challengeSocialImageAlt} />
+	<meta property="og:image" content={data.socialImage.url} />
+	<meta property="og:image:width" content={String(data.socialImage.width)} />
+	<meta property="og:image:height" content={String(data.socialImage.height)} />
+	<meta property="og:image:alt" content={data.socialImage.alt} />
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content={pageTitle} />
 	<meta name="twitter:description" content={publicDescription} />
-	<meta name="twitter:image" content={challengeSocialImage} />
-	<meta name="twitter:image:alt" content={challengeSocialImageAlt} />
+	<meta name="twitter:image" content={data.socialImage.url} />
+	<meta name="twitter:image:alt" content={data.socialImage.alt} />
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 	{@html jsonLdScript}
 </svelte:head>
@@ -178,6 +168,7 @@
 			<ChallengeGame
 				challenge={data.challenge}
 				chain={data.chain}
+				visual={data.visual}
 				{nextChallenges}
 				{initialProgress}
 				{userId}

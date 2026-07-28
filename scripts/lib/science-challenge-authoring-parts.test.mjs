@@ -121,7 +121,7 @@ test('rejects reordered rows and duplicate challenge ids crossing part boundarie
 	);
 });
 
-test('an unknown llm-direct transport version is neither legacy direct nor multipart and is rejected', () => {
+test('an unknown llm-direct transport version is neither current direct nor multipart and is rejected', () => {
 	const summary = {
 		transport: 'llm-direct',
 		transportVersion: 'science-challenge-llm-direct-json/v999'

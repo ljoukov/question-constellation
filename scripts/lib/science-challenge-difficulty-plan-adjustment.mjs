@@ -379,7 +379,7 @@ export function buildScienceChallengeDifficultyPlanAdjustment(input) {
 /**
  * Bind multiple verifier-authorized difficulty corrections found in one immutable terminal batch.
  *
- * Unlike the legacy single-adjustment path, a target row may also contain ordinary reviewed content
+ * Unlike the single-adjustment path, a target row may also contain ordinary reviewed content
  * repairs. This builder never rewrites that row. It binds the complete terminal candidate, records
  * the exact candidate bytes with each difficulty value projected back to its base value, and changes
  * only the corresponding frozen plan rows.

@@ -15,8 +15,6 @@ import {
 import { validateScienceChallengeReviewRebaseInfrastructureRecoveryBinding } from './science-challenge-review-rebase-infra-recovery.mjs';
 import { canonicalHash } from './science-challenge-release.mjs';
 
-const EXPECTED_SHARD_COUNT = 51;
-const EXPECTED_CHALLENGE_COUNT = 408;
 const HASH = /^[a-f0-9]{64}$/u;
 
 /**
@@ -133,15 +131,18 @@ export function validateScienceChallengeEffectiveReleaseGate({
 	}
 	const expectedIds = effectivePlan.rows.map((row) => row.id);
 	const candidateIds = effectiveCohort.candidateSet.map((entry) => entry?.definition?.id);
+	const expectedChallengeCount = effectivePlan.rows.length;
+	const expectedShardCount = new Set(effectivePlan.rows.map((row) => row.shard)).size;
 	if (
-		manifest.shardCount !== EXPECTED_SHARD_COUNT ||
-		manifest.challengeCount !== EXPECTED_CHALLENGE_COUNT ||
-		manifest.candidateCount !== EXPECTED_CHALLENGE_COUNT ||
-		effectivePlan.rows.length !== EXPECTED_CHALLENGE_COUNT ||
-		effectiveCohort.candidateSet.length !== EXPECTED_CHALLENGE_COUNT ||
-		new Set(effectivePlan.rows.map((row) => row.shard)).size !== EXPECTED_SHARD_COUNT
+		expectedChallengeCount === 0 ||
+		expectedShardCount === 0 ||
+		basePlan.rows.length !== expectedChallengeCount ||
+		manifest.shardCount !== expectedShardCount ||
+		manifest.challengeCount !== expectedChallengeCount ||
+		manifest.candidateCount !== expectedChallengeCount ||
+		effectiveCohort.candidateSet.length !== expectedChallengeCount
 	) {
-		issues.push('Effective release requires exactly 51 shards and 408 candidates.');
+		issues.push('Effective release requires the complete non-empty cohort bound by its plans.');
 	}
 	if (
 		manifest.basePlanSha256 !== canonicalHash(basePlan) ||
@@ -191,19 +192,19 @@ export function validateScienceChallengeEffectiveReleaseGate({
 					'reviewRebaseInfrastructureRecoveryManifestSha256',
 					'reviewRebaseInfrastructureRecoveryId'
 				].some((field) => contentVerification[field] !== undefined)) ||
-		contentVerification.assignmentCount !== EXPECTED_SHARD_COUNT ||
-		contentVerification.reviewCount !== EXPECTED_CHALLENGE_COUNT ||
-		contentVerification.acceptedCount !== EXPECTED_CHALLENGE_COUNT ||
+		contentVerification.assignmentCount !== expectedShardCount ||
+		contentVerification.reviewCount !== expectedChallengeCount ||
+		contentVerification.acceptedCount !== expectedChallengeCount ||
 		contentVerification.rejectedCount !== 0 ||
 		!Array.isArray(contentVerification.assignmentResults) ||
-		contentVerification.assignmentResults.length !== EXPECTED_SHARD_COUNT ||
+		contentVerification.assignmentResults.length !== expectedShardCount ||
 		contentVerification.assignmentResults.some((result) => result?.status !== 'passed') ||
 		!Array.isArray(contentVerification.reviews) ||
-		contentVerification.reviews.length !== EXPECTED_CHALLENGE_COUNT ||
+		contentVerification.reviews.length !== expectedChallengeCount ||
 		!Array.isArray(contentVerification.issues) ||
 		contentVerification.issues.length !== 0
 	) {
-		issues.push('Fresh content verification is not one complete accepted 51/408 pass.');
+		issues.push('Fresh content verification is not one complete accepted plan-bound pass.');
 	}
 	const acceptedIds = new Set();
 	for (const review of contentVerification.reviews ?? []) {
@@ -219,7 +220,7 @@ export function validateScienceChallengeEffectiveReleaseGate({
 		acceptedIds.add(review.id);
 	}
 	if (
-		acceptedIds.size !== EXPECTED_CHALLENGE_COUNT ||
+		acceptedIds.size !== expectedChallengeCount ||
 		expectedIds.some((id) => !acceptedIds.has(id))
 	) {
 		issues.push('Fresh content verification does not accept every effective-plan id exactly once.');
@@ -237,7 +238,7 @@ export function validateScienceChallengeEffectiveReleaseGate({
 			receipt.basePlanSha256 !== canonicalHash(basePlan) ||
 			receipt.effectivePlanSha256 !== canonicalHash(effectivePlan) ||
 			receipt.effectiveCohortManifestSha256 !== canonicalHash(manifest) ||
-			receipt.candidateCount !== EXPECTED_CHALLENGE_COUNT ||
+			receipt.candidateCount !== expectedChallengeCount ||
 			receipt.candidateSetSha256 !== effectiveCohort.candidateSetSha256 ||
 			receipt.remapManifestSetSha256 !== manifest.remapManifestSetSha256 ||
 			receipt.recoverySetSha256 !== manifest.recoverySetSha256 ||
@@ -320,7 +321,7 @@ export function validateScienceChallengeEffectiveReleaseGate({
 			manifest.difficultyAdjustmentCount !== proposals.length ||
 			difficultyPlanAdjustmentVerifierInput.effectiveCohortManifestSha256 !==
 				canonicalHash(manifest) ||
-			difficultyPlanAdjustmentVerifierInput.candidateCount !== EXPECTED_CHALLENGE_COUNT ||
+			difficultyPlanAdjustmentVerifierInput.candidateCount !== expectedChallengeCount ||
 			difficultyPlanAdjustmentVerifierInput.candidateSetSha256 !==
 				effectiveCohort.candidateSetSha256 ||
 			difficultyPlanAdjustmentVerifierInput.adjustmentManifestSetSha256 !==

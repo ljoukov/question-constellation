@@ -12,7 +12,6 @@
 		recommendedUnfinishedChallenge
 	} from '$lib/challenges/recommendations';
 	import { challengePath, challengeSubjectLabel } from '$lib/challenges/routing';
-	import { subjectArtForChallenge } from '$lib/challenges/subjectVisuals';
 	import ThemeAwareChallengeArt from '$lib/challenges/ui/ThemeAwareChallengeArt.svelte';
 	import type { UserHomeSnapshot } from '$lib/learning/homeSnapshotTypes';
 	import { ArrowRight, Gamepad2, Settings2, Sparkles } from '@lucide/svelte';
@@ -57,9 +56,7 @@
 			? resolveInternalPath(challengePath(liveChallengeRecommendation))
 			: resolve('/challenges')
 	);
-	const challengeArt = $derived(
-		liveChallengeRecommendation ? subjectArtForChallenge(liveChallengeRecommendation) : null
-	);
+	const challengeArt = $derived(liveChallengeRecommendation?.cardArt ?? null);
 
 	onMount(() => {
 		const applyProgress = (progress: ChallengeProgress) => {
@@ -116,7 +113,7 @@
 				? `${dashboard.weeklySummary.recallCount} recall ${dashboard.weeklySummary.recallCount === 1 ? 'check' : 'checks'}`
 				: null,
 			dashboard.weeklySummary.closedGapCount > 0
-				? `${dashboard.weeklySummary.closedGapCount} ${dashboard.weeklySummary.closedGapCount === 1 ? 'gap closed' : 'gaps closed'}`
+				? `${dashboard.weeklySummary.closedGapCount} ${dashboard.weeklySummary.closedGapCount === 1 ? 'answer improved' : 'answers improved'}`
 				: null
 		]
 			.filter(Boolean)

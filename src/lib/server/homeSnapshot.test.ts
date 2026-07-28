@@ -6,7 +6,8 @@ const mocks = vi.hoisted(() => ({
 	getSignedInLearningHome: vi.fn(),
 	getSubjectLearningPublicCatalog: vi.fn(),
 	getUserAppearancePreferences: vi.fn(),
-	getUserChallengeProgress: vi.fn()
+	getUserChallengeProgress: vi.fn(),
+	getActiveChallengeIds: vi.fn()
 }));
 
 vi.mock('$lib/server/db', () => ({
@@ -29,6 +30,10 @@ vi.mock('$lib/server/userTheme', async (importOriginal) => {
 
 vi.mock('$lib/server/challengeProgress', () => ({
 	getUserChallengeProgress: mocks.getUserChallengeProgress
+}));
+
+vi.mock('$lib/server/challengeCatalog', () => ({
+	getActiveChallengeIds: mocks.getActiveChallengeIds
 }));
 
 import type { ChallengeProgress, ChallengeProgressEntry } from '$lib/challenges/progress';
@@ -165,6 +170,7 @@ function snapshotRow({
 beforeEach(() => {
 	vi.clearAllMocks();
 	mocks.executePersonalQuery.mockResolvedValue(undefined);
+	mocks.getActiveChallengeIds.mockResolvedValue(['biology-data-conclusions']);
 	mocks.getUserAppearancePreferences.mockResolvedValue({
 		themePreference: 'dark',
 		visualEffectsEnabled: false
@@ -420,6 +426,9 @@ describe('immediate challenge projection', () => {
 	});
 
 	it('keeps a 500-entry projection below the D1 bound-parameter limit', async () => {
+		mocks.getActiveChallengeIds.mockResolvedValue(
+			Array.from({ length: 500 }, (_, index) => `challenge-${index}`)
+		);
 		const progress: ChallengeProgress = {
 			version: 2,
 			challenges: Object.fromEntries(

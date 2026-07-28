@@ -172,5 +172,8 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 		locals.user.uid,
 		parsed.data.progress as ChallengeProgress
 	);
-	return json({ progress });
+	const rejectedChallengeIds = Object.keys(parsed.data.progress.challenges).filter(
+		(challengeId) => !progress.challenges[challengeId]
+	);
+	return json({ progress, rejectedChallengeIds });
 };

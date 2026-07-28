@@ -57,15 +57,9 @@ export function inspectVerificationRepairAttempts({
 	requireAttemptLimit(maxAttempts);
 	const runId = scienceChallengeVerificationRepairRunId(repairSha256);
 	const prefix = `verification-repair-${runId}-attempt-`;
-	const continuationDirectory = `verification-repair-${runId}-attempt-04-multipart-continuation`;
 	const attempts = existsSync(shardDir)
 		? readdirSync(shardDir, { withFileTypes: true })
-				.filter(
-					(entry) =>
-						entry.isDirectory() &&
-						entry.name.startsWith(prefix) &&
-						entry.name !== continuationDirectory
-				)
+				.filter((entry) => entry.isDirectory() && entry.name.startsWith(prefix))
 				.map((entry) => {
 					const suffix = entry.name.slice(prefix.length);
 					if (!/^\d{2}$/.test(suffix)) {
@@ -225,9 +219,9 @@ export function requireCompleteVerificationRepairCohort({ selectedShardIds, reje
 /**
  * Derive the only mutation authority that a parent-bound review-rebase repair may use.
  *
- * A wholly legacy verification summary deliberately returns null so legacy prompt and repair
- * bytes remain unchanged. Once any typed rebase field is present, every field is mandatory and
- * must agree with both its own hashes and the optional replayed parent manifest.
+ * An ordinary independent verification summary returns null because it has no review-rebase
+ * mutation authority. Once any typed rebase field is present, every field is mandatory and must
+ * agree with both its own hashes and the optional replayed parent manifest.
  */
 export function buildScienceChallengeVerificationRepairAuthority({
 	verificationSummary,
@@ -242,16 +236,16 @@ export function buildScienceChallengeVerificationRepairAuthority({
 		(field) => verificationSummary[field] !== undefined
 	);
 	if (presentTypedFields.length === 0) {
-		if (suppliedAuthority !== null && suppliedAuthority !== undefined) {
-			throw new Error(
-				'A verification-repair authority cannot be supplied for a legacy verification summary.'
-			);
-		}
-		if (reviewRebaseManifest !== null && reviewRebaseManifest !== undefined) {
-			throw new Error(
-				'A review-rebase manifest cannot parent a legacy verification summary without typed bindings.'
-			);
-		}
+			if (suppliedAuthority !== null && suppliedAuthority !== undefined) {
+				throw new Error(
+					'A verification-repair authority cannot be supplied for a non-rebase verification summary.'
+				);
+			}
+			if (reviewRebaseManifest !== null && reviewRebaseManifest !== undefined) {
+				throw new Error(
+					'A review-rebase manifest cannot parent a non-rebase verification summary without typed bindings.'
+				);
+			}
 		return null;
 	}
 	if (presentTypedFields.length !== REVIEW_REBASE_SUMMARY_FIELDS.length) {

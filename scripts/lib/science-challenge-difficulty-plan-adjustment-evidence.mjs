@@ -39,11 +39,8 @@ import {
 	writeImmutableRepairJson
 } from './science-challenge-verification-repair-transaction.mjs';
 import {
-	discoverVerificationRepairRecoveryBinding,
-	discoverVerificationRepairRecoveryManifest,
 	inspectVerificationRepairExecutionAttempts,
 	requireMatchingVerificationRepairAttemptLedgers,
-	requireVerificationRepairRecoveryArchivePair,
 	scienceChallengeVerificationRepairObjectiveIdentity,
 	verificationRepairExecutionLedgerRoot
 } from './science-challenge-verification-repair-lineage.mjs';
@@ -290,19 +287,16 @@ function inspectPreconditions(options) {
 		}
 		const competingRecoveryDirectories = readdirSync(shardDir, { withFileTypes: true })
 			.filter(
-				(entry) =>
-					entry.isDirectory() &&
-					(/verification-repair-[a-f0-9]{12}-multipart-plan-salvage$/u.test(entry.name) ||
-						/verification-repair-[a-f0-9]{12}-attempt-04-multipart-continuation$/u.test(
-							entry.name
-						) ||
-						/verification-repair-[a-f0-9]{12}-descendant-remap$/u.test(entry.name))
+					(entry) =>
+						entry.isDirectory() &&
+						(/verification-repair-[a-f0-9]{12}-multipart-plan-salvage$/u.test(entry.name) ||
+							/verification-repair-[a-f0-9]{12}-descendant-remap$/u.test(entry.name))
 			)
 			.map((entry) => entry.name);
-		if (competingRecoveryDirectories.length > 0) {
-			return failed(
-				'Difficulty-plan adjustment cannot coexist with salvage, continuation, or descendant-remap lineage.'
-			);
+			if (competingRecoveryDirectories.length > 0) {
+				return failed(
+					'Difficulty-plan adjustment cannot coexist with salvage or descendant-remap lineage.'
+				);
 		}
 		const localLedger = inspectVerificationRepairAttempts({
 			shardDir,
@@ -343,26 +337,6 @@ function inspectPreconditions(options) {
 				)
 		) {
 			return failed('Difficulty-plan adjustment global execution identity is missing or stale.');
-		}
-		const recoveryManifestPath = discoverVerificationRepairRecoveryManifest({
-			ledgerRoot: executionLedgerRoot
-		});
-		const recoveryBinding = discoverVerificationRepairRecoveryBinding({
-			ledgerRoot: executionLedgerRoot,
-			generationRoot: outputRoot
-		});
-		const recoveryManifest = recoveryManifestPath ? readJson(recoveryManifestPath) : null;
-		requireVerificationRepairRecoveryArchivePair({
-			bindingRecord: recoveryBinding,
-			manifest: recoveryManifest,
-			manifestPath: recoveryManifestPath,
-			recoveryRequired: true
-		});
-		if (
-			recoveryBinding.identity.executionId !== options.expectedExecutionIdentity.executionId ||
-			recoveryManifest.executionId !== options.expectedExecutionIdentity.executionId
-		) {
-			return failed('Difficulty-plan adjustment belongs to another recovered execution identity.');
 		}
 		const cohortState = readVerificationRepairCohortState({
 			outputRoot,

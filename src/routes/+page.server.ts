@@ -1,6 +1,4 @@
 import { getHomePagePublicData } from '$lib/server/learningChainData';
-import { challengeCatalog } from '$lib/challenges/catalog';
-import { publicChallengePreviewDefinition } from '$lib/challenges/authoredData';
 import { challengeProgressTotals, emptyChallengeProgress } from '$lib/challenges/progress';
 import {
 	mostRecentlyCompletedChallenge,
@@ -11,18 +9,8 @@ import {
 	parseAnonymousLearnerProfileCookie
 } from '$lib/anonymousLearnerProfile';
 import type { UserHomeSnapshot } from '$lib/learning/homeSnapshotTypes';
-import { blogArticles } from '$lib/blog/articles';
-import type { BlogArticle, BlogArticleMeta } from '$lib/blog/types';
+import { getChallengeCatalogIndex } from '$lib/server/challengeCatalog';
 import type { PageServerLoad } from './$types';
-
-function toBlogMeta(article: BlogArticle): BlogArticleMeta {
-	const meta = { ...article };
-	delete (meta as Partial<BlogArticle>).bodyMarkdown;
-	return meta;
-}
-
-const latestArticles = blogArticles.slice(0, 3).map(toBlogMeta);
-const publicChallengeCatalog = challengeCatalog.map(publicChallengePreviewDefinition);
 
 function fallbackDashboard(user: NonNullable<App.Locals['user']>): UserHomeSnapshot['dashboard'] {
 	return {
@@ -38,8 +26,9 @@ function fallbackDashboard(user: NonNullable<App.Locals['user']>): UserHomeSnaps
 
 export const load: PageServerLoad = async ({ locals, parent, cookies }) => {
 	if (locals.user) {
-		const layoutData = await parent();
+		const [layoutData, challengeIndex] = await Promise.all([parent(), getChallengeCatalogIndex()]);
 		const snapshot = layoutData.homeSnapshot;
+		const challengeCatalog = challengeIndex?.challenges ?? [];
 		const localProfile = parseAnonymousLearnerProfileCookie(
 			cookies.get(ANONYMOUS_PROFILE_COOKIE_NAME)
 		);
@@ -63,16 +52,11 @@ export const load: PageServerLoad = async ({ locals, parent, cookies }) => {
 		const challengeTotals = challengeProgressTotals(challengeProgress);
 
 		return {
-			featuredChains: [],
-			stats: { chainCount: 0, questionCount: 0, subjectCount: 0 },
-			latestArticles,
-			learnerSettings: null,
+			featuredQuestion: null,
 			dashboard: snapshot?.dashboard ?? fallbackDashboard(locals.user),
 			challengeProgress,
-			challengeCatalog: publicChallengeCatalog,
-			challengeRecommendation: recommendedChallenge
-				? publicChallengePreviewDefinition(recommendedChallenge)
-				: null,
+			challengeCatalog,
+			challengeRecommendation: recommendedChallenge,
 			challengeCompletedCount: challengeTotals.completedCount,
 			challengeTotalBestScore: challengeTotals.totalBestScore,
 			snapshotInitialising:
@@ -84,10 +68,19 @@ export const load: PageServerLoad = async ({ locals, parent, cookies }) => {
 	}
 
 	const publicData = await getHomePagePublicData();
+	const featuredGroup = publicData.featuredChains[0];
+	const featured = featuredGroup?.questions.find((question) => question.id);
 	return {
-		featuredChains: publicData.featuredChains,
-		stats: publicData.stats,
-		latestArticles,
+		featuredQuestion:
+			featured?.id && featuredGroup
+				? {
+						id: featured.id,
+						subject: featuredGroup.subject,
+						title: featured.title,
+						teaser: featured.teaser,
+						marks: featured.marks
+					}
+				: null,
 		dashboard: null,
 		challengeProgress: emptyChallengeProgress(),
 		challengeCatalog: [],

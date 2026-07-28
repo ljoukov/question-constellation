@@ -4,7 +4,8 @@ const mocks = vi.hoisted(() => ({
 	getEnglishLiteratureSubjectHub: vi.fn(),
 	getRecallCards: vi.fn(),
 	getRecallCatalogScopeForLearner: vi.fn(),
-	recallCardsWithinLearnerScope: vi.fn()
+	recallCardsWithinLearnerScope: vi.fn(),
+	getChallengeSubject: vi.fn()
 }));
 
 vi.mock('$lib/server/englishLiteratureSubjectHub', () => ({
@@ -18,6 +19,10 @@ vi.mock('$lib/server/recallCatalog', () => ({
 vi.mock('$lib/server/subjectLearning', () => ({
 	getRecallCatalogScopeForLearner: mocks.getRecallCatalogScopeForLearner,
 	recallCardsWithinLearnerScope: mocks.recallCardsWithinLearnerScope
+}));
+
+vi.mock('$lib/server/challengeCatalog', () => ({
+	getChallengeSubject: mocks.getChallengeSubject
 }));
 
 import { load } from './+page.server';
@@ -70,6 +75,7 @@ beforeEach(() => {
 	mocks.getRecallCards.mockResolvedValue([]);
 	mocks.recallCardsWithinLearnerScope.mockResolvedValue([]);
 	mocks.getEnglishLiteratureSubjectHub.mockResolvedValue({ sections: [] });
+	mocks.getChallengeSubject.mockResolvedValue({ challenges: [] });
 });
 
 describe('signed-in subject recall deck summary', () => {

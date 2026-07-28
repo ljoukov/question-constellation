@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
+import { existsSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
+
+import { canonicalHash } from './lib/challenge-catalog-bundle.mjs';
 
 const repositoryRoot = path.resolve(import.meta.dirname, '..');
 const cli = path.join(repositoryRoot, 'scripts/build-science-challenge-review-rebase.mjs');
@@ -13,6 +15,7 @@ test('review-rebase CLI documents every immutable input and the write-free mode'
 	assert.equal(result.status, 0, result.stderr);
 	for (const option of [
 		'--output-root',
+		'--catalog-source',
 		'--spec',
 		'--base-plan',
 		'--source',
@@ -43,22 +46,54 @@ test('review-rebase CLI rejects ambiguous flags and incomplete invocations', asy
 
 test('review-rebase CLI dry-run rejects path escape before creating its output root', () => {
 	const outputRoot = `tmp/review-rebase-cli-test-${process.pid}`;
+	const catalogSource = `tmp/review-rebase-cli-source-${process.pid}.json`;
 	assert.equal(existsSync(path.join(repositoryRoot, outputRoot)), false);
-	const result = run([
-		`--output-root=${outputRoot}`,
-		'--spec=../outside.json',
-		'--base-plan=missing/base-plan.json',
-		'--source=missing/source.json',
-		'--evidence=missing/evidence.json',
-		'--parent-verification=missing/verification.json',
-		'--parent-repair=missing/repair.json',
-		'--selections=missing/selections.json',
-		'--dry-run'
-	]);
+	const unsignedCatalogSource = {
+		schemaVersion: 'challenge-catalog-source/v1',
+		release: {
+			id: 'synthetic-review-rebase-test',
+			contentSha256: 'a'.repeat(64),
+			challengeCount: 1
+		},
+		records: [
+			{
+				definition: {
+					id: 'existing-review-rebase-fixture',
+					slug: 'existing-review-rebase-fixture',
+					subject: 'biology'
+				}
+			}
+		],
+		subjects: [],
+		arcs: []
+	};
+	writeFileSync(
+		path.join(repositoryRoot, catalogSource),
+		`${JSON.stringify({
+			...unsignedCatalogSource,
+			contentSha256: canonicalHash(unsignedCatalogSource)
+		})}\n`
+	);
+	try {
+		const result = run([
+			`--output-root=${outputRoot}`,
+			`--catalog-source=${catalogSource}`,
+			'--spec=../outside.json',
+			'--base-plan=missing/base-plan.json',
+			'--source=missing/source.json',
+			'--evidence=missing/evidence.json',
+			'--parent-verification=missing/verification.json',
+			'--parent-repair=missing/repair.json',
+			'--selections=missing/selections.json',
+			'--dry-run'
+		]);
 
-	assert.notEqual(result.status, 0);
-	assert.match(result.stderr, /repository-relative path/u);
-	assert.equal(existsSync(path.join(repositoryRoot, outputRoot)), false);
+		assert.notEqual(result.status, 0);
+		assert.match(result.stderr, /repository-relative path/u);
+		assert.equal(existsSync(path.join(repositoryRoot, outputRoot)), false);
+	} finally {
+		rmSync(path.join(repositoryRoot, catalogSource), { force: true });
+	}
 });
 
 function run(args) {

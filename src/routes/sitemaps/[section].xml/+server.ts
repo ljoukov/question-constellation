@@ -3,8 +3,8 @@ import {
 	gcsePastPaperEntryIndex,
 	gcsePastPaperSubjectIndex
 } from '$lib/pastPapers/gcsePastPapers';
-import { challengeCatalog, challengePath, challengeSubjects } from '$lib/challenges/catalog';
 import { blogArticles } from '$lib/blog/articles';
+import { getChallengeCatalogIndex } from '$lib/server/challengeCatalog';
 import {
 	getPublicQuestionSitemapEntries,
 	getSeoTopicSitemapEntries
@@ -19,32 +19,8 @@ const staticEntries: SitemapEntry[] = [
 	{ path: '/past-papers/gcse', priority: '0.9', changefreq: 'weekly' }
 ];
 
-function challengeEntries(): SitemapEntry[] {
-	const latestChallengeReview = challengeCatalog
-		.map(({ lastReviewed }) => lastReviewed)
-		.sort()
-		.at(-1);
-
-	return [
-		{
-			path: '/challenges',
-			priority: '0.92',
-			changefreq: 'weekly',
-			lastmod: latestChallengeReview
-		},
-		...challengeSubjects.map((subject) => ({
-			path: `/challenges/${subject.subject}`,
-			priority: '0.88',
-			changefreq: 'weekly' as const,
-			lastmod: latestChallengeReview
-		})),
-		...challengeCatalog.map((challenge) => ({
-			path: challengePath(challenge),
-			priority: '0.82',
-			changefreq: 'monthly' as const,
-			lastmod: challenge.lastReviewed
-		}))
-	];
+async function challengeEntries(): Promise<SitemapEntry[]> {
+	return (await getChallengeCatalogIndex())?.sitemapEntries ?? [];
 }
 
 function pastPaperEntries(): SitemapEntry[] {
@@ -75,7 +51,7 @@ function blogEntries(): SitemapEntry[] {
 		...blogArticles.map((article) => ({
 			path: `/blog/${article.slug}`,
 			changefreq: 'monthly' as const,
-			priority: article.category === 'Comparison' ? '0.74' : '0.7',
+			priority: '0.7',
 			lastmod: article.updatedAt ?? article.publishedAt
 		}))
 	];
@@ -92,7 +68,7 @@ function uniqueEntries(entries: SitemapEntry[]) {
 
 async function entriesForSection(section: string): Promise<SitemapEntry[] | null> {
 	if (section === 'static') return uniqueEntries(staticEntries);
-	if (section === 'challenges') return uniqueEntries(challengeEntries());
+	if (section === 'challenges') return uniqueEntries(await challengeEntries());
 	if (section === 'blog') return uniqueEntries(blogEntries());
 	if (section === 'past-papers') return uniqueEntries(pastPaperEntries());
 	if (section === 'questions') return uniqueEntries(await getPublicQuestionSitemapEntries());

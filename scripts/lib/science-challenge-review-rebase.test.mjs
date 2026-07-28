@@ -653,7 +653,7 @@ function reviewRebaseFixture() {
 	];
 	const sourceById = new Map(sources.map((source) => [source.id, source]));
 	const basePlan = {
-		schemaVersion: 'science-challenge-plan/v1',
+		schemaVersion: 'science-challenge-plan/v2',
 		rows: [
 			planRow({
 				id: acceptedBiologyId,

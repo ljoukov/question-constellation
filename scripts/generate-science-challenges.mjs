@@ -14,7 +14,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { createServer } from 'vite';
+import { loadChallengeCatalogSource } from './lib/challenge-catalog-source.mjs';
 
 import { loadDefaultEnv, runCodexSdkTurn } from './lib/codex-sdk-runner.mjs';
 import {
@@ -89,14 +89,6 @@ import {
 } from './lib/science-challenge-multipart-salvage-approval-cli.mjs';
 import { evaluateScienceChallengeVerificationRepairOverlay } from './lib/science-challenge-verification-repair-overlay.mjs';
 import {
-	inspectScienceChallengeMultipartContinuation,
-	readScienceChallengeMultipartContinuation,
-	requireExclusiveScienceChallengeMultipartRecoveryLineage,
-	runScienceChallengeMultipartContinuation,
-	scienceChallengeMultipartContinuationDirectory,
-	validateScienceChallengeMultipartContinuationAcceptance
-} from './lib/science-challenge-multipart-continuation.mjs';
-import {
 	buildScienceChallengeReviewRebaseSuccessorEmptyRecoveryBinding,
 	requireContentVerificationEvidence
 } from './lib/science-challenge-review-evidence.mjs';
@@ -145,49 +137,18 @@ import {
 import {
 	bindVerificationRepairExecutionMarker,
 	claimVerificationRepairAttemptPair,
-	discoverVerificationRepairRecoveryBinding,
-	discoverVerificationRepairRecoveryManifest,
 	initializeVerificationRepairExecutionLedger,
 	inspectVerificationRepairExecutionAttempts,
-	requireVerificationRepairRecoveryArchivePair,
 	reconcileVerificationRepairAttemptTransactions,
 	requireMatchingVerificationRepairAttemptLedgers,
 	requireMatchingVerificationRepairExecutionIdentity,
 	scienceChallengeVerificationRepairExecutionIdentity,
-	validateVerificationRepairRecoveryManifest,
 	verificationRepairExecutionLedgerRoot
 } from './lib/science-challenge-verification-repair-lineage.mjs';
 
 const CODEX_SDK_TRANSPORT = 'codex-sdk';
 const CODEX_SDK_MODEL = 'gpt-5.6-sol';
 const THINKING_LEVEL = 'max';
-const REVIEW_REBASE_INFRASTRUCTURE_RECOVERY_EXPECTED_SHARD_IDS = Object.freeze(
-	Array.from({ length: 51 }, (_, index) => `science-${String(index + 1).padStart(3, '0')}`)
-);
-const REVIEW_REBASE_INFRASTRUCTURE_RECOVERY_EXPECTED_PRESERVED_SHARD_IDS = Object.freeze([
-	'science-001',
-	'science-002',
-	'science-003',
-	'science-004',
-	'science-005',
-	'science-006',
-	'science-007',
-	'science-009',
-	'science-012',
-	'science-013'
-]);
-const REVIEW_REBASE_INFRASTRUCTURE_RECOVERY_EXPECTED_FROZEN_SHARD_IDS = Object.freeze([
-	'science-035',
-	'science-044'
-]);
-const REVIEW_REBASE_INFRASTRUCTURE_RECOVERY_EXPECTED_NEXT_LOGICAL_ORDINAL = Object.freeze({
-	'science-008': 4,
-	'science-010': 3,
-	'science-011': 3,
-	'science-014': 3,
-	'science-015': 2,
-	'science-016': 2
-});
 const rootDir = process.cwd();
 loadDefaultEnv(rootDir);
 const args = parseArgs(process.argv.slice(2));
@@ -255,10 +216,14 @@ const sourceById = new Map(
 const sourceDocumentById = new Map(
 	(sourceSnapshot.sourceDocuments ?? []).map((document) => [document.id, document])
 );
-const existingChallengeDefinitions = await loadExistingCatalog();
-if (existingChallengeDefinitions.length !== basePlan.existingRoundCount) {
+const existingChallengeCatalog = await loadExistingCatalog();
+const existingChallengeDefinitions = existingChallengeCatalog.definitions;
+if (
+	existingChallengeCatalog.contentSha256 !== basePlan.baseCatalogContentSha256 ||
+	existingChallengeDefinitions.length !== basePlan.baseCatalogRecordCount
+) {
 	throw new Error(
-		`Expected ${basePlan.existingRoundCount} existing rounds; found ${existingChallengeDefinitions.length}.`
+		'Active challenge catalogue differs from the exact source bound into the generation plan.'
 	);
 }
 const curriculumById = new Map(
@@ -275,26 +240,6 @@ const unvalidatedVerificationRepairExecutionIdentity = unvalidatedVerificationRe
 			verificationSha256: verificationRepairSha256
 		})
 	: null;
-const unvalidatedRepairExecutionLedgerRoot = unvalidatedVerificationRepairExecutionIdentity
-	? verificationRepairExecutionLedgerRoot(
-			rootDir,
-			unvalidatedVerificationRepairExecutionIdentity.objectiveId
-		)
-	: null;
-const verificationRepairRecovery = unvalidatedVerificationRepairExecutionIdentity
-	? inspectVerificationRepairRecovery({
-			identity: unvalidatedVerificationRepairExecutionIdentity,
-			ledgerRoot: unvalidatedRepairExecutionLedgerRoot
-		})
-	: null;
-if (
-	args.reviewRebaseInfrastructureRecovery &&
-	verificationRepairRecovery?.status !== 'not-present'
-) {
-	throw new Error(
-		'Typed review-rebase infrastructure recovery cannot be combined with legacy verification-repair recovery.'
-	);
-}
 if (typeof basePlan.curriculumCatalogPath !== 'string' || !basePlan.curriculumCatalogPath.trim()) {
 	throw new Error('Plan does not bind a curriculumCatalogPath.');
 }
@@ -438,21 +383,6 @@ if (verificationRepair && selectedShardIds.length === 0) {
 if (reviewRebaseInfrastructureRecovery) {
 	requireExactReviewRebaseInfrastructureRecoveryCohort(selectedShardIds);
 }
-if (args.continueExhaustedMultipart) {
-	if (
-		!verificationRepair ||
-		args.shards.length !== 1 ||
-		selectedShardIds.length !== 1 ||
-		!args.resume
-	) {
-		throw new Error(
-			'--continue-exhausted-multipart requires --repair-verification, --resume and exactly one rejected --shard.'
-		);
-	}
-	const result = await runExplicitMultipartContinuation(selectedShardIds[0]);
-	console.log(JSON.stringify(result, null, 2));
-	process.exit(result.status === 'passed' ? 0 : 1);
-}
 if (verificationRepair) {
 	requireCompleteVerificationRepairCohort({
 		selectedShardIds,
@@ -511,8 +441,7 @@ if (reviewRebaseChildRegistrationOptions && !args.dryRun) {
 if (
 	verificationRepairSha256 &&
 	existsSync(outputRoot) &&
-	!args.dryRun &&
-	!args.continueExhaustedMultipart
+	!args.dryRun
 ) {
 	recoverVerificationRepairPublication({
 		outputRoot,
@@ -577,7 +506,6 @@ if (args.dryRun) {
 				verificationRepairParentSha256,
 				...reviewRebaseSummaryBindings(),
 				...reviewRebaseInfrastructureRecoverySummaryBindings(),
-				verificationRepairRecovery,
 				reviewRebaseChildRegistration: summarizeReviewRebaseChildRegistration(
 					reviewRebaseChildRegistration
 				),
@@ -662,7 +590,7 @@ let effectiveCohort = null;
 let successorReviewPending = false;
 if (reviewRebaseInfrastructureRecovery && reviewPending.length > 0) {
 	throw new Error(
-		'Typed review-rebase infrastructure recovery cannot enter legacy review-pending recovery.'
+		'Typed review-rebase infrastructure recovery cannot enter another review-pending recovery.'
 	);
 }
 if (verificationRepair && failures.length === 0 && reviewPending.length === 0) {
@@ -988,64 +916,6 @@ if (persistGenerationSummary) {
 console.log(JSON.stringify(summary, null, 2));
 if (failures.length || collectionValidation.status !== 'passed') process.exit(1);
 
-function inspectVerificationRepairRecovery({ identity, ledgerRoot }) {
-	const bindingRecord = discoverVerificationRepairRecoveryBinding({
-		ledgerRoot,
-		generationRoot: outputRoot
-	});
-	const manifestPath = discoverVerificationRepairRecoveryManifest({
-		ledgerRoot
-	});
-	let manifest = null;
-	if (manifestPath) {
-		try {
-			manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
-		} catch (error) {
-			throw new Error(
-				`Verification-repair recovery manifest is invalid JSON: ${
-					error instanceof Error ? error.message : String(error)
-				}`,
-				{ cause: error }
-			);
-		}
-	}
-	requireVerificationRepairRecoveryArchivePair({
-		bindingRecord,
-		manifest,
-		manifestPath
-	});
-	if (!bindingRecord) {
-		return {
-			status: 'not-present',
-			ledgerRoot: path.relative(rootDir, ledgerRoot)
-		};
-	}
-	requireMatchingVerificationRepairExecutionIdentity({
-		expected: bindingRecord.identity,
-		actual: identity,
-		label: 'Verification-repair recovery execution identity'
-	});
-	const validation = validateVerificationRepairRecoveryManifest({
-		manifest,
-		manifestPath,
-		planPath,
-		generationRoot: outputRoot
-	});
-	if (validation.status !== 'passed') {
-		throw new Error(
-			`Verification-repair recovery binding failed validation:\n${validation.issues.join('\n')}`
-		);
-	}
-	return {
-		status: 'bound',
-		ledgerRoot: path.relative(rootDir, ledgerRoot),
-		manifestPath: path.relative(rootDir, manifestPath),
-		manifestSha256: canonicalHash(manifest),
-		objectiveId: bindingRecord.binding.objectiveId,
-		executionId: bindingRecord.binding.executionId
-	};
-}
-
 function reviewRebaseBindingsFromReplay(reviewRebase) {
 	const remediations = structuredClone(reviewRebase.manifest.collectionRemediations);
 	const targetIds = [
@@ -1200,17 +1070,6 @@ function requireExactReviewRebaseInfrastructureRecoveryCohort(selectedShardIds) 
 	const state = reviewRebaseInfrastructureRecovery.state;
 	const shardIds = [...new Set(plan.rows.map((row) => row.shard))].sort();
 	const selected = [...selectedShardIds].sort();
-	const expectedShardIds = [...REVIEW_REBASE_INFRASTRUCTURE_RECOVERY_EXPECTED_SHARD_IDS];
-	const expectedPreservedShardIds = [
-		...REVIEW_REBASE_INFRASTRUCTURE_RECOVERY_EXPECTED_PRESERVED_SHARD_IDS
-	].sort();
-	const expectedFrozenShardIds = [
-		...REVIEW_REBASE_INFRASTRUCTURE_RECOVERY_EXPECTED_FROZEN_SHARD_IDS
-	].sort();
-	const expectedUnresolvedShardIds = expectedShardIds.filter(
-		(shardId) =>
-			!expectedPreservedShardIds.includes(shardId) && !expectedFrozenShardIds.includes(shardId)
-	);
 	const mutable = [...state.shards.values()]
 		.filter(
 			(shard) =>
@@ -1228,9 +1087,6 @@ function requireExactReviewRebaseInfrastructureRecoveryCohort(selectedShardIds) 
 	const frozen = [...state.shards.values()].filter(
 		(shard) => shard.status === SCIENCE_CHALLENGE_REVIEW_REBASE_RECOVERY_STATUS_FROZEN_NONMUTABLE
 	);
-	const passedShardIds = passed.map((shard) => shard.shardId).sort();
-	const unresolvedShardIds = unresolved.map((shard) => shard.shardId).sort();
-	const frozenShardIds = frozen.map((shard) => shard.shardId).sort();
 	const invalidShardState = [...state.shards.values()].some((shard) => {
 		const mutableByAuthority = rejectedShardIds.has(shard.shardId);
 		const consumed = shard.sourceAttempts.filter(
@@ -1257,45 +1113,22 @@ function requireExactReviewRebaseInfrastructureRecoveryCohort(selectedShardIds) 
 			shard.nextLogicalContentOrdinal !== (repairRequired ? consumed + 1 : null)
 		);
 	});
-	const invalidUnresolvedOrdinal = unresolved.some((shard) => {
-		const expected =
-			REVIEW_REBASE_INFRASTRUCTURE_RECOVERY_EXPECTED_NEXT_LOGICAL_ORDINAL[shard.shardId] ?? 1;
-		return (
-			shard.nextLogicalContentOrdinal !== expected ||
-			shard.consumedLogicalContentAttempts !== expected - 1 ||
-			shard.remainingLogicalContentAttempts !==
-				SCIENCE_CHALLENGE_REVIEW_REBASE_MAX_LOGICAL_CONTENT_ATTEMPTS - expected + 1
-		);
-	});
-	const planRowCountByShard = new Map();
-	for (const row of plan.rows) {
-		planRowCountByShard.set(row.shard, (planRowCountByShard.get(row.shard) ?? 0) + 1);
-	}
 	const counts = reviewRebaseInfrastructureRecovery.manifest.counts;
 	if (
-		plan.rows.length !== 408 ||
-		canonicalHash(shardIds) !== canonicalHash(expectedShardIds) ||
-		expectedShardIds.some((shardId) => planRowCountByShard.get(shardId) !== 8) ||
 		state.shards.size !== shardIds.length ||
 		canonicalHash([...state.shards.keys()].sort()) !== canonicalHash(shardIds) ||
 		canonicalHash(selected) !== canonicalHash(mutable) ||
-		canonicalHash(passedShardIds) !== canonicalHash(expectedPreservedShardIds) ||
-		canonicalHash(unresolvedShardIds) !== canonicalHash(expectedUnresolvedShardIds) ||
-		canonicalHash(frozenShardIds) !== canonicalHash(expectedFrozenShardIds) ||
-		passed.length !== 10 ||
-		unresolved.length !== 39 ||
-		frozen.length !== 2 ||
+		passed.length + unresolved.length + frozen.length !== shardIds.length ||
 		passed.length !== reviewRebaseInfrastructureRecovery.manifest.recoveryProposals.length ||
 		counts?.shardCount !== shardIds.length ||
 		counts?.[SCIENCE_CHALLENGE_REVIEW_REBASE_RECOVERY_STATUS_PASSED_PROPOSAL] !== passed.length ||
 		counts?.[SCIENCE_CHALLENGE_REVIEW_REBASE_RECOVERY_STATUS_REPAIR_REQUIRED] !==
 			unresolved.length ||
 		counts?.[SCIENCE_CHALLENGE_REVIEW_REBASE_RECOVERY_STATUS_FROZEN_NONMUTABLE] !== frozen.length ||
-		invalidShardState ||
-		invalidUnresolvedOrdinal
+		invalidShardState
 	) {
 		throw new Error(
-			'Typed review-rebase infrastructure recovery must be the exact 51-shard/408-row cohort with 10 preserved proposals, 39 unresolved shards, two frozen shards and the authenticated logical ordinals.'
+			'Typed review-rebase infrastructure recovery does not match the current plan, authority, status counts, or authenticated logical ordinals.'
 		);
 	}
 }
@@ -1348,10 +1181,6 @@ function requireExactReviewRebaseInfrastructureRecoveryTerminal(proposals) {
 		first.status !== 'passed' ||
 		replay.status !== 'passed' ||
 		first.pendingShardIds.length !== 0 ||
-		first.finalProposals.length !== 49 ||
-		first.frozenShardIds.length !== 2 ||
-		preserved.length !== 10 ||
-		recovered.length !== 39 ||
 		first.finalProposals.length !== expectedMutableShardIds.length ||
 		proposals.length !== expectedMutableShardIds.length ||
 		proposalByShard.size !== expectedMutableShardIds.length ||
@@ -1359,14 +1188,8 @@ function requireExactReviewRebaseInfrastructureRecoveryTerminal(proposals) {
 		canonicalHash(first.finalProposals.map((proposal) => proposal.shardId).sort()) !==
 			canonicalHash(expectedMutableShardIds) ||
 		canonicalHash([...first.frozenShardIds].sort()) !== canonicalHash(expectedFrozenShardIds) ||
-		canonicalHash([...first.frozenShardIds].sort()) !==
-			canonicalHash([...REVIEW_REBASE_INFRASTRUCTURE_RECOVERY_EXPECTED_FROZEN_SHARD_IDS].sort()) ||
 		canonicalHash(preserved.map((proposal) => proposal.shardId).sort()) !==
 			canonicalHash(expectedPreservedShardIds) ||
-		canonicalHash(preserved.map((proposal) => proposal.shardId).sort()) !==
-			canonicalHash(
-				[...REVIEW_REBASE_INFRASTRUCTURE_RECOVERY_EXPECTED_PRESERVED_SHARD_IDS].sort()
-			) ||
 		canonicalHash(recovered.map((proposal) => proposal.shardId).sort()) !==
 			canonicalHash(expectedRecoveredShardIds) ||
 		first.logicalLedgerSha256 !== replay.logicalLedgerSha256 ||
@@ -1374,7 +1197,7 @@ function requireExactReviewRebaseInfrastructureRecoveryTerminal(proposals) {
 		canonicalHash(first.finalProposals) !== canonicalHash(replay.finalProposals)
 	) {
 		throw new Error(
-			'Typed review-rebase infrastructure recovery is not the replay-stable terminal 49-proposal plus two-frozen cohort.'
+			'Typed review-rebase infrastructure recovery is not replay-stable for the current mutable and frozen shard sets.'
 		);
 	}
 	return first;
@@ -1548,11 +1371,6 @@ function requireFreshReviewRebaseRepairObjective() {
 		verificationRepairExecutionIdentity.executionId === parent.executionId
 	) {
 		throw new Error('Fresh review-rebase repair must use a new objective and execution identity.');
-	}
-	if (verificationRepairRecovery?.status === 'bound') {
-		throw new Error(
-			'Review-rebase repair cannot import pre-model clone-recovery lineage from another objective.'
-		);
 	}
 	if (!outputRootInitiallyExists) {
 		for (const shardId of [
@@ -2316,27 +2134,6 @@ function planDryRunShard(shardId) {
 		};
 	}
 
-	const replayOptions = multipartContinuationReplayOptions({
-		shardId,
-		shardDir,
-		repairSha256: verificationRepairSha256,
-		expectedExecutionIdentity: verificationRepairExecutionIdentity,
-		inputSha256,
-		inputs,
-		rows,
-		priorCandidate,
-		priorValidation,
-		verificationSummary: verificationRepair
-	});
-	const completedContinuation = readScienceChallengeMultipartContinuation(replayOptions);
-	if (completedContinuation.status === 'passed') {
-		return {
-			...base,
-			action: 'reuse-exhausted-multipart-continuation',
-			attempt: SCIENCE_CHALLENGE_VERIFICATION_REPAIR_MAX_ATTEMPTS,
-			candidateSha256: completedContinuation.proposal.candidateSha256
-		};
-	}
 	const salvageApprovalOptions = multipartSalvageSourceApprovalOptions(shardId);
 	const salvageReplayOptions = multipartPlanSalvageReplayOptions({
 		resume: args.resume,
@@ -2381,20 +2178,6 @@ function planDryRunShard(shardId) {
 				modelCallsDuringDryRun: false
 			};
 		}
-	}
-	const continuation = inspectScienceChallengeMultipartContinuation(replayOptions);
-	if (continuation.status === 'passed') {
-		return {
-			...base,
-			action: 'run-explicit-exhausted-multipart-continuation',
-			sourceAttempt: continuation.sourceAttempt,
-			nextPartId: continuation.nextPartId,
-			missingPartIds: continuation.missingPartIds,
-			completedPartIds: continuation.completedPartIds,
-			requiresContinueExhaustedMultipart: true,
-			requiresLaterFullCohortResume: true,
-			writesDuringDryRun: false
-		};
 	}
 	const difficultyAdjustment = recoverExhaustedScienceChallengeDifficultyPlanAdjustment({
 		dryRun: true,
@@ -2459,7 +2242,6 @@ function planDryRunShard(shardId) {
 		issues: [
 			resumePlan.issue,
 			...salvage.issues.map((issue) => `Salvage: ${issue}`),
-			...continuation.issues.map((issue) => `Continuation: ${issue}`),
 			...difficultyAdjustment.issues.map((issue) => `Difficulty adjustment: ${issue}`),
 			...descendantRemap.issues.map((issue) => `Descendant remap: ${issue}`)
 		]
@@ -2673,37 +2455,6 @@ async function generateShard(shardId) {
 					issues: [
 						'Parent-bound review-rebase repair exhausted its fresh immutable four-attempt budget.'
 					]
-				};
-			}
-			const continuation = readScienceChallengeMultipartContinuation(
-				multipartContinuationReplayOptions({
-					shardId,
-					shardDir,
-					repairSha256: verificationRepairSha256,
-					expectedExecutionIdentity: verificationRepairExecutionIdentity,
-					inputSha256,
-					inputs,
-					rows,
-					priorCandidate,
-					priorValidation,
-					verificationSummary: verificationRepair
-				})
-			);
-			if (continuation.status === 'passed') {
-				const proposal = {
-					...continuation.proposal,
-					candidatePath: path.relative(rootDir, continuation.proposal.candidatePath),
-					validationPath: path.relative(rootDir, continuation.proposal.validationPath)
-				};
-				return {
-					shardId,
-					status: 'passed',
-					action: 'verification-repair-multipart-continuation-resumed',
-					attempt: proposal.attempt,
-					count: rows.length,
-					candidateSha256: proposal.candidateSha256,
-					continuationManifestSha256: canonicalHash(continuation.manifest),
-					proposal
 				};
 			}
 			const salvageApprovalOptions = multipartSalvageSourceApprovalOptions(shardId);
@@ -3001,7 +2752,7 @@ async function generateShard(shardId) {
 				path.join(tmpdir(), 'question-constellation-science-authoring-')
 			);
 			try {
-				return await runCodexSdkTurn({
+				const sdkRun = await runCodexSdkTurn({
 					prompt,
 					workDir: modelWorkDir,
 					eventsPath: eventLogPath,
@@ -3014,6 +2765,15 @@ async function generateShard(shardId) {
 					sandboxMode: 'read-only',
 					environmentMode: 'minimal'
 				});
+				const currentRun = {
+					...withoutFinalResponse(sdkRun),
+					transport: CODEX_SDK_TRANSPORT
+				};
+				writeFileSync(
+					path.join(attemptDir, 'run-summary.json'),
+					`${stableStringify(currentRun)}\n`
+				);
+				return { ...currentRun, finalResponse: sdkRun.finalResponse };
 			} finally {
 				rmSync(modelWorkDir, { recursive: true, force: true });
 			}
@@ -3244,18 +3004,16 @@ function validationFromAttemptOutcome(outcome) {
 		promptVersion: outcome.promptVersion,
 		promptSha256: outcome.promptSha256,
 		runSummarySha256: outcome.runSummarySha256,
-		transport: outcome.run?.transport ?? args.transport,
+		transport: outcome.run?.transport ?? null,
 		transportVersion: outcome.run?.transportVersion ?? null,
-		responseMode: outcome.run?.responseMode,
-		providerSchemaApplied: outcome.run?.providerSchemaApplied,
-		provider:
-			outcome.run?.provider ??
-			(args.transport === SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT ? 'chatgpt' : null),
-		model: outcome.run?.model ?? args.model,
+		responseMode: outcome.run?.responseMode ?? null,
+		providerSchemaApplied: outcome.run?.providerSchemaApplied ?? null,
+		provider: outcome.run?.provider ?? null,
+		model: outcome.run?.model ?? null,
 		modelVersion: outcome.run?.modelVersion ?? null,
 		modelVersions: outcome.run?.modelVersions ?? null,
 		directPartSize: outcome.run?.partSize ?? null,
-		thinkingLevel: outcome.run?.thinkingLevel ?? args.thinkingLevel,
+		thinkingLevel: outcome.run?.thinkingLevel ?? null,
 		transportError: outcome.transportIssue
 	};
 }
@@ -3482,71 +3240,6 @@ function multipartPlanSalvageReplayOptions({
 	};
 }
 
-function multipartContinuationReplayOptions({
-	shardId,
-	shardDir,
-	repairSha256,
-	expectedExecutionIdentity,
-	inputSha256,
-	inputs,
-	rows,
-	priorCandidate,
-	priorValidation,
-	verificationSummary,
-	authMode,
-	validateCollectionCandidate = (candidate) =>
-		validateAvailableCandidateCollection(new Map([[shardId, candidate]]))
-}) {
-	const continuationPlanPath = path.join(
-		scienceChallengeMultipartContinuationDirectory({ shardDir, repairSha256 }),
-		'plan.json'
-	);
-	const replayAuthMode =
-		authMode ??
-		(existsSync(continuationPlanPath)
-			? JSON.parse(readFileSync(continuationPlanPath, 'utf8')).invocationPolicy?.authMode
-			: directAuthMode);
-	return {
-		shardId,
-		shardDir,
-		outputRoot,
-		workspaceRoot: rootDir,
-		repairSha256,
-		expectedPlanSha256: canonicalHash(plan),
-		expectedExecutionIdentity,
-		inputSha256,
-		inputs,
-		rows,
-		priorCandidate,
-		priorValidation,
-		reviews: verificationSummary.reviews,
-		expectedReviewIds: plan.rows.map((row) => row.id),
-		authMode: replayAuthMode,
-		validateBatchCandidate,
-		validateCollectionCandidate,
-		reconstructSourceEvidence: ({ attemptDirectory, summary }) => ({
-			expectedPromptBytes: Buffer.from(
-				`${reconstructScienceChallengeAuthoringAttemptPrompt({
-					shardDir,
-					attemptDirectory,
-					rows,
-					inputs,
-					existingChallengeDefinitions
-				})}\n`
-			),
-			expectedPartPrompts: reconstructScienceChallengeMultipartAttemptParts({
-				shardDir,
-				attemptDirectory,
-				rows,
-				inputs,
-				partSize: summary.partSize,
-				existingChallengeDefinitions,
-				allPlanIds: plan.rows.map((row) => row.id)
-			}).map((part) => part.prompt)
-		})
-	};
-}
-
 function descendantRemapReplayOptions({
 	resume,
 	shardId,
@@ -3640,86 +3333,6 @@ function readFirstReviewShardEvidence(shardId) {
 	};
 }
 
-async function runExplicitMultipartContinuation(shardId) {
-	const rows = plan.rows.filter((row) => row.shard === shardId);
-	const inputs = rows.map((row, index) => buildAuthoringInput(row, index));
-	const shardDir = path.join(outputRoot, 'shards', shardId);
-	requireExclusiveMultipartRecoveryLineage(shardId, shardDir);
-	const priorCandidate = verificationRepairPriorCandidateByShard.get(shardId);
-	const repairDir = path.join(
-		shardDir,
-		`verification-repair-${verificationRepairSha256.slice(0, 12)}`
-	);
-	const priorValidationPath = path.join(repairDir, 'prior-validation.json');
-	if (!existsSync(priorValidationPath)) {
-		throw new Error(`Multipart continuation requires ${priorValidationPath}.`);
-	}
-	const priorValidation = JSON.parse(readFileSync(priorValidationPath, 'utf8'));
-	const inputSha256 = canonicalHash({
-		promptVersion: SCIENCE_CHALLENGE_PROMPT_VERSION,
-		inputs,
-		priorCandidateSha256: canonicalHash(priorCandidate),
-		verificationSummarySha256: verificationRepairSha256,
-		...(verificationRepairAuthoritySha256 ? { verificationRepairAuthoritySha256 } : {})
-	});
-	const replayOptions = multipartContinuationReplayOptions({
-		shardId,
-		shardDir,
-		repairSha256: verificationRepairSha256,
-		expectedExecutionIdentity: verificationRepairExecutionIdentity,
-		inputSha256,
-		inputs,
-		rows,
-		priorCandidate,
-		priorValidation,
-		verificationSummary: verificationRepair
-	});
-	const eligibility = inspectScienceChallengeMultipartContinuation(replayOptions);
-	if (eligibility.status !== 'passed') return eligibility;
-	if (
-		!args.dryRun &&
-		eligibility.action === 'eligible' &&
-		replayOptions.authMode !== directAuthMode
-	) {
-		return {
-			status: 'failed',
-			issues: [
-				'Multipart continuation active authentication mode differs from its immutable invocation plan.'
-			]
-		};
-	}
-	const result = await runScienceChallengeMultipartContinuation({
-		...replayOptions,
-		resume: true,
-		dryRun: args.dryRun,
-		timeoutMs: args.timeoutMs,
-		runPartImpl: runDirectScienceChallengePromptJsonTurn
-	});
-	if (result.status !== 'passed') return result;
-	if (args.dryRun) {
-		return {
-			...result,
-			plannedAction:
-				result.action === 'dry-run-complete'
-					? 'finalize-or-reuse-complete-attempt-4-continuation'
-					: 'run-only-untouched-attempt-4-suffix-parts',
-			requiresLaterFullCohortResume: true,
-			laterFullCohortResume:
-				'Rerun the complete rejected verification-repair cohort with --resume after continuation passes.',
-			writesDuringDryRun: false,
-			modelCallsDuringDryRun: false
-		};
-	}
-	return {
-		...result,
-		proposal: {
-			...result.proposal,
-			candidatePath: path.relative(rootDir, result.proposal.candidatePath),
-			validationPath: path.relative(rootDir, result.proposal.validationPath)
-		}
-	};
-}
-
 function listMultipartPlanSalvageDirectories(shardDir) {
 	if (!existsSync(shardDir)) return [];
 	return readdirSync(shardDir, { withFileTypes: true })
@@ -3727,18 +3340,6 @@ function listMultipartPlanSalvageDirectories(shardDir) {
 			(entry) =>
 				entry.isDirectory() &&
 				/^verification-repair-[a-f0-9]{12}-multipart-plan-salvage$/.test(entry.name)
-		)
-		.map((entry) => path.join(shardDir, entry.name))
-		.sort();
-}
-
-function listMultipartContinuationDirectories(shardDir) {
-	if (!existsSync(shardDir)) return [];
-	return readdirSync(shardDir, { withFileTypes: true })
-		.filter(
-			(entry) =>
-				entry.isDirectory() &&
-				/^verification-repair-[a-f0-9]{12}-attempt-04-multipart-continuation$/.test(entry.name)
 		)
 		.map((entry) => path.join(shardDir, entry.name))
 		.sort();
@@ -3758,19 +3359,16 @@ function listDescendantRemapDirectories(shardDir) {
 
 function requireExclusiveMultipartRecoveryLineage(shardId, shardDir) {
 	const salvageDirectories = listMultipartPlanSalvageDirectories(shardDir);
-	const continuationDirectories = listMultipartContinuationDirectories(shardDir);
 	const descendantRemapDirectories = listDescendantRemapDirectories(shardDir);
-	requireExclusiveScienceChallengeMultipartRecoveryLineage({
-		shardId,
-		salvageDirectories,
-		continuationDirectories
-	});
+	if (salvageDirectories.length > 1) {
+		throw new Error(`${shardId} contains ambiguous multipart salvage lineage.`);
+	}
 	if (descendantRemapDirectories.length > 1) {
 		throw new Error(`${shardId} contains ambiguous descendant-remap recovery lineage.`);
 	}
 	if (
 		descendantRemapDirectories.length > 0 &&
-		(salvageDirectories.length > 0 || continuationDirectories.length > 0)
+		salvageDirectories.length > 0
 	) {
 		throw new Error(
 			`${shardId} contains descendant-remap and multipart recovery lineage; recovery is ambiguous.`
@@ -4203,18 +3801,10 @@ function authoringValidationMatchesInvocation(validation) {
 }
 
 async function loadExistingCatalog() {
-	const server = await createServer({
-		root: rootDir,
-		server: { middlewareMode: true },
-		appType: 'custom',
-		logLevel: 'silent'
+	return loadChallengeCatalogSource({
+		rootDir,
+		sourcePath: args.catalogSource
 	});
-	try {
-		const module = await server.ssrLoadModule('/src/lib/challenges/catalog.ts');
-		return module.challengeCatalog;
-	} finally {
-		await server.close();
-	}
 }
 
 function selectShardIds(rows, requested) {
@@ -4665,12 +4255,7 @@ function readAndValidateVerificationRepair(
 			const shardInputs = shardRows.map((row, index) => buildAuthoringInput(row, index));
 			const shardDir = path.join(outputRoot, 'shards', shardId);
 			const salvageDirectories = listMultipartPlanSalvageDirectories(shardDir);
-			const continuationDirectories = listMultipartContinuationDirectories(shardDir);
-			requireExclusiveScienceChallengeMultipartRecoveryLineage({
-				shardId,
-				salvageDirectories,
-				continuationDirectories
-			});
+			requireExclusiveMultipartRecoveryLineage(shardId, shardDir);
 			const validateOrdinaryAuthoringEvidence = () =>
 				findBoundToolFreeScienceChallengeAuthoringAttempt({
 					shardDir,
@@ -4700,129 +4285,6 @@ function readAndValidateVerificationRepair(
 			let authoringEvidence;
 			if (currentIsExactRebaseSeed) {
 				authoringEvidence = { status: 'passed', issues: [] };
-			} else if (
-				currentValidation.authoringDisposition === 'exhausted-multipart-part-continuation' ||
-				continuationDirectories.length > 0
-			) {
-				const published =
-					currentValidation.authoringDisposition === 'exhausted-multipart-part-continuation';
-				const continuationRepairSha256 = published
-					? currentValidation.verificationRepairSha256
-					: canonicalHash(summary);
-				const repairRunId =
-					typeof continuationRepairSha256 === 'string' &&
-					/^[a-f0-9]{64}$/.test(continuationRepairSha256)
-						? continuationRepairSha256.slice(0, 12)
-						: null;
-				const continuationRepairRoot = repairRunId
-					? path.join(shardDir, `verification-repair-${repairRunId}`)
-					: null;
-				const verificationSummaryPath = continuationRepairRoot
-					? path.join(continuationRepairRoot, 'verification-summary.json')
-					: null;
-				const priorCandidatePath = continuationRepairRoot
-					? path.join(continuationRepairRoot, 'prior-candidate.json')
-					: null;
-				const priorValidationPath = continuationRepairRoot
-					? path.join(continuationRepairRoot, 'prior-validation.json')
-					: null;
-				const expectedContinuationDir = repairRunId
-					? scienceChallengeMultipartContinuationDirectory({
-							shardDir,
-							repairSha256: continuationRepairSha256
-						})
-					: null;
-				const continuationPlanPath = expectedContinuationDir
-					? path.join(expectedContinuationDir, 'plan.json')
-					: null;
-				if (
-					continuationDirectories.length !== 1 ||
-					!expectedContinuationDir ||
-					path.resolve(continuationDirectories[0]) !== path.resolve(expectedContinuationDir) ||
-					!verificationSummaryPath ||
-					!priorCandidatePath ||
-					!priorValidationPath ||
-					!continuationPlanPath ||
-					[
-						verificationSummaryPath,
-						priorCandidatePath,
-						priorValidationPath,
-						continuationPlanPath
-					].some((filePath) => !existsSync(filePath))
-				) {
-					authoringEvidence = {
-						status: 'failed',
-						issues: ['Exhausted multipart continuation directory or repair snapshots are missing.']
-					};
-				} else {
-					const continuationVerificationSummary = JSON.parse(
-						readFileSync(verificationSummaryPath, 'utf8')
-					);
-					const continuationPriorCandidate = JSON.parse(readFileSync(priorCandidatePath, 'utf8'));
-					const continuationPriorValidation = JSON.parse(readFileSync(priorValidationPath, 'utf8'));
-					const continuationPlan = JSON.parse(readFileSync(continuationPlanPath, 'utf8'));
-					const invocationPolicy = continuationPlan.invocationPolicy;
-					const continuationExecutionIdentity = executionIdentityForVerificationRepair(
-						continuationVerificationSummary,
-						{
-							verificationSha256: continuationRepairSha256,
-							model: invocationPolicy?.model,
-							transport: invocationPolicy?.transport,
-							responseMode: invocationPolicy?.responseMode,
-							thinkingLevel: invocationPolicy?.thinkingLevel,
-							directPartSize: invocationPolicy?.directPartSize
-						}
-					);
-					const continuationInputSha256 = published
-						? currentValidation.inputSha256
-						: canonicalHash({
-								promptVersion: SCIENCE_CHALLENGE_PROMPT_VERSION,
-								inputs: shardInputs,
-								priorCandidateSha256: canonicalHash(continuationPriorCandidate),
-								verificationSummarySha256: continuationRepairSha256
-							});
-					const replayOptions = multipartContinuationReplayOptions({
-						shardId,
-						shardDir,
-						repairSha256: continuationRepairSha256,
-						expectedExecutionIdentity: continuationExecutionIdentity,
-						inputSha256: continuationInputSha256,
-						inputs: shardInputs,
-						rows: shardRows,
-						priorCandidate: continuationPriorCandidate,
-						priorValidation: continuationPriorValidation,
-						verificationSummary: continuationVerificationSummary,
-						authMode: invocationPolicy?.authMode,
-						validateCollectionCandidate: (candidate) =>
-							validateAvailableCandidateCollection(new Map([[shardId, candidate]]), {
-								verificationSummary: summary,
-								priorCandidateByShard
-							})
-					});
-					const staged = published
-						? {
-								status: 'passed',
-								candidate: currentCandidate,
-								validation: currentValidation
-							}
-						: readScienceChallengeMultipartContinuation(replayOptions);
-					if (staged.status !== 'passed') {
-						const recoverable = published
-							? staged
-							: inspectScienceChallengeMultipartContinuation(replayOptions);
-						authoringEvidence =
-							recoverable.status === 'passed' ? validateOrdinaryAuthoringEvidence() : staged;
-					} else {
-						authoringEvidence = validateScienceChallengeMultipartContinuationAcceptance({
-							acceptedCandidate: staged.candidate,
-							acceptedValidation: staged.validation,
-							replayOptions
-						});
-						if (authoringEvidence.status === 'passed' && !published) {
-							authoringEvidence = validateOrdinaryAuthoringEvidence();
-						}
-					}
-				}
 			} else if (
 				currentValidation.authoringDisposition === 'deterministic-multipart-plan-drift-salvage' ||
 				salvageDirectories.length > 0
@@ -5175,6 +4637,7 @@ function parseArgs(argv) {
 		'plan',
 		'source',
 		'evidence',
+		'catalog-source',
 		'output-root',
 		'concurrency',
 		'max-attempts',
@@ -5206,11 +4669,6 @@ function parseArgs(argv) {
 				throw new Error('Duplicate --preflight-only option.');
 			}
 			values.set('preflight-only', true);
-		} else if (arg === '--continue-exhausted-multipart') {
-			if (values.has('continue-exhausted-multipart')) {
-				throw new Error('Duplicate --continue-exhausted-multipart option.');
-			}
-			values.set('continue-exhausted-multipart', true);
 		} else if (arg.startsWith('--shard=')) {
 			const shardId = arg.slice('--shard='.length);
 			if (!shardId) throw new Error('--shard requires a non-empty value.');
@@ -5223,11 +4681,7 @@ function parseArgs(argv) {
 			multipartSalvageSourceApprovals.push(approvalPath);
 		} else if (arg.startsWith('--') && arg.includes('=')) {
 			const [key, ...rest] = arg.slice(2).split('=');
-			if (
-				['help', 'resume', 'dry-run', 'preflight-only', 'continue-exhausted-multipart'].includes(
-					key
-				)
-			) {
+			if (['help', 'resume', 'dry-run', 'preflight-only'].includes(key)) {
 				throw new Error(`--${key} is a boolean flag and does not accept a value.`);
 			}
 			if (!valueOptions.has(key)) throw new Error(`Unknown option --${key}.`);
@@ -5293,11 +4747,10 @@ function parseArgs(argv) {
 		multipartSalvageSourceApprovals.length > 0 &&
 		(!values.has('repair-verification') ||
 			!values.get('resume') ||
-			values.get('continue-exhausted-multipart') ||
 			values.get('preflight-only'))
 	) {
 		throw new Error(
-			'--multipart-salvage-source-approval requires --repair-verification and --resume, and cannot be combined with preflight or exhausted-multipart continuation.'
+			'--multipart-salvage-source-approval requires --repair-verification and --resume, and cannot be combined with preflight.'
 		);
 	}
 	const directPartSize = values.has('direct-part-size')
@@ -5339,20 +4792,6 @@ function parseArgs(argv) {
 		);
 	}
 	if (
-		values.get('continue-exhausted-multipart') &&
-		(transport !== SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT ||
-			directResponseMode !== SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON ||
-			thinkingLevel !== 'high' ||
-			directPartSize === null ||
-			!values.has('repair-verification') ||
-			!values.get('resume') ||
-			shards.length !== 1)
-	) {
-		throw new Error(
-			'--continue-exhausted-multipart requires --transport=llm-direct, --direct-response-mode=prompt-json, --thinking-level=high, --direct-part-size, --repair-verification, --resume and exactly one --shard.'
-		);
-	}
-	if (
 		reviewRebaseRequested &&
 		(transport !== SCIENCE_CHALLENGE_DIRECT_JSON_TRANSPORT ||
 			directResponseMode !== SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON ||
@@ -5360,7 +4799,6 @@ function parseArgs(argv) {
 			directPartSize !== 2 ||
 			maxAttempts !== SCIENCE_CHALLENGE_VERIFICATION_REPAIR_MAX_ATTEMPTS ||
 			values.get('preflight-only') ||
-			values.get('continue-exhausted-multipart') ||
 			multipartSalvageSourceApprovals.length > 0)
 	) {
 		throw new Error(
@@ -5371,7 +4809,6 @@ function parseArgs(argv) {
 		reviewRebaseInfrastructureRecoveryRequested &&
 		(!values.get('resume') ||
 			values.get('preflight-only') ||
-			values.get('continue-exhausted-multipart') ||
 			multipartSalvageSourceApprovals.length > 0 ||
 			shards.length > 0)
 	) {
@@ -5384,17 +4821,19 @@ function parseArgs(argv) {
 		resume: Boolean(values.get('resume')),
 		dryRun: Boolean(values.get('dry-run')),
 		preflightOnly: Boolean(values.get('preflight-only')),
-		continueExhaustedMultipart: Boolean(values.get('continue-exhausted-multipart')),
 		multipartSalvageSourceApprovals,
 		preflightOutput: values.has('preflight-output') ? String(values.get('preflight-output')) : null,
 		shards,
-		plan: String(values.get('plan') ?? 'tmp/science-challenges/science-500-v1/plan.json'),
+		plan: String(values.get('plan') ?? 'tmp/science-challenges/candidate-release/plan.json'),
 		source: String(values.get('source') ?? 'tmp/science-challenge-sources-v1.json'),
 		evidence: String(
-			values.get('evidence') ?? 'tmp/science-challenges/science-500-v1/curriculum-evidence.json'
+			values.get('evidence') ?? 'tmp/science-challenges/candidate-release/curriculum-evidence.json'
 		),
+		catalogSource: values.has('catalog-source')
+			? String(values.get('catalog-source'))
+			: (process.env.CHALLENGE_CATALOG_SOURCE ?? null),
 		outputRoot: String(
-			values.get('output-root') ?? 'tmp/science-challenges/science-500-v1/generation'
+			values.get('output-root') ?? 'tmp/science-challenges/candidate-release/generation'
 		),
 		repairVerification: values.has('repair-verification')
 			? String(values.get('repair-verification'))
@@ -5436,6 +4875,7 @@ function usage() {
 		'--plan=<plan.json>',
 		'--source=<snapshot.json>',
 		'--evidence=<curriculum-evidence.json>',
+		'--catalog-source=<ignored JSON>  Optional active D1 catalogue export; otherwise read D1',
 		'--output-root=<directory>  Typed recovery uses a distinct new/resumable publication sibling',
 		'--shard=<id>              Repeat to select shards; default all',
 		'--concurrency=<1-6>       Default 2',
@@ -5452,8 +4892,6 @@ function usage() {
 		'--multipart-salvage-source-approval=<json>  Repeatable exact shard-bound terminal-source approval; requires repair --resume',
 		'--preflight-only           Test direct auth/network/model without reading authoring evidence',
 		'--preflight-output=<json>  Immutably retain the passed content-free preflight',
-		'--continue-exhausted-multipart  Continue only untouched attempt-4 suffix parts; requires one shard, --resume and four-attempt exhaustion',
-		'                                A passed continuation still requires a later full rejected-cohort --resume',
 		'--dry-run                  Validate inputs, recovery binding, ledger parity and exact resume action without writes or model calls'
 	].join('\n');
 }

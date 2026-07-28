@@ -16,9 +16,6 @@ import {
 	validateScienceChallengeDifficultyPlanAdjustmentProposals
 } from './science-challenge-difficulty-plan-adjustment-review.mjs';
 import {
-	SCIENCE_CHALLENGE_ASSIGNMENTS_PER_VERIFIER,
-	SCIENCE_CHALLENGE_VERIFICATION_ASSIGNMENT_COUNT,
-	SCIENCE_CHALLENGE_VERIFIER_COUNT,
 	validateScienceChallengeVerifierDispatchLedger
 } from './science-challenge-verifier-dispatch.mjs';
 
@@ -260,11 +257,9 @@ export function validateScienceChallengeVerifierPacketInputs(assignmentIndex, di
 	}
 	if (
 		!Array.isArray(assignmentIndex?.assignments) ||
-		assignmentIndex.assignments.length !== SCIENCE_CHALLENGE_VERIFICATION_ASSIGNMENT_COUNT
+		assignmentIndex.assignments.length === 0
 	) {
-		issues.push(
-			`assignment index must contain exactly ${SCIENCE_CHALLENGE_VERIFICATION_ASSIGNMENT_COUNT} assignments.`
-		);
+		issues.push('assignment index must contain at least one assignment.');
 		return failed(issues);
 	}
 	const rebaseValidation = validateScienceChallengeReviewRebaseIndexBindings(assignmentIndex);
@@ -298,8 +293,12 @@ export function validateScienceChallengeVerifierPacketInputs(assignmentIndex, di
 		if (!SHA256_PATTERN.test(String(assignment?.sha256 ?? ''))) {
 			issues.push(`${expectedAssignmentId} has an invalid assignment SHA-256.`);
 		}
-		if (!Array.isArray(assignment?.ids) || assignment.ids.length !== 8) {
-			issues.push(`${expectedAssignmentId} must bind exactly 8 challenge ids.`);
+		if (
+			!Array.isArray(assignment?.ids) ||
+			assignment.ids.length < 1 ||
+			assignment.ids.length > 20
+		) {
+			issues.push(`${expectedAssignmentId} must bind 1-20 challenge ids.`);
 			continue;
 		}
 		for (const challengeId of assignment.ids) {
@@ -384,6 +383,9 @@ export function validateScienceChallengeVerifierPacketInputs(assignmentIndex, di
 			);
 		}
 	}
+	if (assignmentIndex.candidateCount !== challengeIds.size) {
+		issues.push('assignment index candidateCount differs from its exact challenge-id union.');
+	}
 	if (
 		remapProposalCount > 0 !==
 		SHA256_PATTERN.test(String(assignmentIndex?.curriculumRemapVerifierInputSha256 ?? ''))
@@ -461,19 +463,13 @@ export function buildScienceChallengeVerifierPacketBundle({
 			: {};
 	const artifacts = [];
 	const manifestPackets = [];
+	const dispatchGroups = contiguousDispatchGroups(dispatchLedger.dispatches);
 
-	for (
-		let verifierIndex = 0;
-		verifierIndex < SCIENCE_CHALLENGE_VERIFIER_COUNT;
-		verifierIndex += 1
-	) {
+	for (const [verifierIndex, dispatchGroup] of dispatchGroups.entries()) {
 		const verifierOrdinal = verifierIndex + 1;
 		const verifierDirectory = `verifier-${String(verifierOrdinal).padStart(2, '0')}`;
-		const start = verifierIndex * SCIENCE_CHALLENGE_ASSIGNMENTS_PER_VERIFIER;
-		const dispatches = dispatchLedger.dispatches.slice(
-			start,
-			start + SCIENCE_CHALLENGE_ASSIGNMENTS_PER_VERIFIER
-		);
+		const start = dispatchGroup.start;
+		const dispatches = dispatchGroup.dispatches;
 		const taskName = dispatches[0].taskName;
 		const waves = dispatches.map((dispatch, waveIndex) => {
 			const waveNumber = waveIndex + 1;
@@ -510,7 +506,9 @@ export function buildScienceChallengeVerifierPacketBundle({
 					...reviewRebaseInfrastructureRecoveryBindings,
 					reviewRebaseCollectionRemediations,
 					resultPath,
-					waveNumber
+					waveNumber,
+					waveCount: dispatches.length,
+					candidateCount: assignmentIndex.candidateCount
 				})
 			};
 			artifacts.push({ relativePath: payloadRelativePath, value: payload });
@@ -628,11 +626,13 @@ function followupMessage({
 	reviewRebaseInfrastructureRecoveryManifestSha256,
 	reviewRebaseInfrastructureRecoveryId,
 	resultPath,
-	waveNumber
+	waveNumber,
+	waveCount,
+	candidateCount
 }) {
 	const waveLabel = String(waveNumber).padStart(2, '0');
 	const lines = [
-		`Verifier wave ${waveLabel} of ${SCIENCE_CHALLENGE_ASSIGNMENTS_PER_VERIFIER}. Review exactly one assignment in this turn and no later assignment.`,
+		`Verifier wave ${waveLabel} of ${waveCount}. Review exactly one assignment in this turn and no later assignment.`,
 		'',
 		'Frozen provenance:',
 		`- canonical verifier task name: ${taskName}`,
@@ -668,9 +668,9 @@ function followupMessage({
 			: []),
 		`- required result path: ${resultPath}`,
 		'',
-		`Follow ${REVIEW_RUBRIC_PATH}. Before reviewing, verify that the parsed assignment JSON has the expected canonical SHA-256. Review all eight assigned candidates independently, without authoring or repairing them. Write exactly one result JSON to the required result path using science-challenge-independent-verification/v1.`,
+		`Follow ${REVIEW_RUBRIC_PATH}. Before reviewing, verify that the parsed assignment JSON has the expected canonical SHA-256. Review every assigned candidate independently, without authoring or repairing them. Write exactly one result JSON to the required result path using science-challenge-independent-verification/v1.`,
 		`Set verifier.context to "empty", model to "gpt-5.6-sol", reasoningEffort to "max", and provenance to orchestrator "codex-collaboration", taskName "${taskName}", forkTurns "none", dispatchLedgerSha256 "${dispatchLedgerSha256}". Copy assignmentEvidenceSha256 from the assignment evidenceSha256 exactly.`,
-		'The ordinary 408-row content review remains mandatory and independent of any exceptional-recovery decision. An exceptional-recovery decision does not accept the rest of a challenge.'
+		`The complete ${candidateCount}-candidate plan-bound content review remains mandatory and independent of any exceptional-recovery decision. An exceptional-recovery decision does not accept the rest of a challenge.`
 	];
 	if (reviewRebaseManifestSha256) {
 		lines.push(
@@ -737,6 +737,19 @@ function followupMessage({
 		'After writing the result, report this assignment complete and wait for the next wave. Do not open another assignment yet.'
 	);
 	return lines.join('\n');
+}
+
+function contiguousDispatchGroups(dispatches) {
+	const groups = [];
+	for (const [index, dispatch] of dispatches.entries()) {
+		const current = groups.at(-1);
+		if (!current || current.taskName !== dispatch.taskName) {
+			groups.push({ taskName: dispatch.taskName, start: index, dispatches: [dispatch] });
+		} else {
+			current.dispatches.push(dispatch);
+		}
+	}
+	return groups;
 }
 
 function safeRelativePath(value) {

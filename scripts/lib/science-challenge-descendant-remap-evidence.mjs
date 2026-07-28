@@ -17,8 +17,6 @@ import {
 import { SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON } from './science-challenge-authoring-transport.mjs';
 import {
 	SCIENCE_CHALLENGE_DESCENDANT_REMAP_DISPOSITION,
-	SCIENCE_CHALLENGE_DESCENDANT_REMAP_SCHEMA,
-	SCIENCE_CHALLENGE_DESCENDANT_REMAP_VALIDATION_SCHEMA,
 	buildScienceChallengeDescendantRemap
 } from './science-challenge-descendant-remap.mjs';
 import {
@@ -39,11 +37,8 @@ import {
 	writeImmutableRepairJson
 } from './science-challenge-verification-repair-transaction.mjs';
 import {
-	discoverVerificationRepairRecoveryBinding,
-	discoverVerificationRepairRecoveryManifest,
 	inspectVerificationRepairExecutionAttempts,
 	requireMatchingVerificationRepairAttemptLedgers,
-	requireVerificationRepairRecoveryArchivePair,
 	scienceChallengeVerificationRepairObjectiveIdentity,
 	verificationRepairExecutionLedgerRoot
 } from './science-challenge-verification-repair-lineage.mjs';
@@ -259,17 +254,14 @@ function inspectPreconditions(options) {
 		}
 		const competingRecoveryDirectories = readdirSync(shardDir, { withFileTypes: true })
 			.filter(
-				(entry) =>
-					entry.isDirectory() &&
-					(/verification-repair-[a-f0-9]{12}-multipart-plan-salvage$/u.test(entry.name) ||
-						/verification-repair-[a-f0-9]{12}-attempt-04-multipart-continuation$/u.test(entry.name))
+					(entry) =>
+						entry.isDirectory() &&
+						/verification-repair-[a-f0-9]{12}-multipart-plan-salvage$/u.test(entry.name)
 			)
 			.map((entry) => entry.name);
-		if (competingRecoveryDirectories.length > 0) {
-			return failed(
-				'Descendant remap cannot coexist with multipart salvage or continuation lineage.'
-			);
-		}
+			if (competingRecoveryDirectories.length > 0) {
+				return failed('Descendant remap cannot coexist with multipart salvage lineage.');
+			}
 		const localLedger = inspectVerificationRepairAttempts({
 			shardDir,
 			repairSha256: options.repairSha256,
@@ -310,26 +302,6 @@ function inspectPreconditions(options) {
 		) {
 			return failed('Descendant-remap global execution identity is missing or stale.');
 		}
-		const recoveryManifestPath = discoverVerificationRepairRecoveryManifest({
-			ledgerRoot: executionLedgerRoot
-		});
-		const recoveryBinding = discoverVerificationRepairRecoveryBinding({
-			ledgerRoot: executionLedgerRoot,
-			generationRoot: outputRoot
-		});
-		const recoveryManifest = recoveryManifestPath ? readJson(recoveryManifestPath) : null;
-		requireVerificationRepairRecoveryArchivePair({
-			bindingRecord: recoveryBinding,
-			manifest: recoveryManifest,
-			manifestPath: recoveryManifestPath,
-			recoveryRequired: true
-		});
-		if (
-			recoveryBinding.identity.executionId !== options.expectedExecutionIdentity.executionId ||
-			recoveryManifest.executionId !== options.expectedExecutionIdentity.executionId
-		) {
-			return failed('Descendant remap belongs to another recovered execution identity.');
-		}
 		const cohortState = readVerificationRepairCohortState({
 			outputRoot,
 			repairSha256: options.repairSha256
@@ -353,14 +325,11 @@ function inspectPreconditions(options) {
 			localLedger,
 			globalLedger,
 			executionLedgerRoot,
-			identityPath,
-			cohortState,
-			invalidatedAttempts,
-			recoveryBinding,
-			recoveryManifest,
-			recoveryManifestPath,
-			repairEvidence
-		};
+				identityPath,
+				cohortState,
+				invalidatedAttempts,
+				repairEvidence
+			};
 	} catch (error) {
 		return failed(errorMessage(error));
 	}
@@ -401,9 +370,7 @@ function prepareEvidence(options, precondition) {
 		executionIdentitySha256: canonicalHash(options.expectedExecutionIdentity),
 		repairEvidence: precondition.repairEvidence.binding,
 		globalObjectiveSha256: canonicalHash(readJson(precondition.identityPath)),
-		globalObjectiveFileSha256: sha256(readFileSync(precondition.identityPath)),
-		recoveryManifestSha256: canonicalHash(precondition.recoveryManifest),
-		recoveryBindingSha256: canonicalHash(precondition.recoveryBinding.binding)
+		globalObjectiveFileSha256: sha256(readFileSync(precondition.identityPath))
 	};
 	const provenance = {
 		...evidenceCore,

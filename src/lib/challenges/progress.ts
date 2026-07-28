@@ -1,9 +1,4 @@
-export const LEGACY_CHALLENGE_PROGRESS_STORAGE_KEY = 'question-constellation.challenge-progress.v1';
-export const CHALLENGE_PROGRESS_V1_STORAGE_KEY = LEGACY_CHALLENGE_PROGRESS_STORAGE_KEY;
-export const CHALLENGE_PROGRESS_GUEST_STORAGE_KEY =
-	'question-constellation.challenge-progress.v2:guest';
-/** Backwards-compatible name used by guest catalogue storage listeners. */
-export const CHALLENGE_PROGRESS_STORAGE_KEY = CHALLENGE_PROGRESS_GUEST_STORAGE_KEY;
+export const CHALLENGE_PROGRESS_STORAGE_KEY = 'question-constellation.challenge-progress.v2:guest';
 
 const challengeProgressUserStoragePrefix = 'question-constellation.challenge-progress.v2:user:';
 const stages = ['showdown', 'diagnose', 'repair', 'transfer', 'complete'] as const;
@@ -30,19 +25,7 @@ export type ChallengeProgress = {
 	challenges: Record<string, ChallengeProgressEntry>;
 };
 
-type LegacyChallengeProgressEntry = {
-	startedAt: string;
-	completedAt: string | null;
-	plays: number;
-	lastStage: ChallengeProgressStage;
-};
-
-type LegacyChallengeProgress = {
-	version: 1;
-	challenges: Record<string, LegacyChallengeProgressEntry>;
-};
-
-type ReadableStorage = Pick<Storage, 'getItem'> & Partial<Pick<Storage, 'setItem' | 'removeItem'>>;
+type ReadableStorage = Pick<Storage, 'getItem'>;
 type ChallengeProgressStorage = Pick<Storage, 'getItem' | 'setItem'>;
 
 export function emptyChallengeProgress(): ChallengeProgress {
@@ -56,7 +39,7 @@ export function challengeProgressStorageKey(userId?: string | null): string {
 	const normalizedUserId = userId?.trim();
 	return normalizedUserId
 		? `${challengeProgressUserStoragePrefix}${encodeURIComponent(normalizedUserId)}`
-		: CHALLENGE_PROGRESS_GUEST_STORAGE_KEY;
+		: CHALLENGE_PROGRESS_STORAGE_KEY;
 }
 
 function isStage(value: unknown): value is ChallengeProgressStage {
@@ -142,57 +125,17 @@ function parseVersionTwo(parsed: Record<string, unknown>): ChallengeProgress | n
 			continue;
 		}
 
-		const hasCompleted = candidate.completedAt !== null;
-		const needsLegacyCompletionScore =
-			hasCompleted && parsedBestScore === null && parsedLastScore === null;
-		const bestScore = needsLegacyCompletionScore ? completionBaseScore : parsedBestScore;
-		const lastScore = needsLegacyCompletionScore ? completionBaseScore : parsedLastScore;
+		if (candidate.completedAt !== null && parsedBestScore === null) continue;
 		challenges[id] = {
 			startedAt: candidate.startedAt,
 			updatedAt: candidate.updatedAt,
 			completedAt: candidate.completedAt ?? null,
 			plays: parsedPlays,
 			lastStage: candidate.lastStage,
-			bestScore,
-			bestTimeMs: bestScore === null ? null : parsedBestTimeMs,
-			lastScore,
-			lastTimeMs: lastScore === null ? null : parsedLastTimeMs
-		};
-	}
-	return { version: 2, challenges };
-}
-
-function migrateVersionOne(parsed: Record<string, unknown>): ChallengeProgress | null {
-	if (parsed.version !== 1 || !parsed.challenges || typeof parsed.challenges !== 'object') {
-		return null;
-	}
-
-	const legacy = parsed as unknown as Partial<LegacyChallengeProgress>;
-	const challenges: Record<string, ChallengeProgressEntry> = {};
-	for (const [id, value] of Object.entries(legacy.challenges ?? {})) {
-		if (!id || !value || typeof value !== 'object' || Array.isArray(value)) continue;
-		const candidate = value as Partial<LegacyChallengeProgressEntry>;
-		const parsedPlays = plays(candidate.plays);
-		if (
-			!isTimestamp(candidate.startedAt) ||
-			(candidate.completedAt !== null && !isTimestamp(candidate.completedAt)) ||
-			parsedPlays === null ||
-			!isStage(candidate.lastStage)
-		) {
-			continue;
-		}
-		const completedAt = candidate.completedAt ?? null;
-		const completionScore = completedAt ? completionBaseScore : null;
-		challenges[id] = {
-			startedAt: candidate.startedAt,
-			updatedAt: completedAt ?? candidate.startedAt,
-			completedAt,
-			plays: parsedPlays,
-			lastStage: candidate.lastStage,
-			bestScore: completionScore,
-			bestTimeMs: null,
-			lastScore: completionScore,
-			lastTimeMs: null
+			bestScore: parsedBestScore,
+			bestTimeMs: parsedBestScore === null ? null : parsedBestTimeMs,
+			lastScore: parsedLastScore,
+			lastTimeMs: parsedLastScore === null ? null : parsedLastTimeMs
 		};
 	}
 	return { version: 2, challenges };
@@ -206,11 +149,7 @@ export function parseChallengeProgress(raw: string | null | undefined): Challeng
 		if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
 			return emptyChallengeProgress();
 		}
-		return (
-			parseVersionTwo(parsed as Record<string, unknown>) ??
-			migrateVersionOne(parsed as Record<string, unknown>) ??
-			emptyChallengeProgress()
-		);
+		return parseVersionTwo(parsed as Record<string, unknown>) ?? emptyChallengeProgress();
 	} catch {
 		return emptyChallengeProgress();
 	}
@@ -222,16 +161,7 @@ export function readChallengeProgress(
 ): ChallengeProgress {
 	if (!storage) return emptyChallengeProgress();
 	try {
-		const currentRaw = storage.getItem(challengeProgressStorageKey(userId));
-		if (currentRaw !== null) return parseChallengeProgress(currentRaw);
-		if (userId) return emptyChallengeProgress();
-
-		const legacyRaw = storage.getItem(LEGACY_CHALLENGE_PROGRESS_STORAGE_KEY);
-		const migrated = parseChallengeProgress(legacyRaw);
-		if (legacyRaw !== null && storage.setItem) {
-			storage.setItem(CHALLENGE_PROGRESS_GUEST_STORAGE_KEY, JSON.stringify(migrated));
-		}
-		return migrated;
+		return parseChallengeProgress(storage.getItem(challengeProgressStorageKey(userId)));
 	} catch {
 		return emptyChallengeProgress();
 	}
@@ -278,8 +208,7 @@ export function mergeStoredChallengeProgress({
 export function clearGuestChallengeProgress(storage?: Pick<Storage, 'removeItem'>): void {
 	if (!storage) return;
 	try {
-		storage.removeItem(CHALLENGE_PROGRESS_GUEST_STORAGE_KEY);
-		storage.removeItem(LEGACY_CHALLENGE_PROGRESS_STORAGE_KEY);
+		storage.removeItem(CHALLENGE_PROGRESS_STORAGE_KEY);
 	} catch {
 		// A confirmed server import remains authoritative if browser cleanup is blocked.
 	}

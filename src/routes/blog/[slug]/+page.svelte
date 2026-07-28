@@ -178,8 +178,8 @@
 					<p class="blog-kicker">Question first</p>
 					<h2>Try a GCSE question next.</h2>
 					<p>
-						Start with a real question, see the method, then practise related questions that use the
-						same logic.
+						Write a real answer, check its marking points, improve it, then try a related
+						question.
 					</p>
 				</div>
 				<a href={resolve('/questions')}>

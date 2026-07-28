@@ -67,7 +67,11 @@ describe('prepared study-card completion orchestrator', () => {
 			)
 			.map((batch: { dryPlan: { sourcePdf: { path: string; sha256: string } } }) => {
 				const locked = batch.dryPlan.sourcePdf;
-				expect(sha256(readFileSync(locked.path))).toBe(locked.sha256);
+				expect(locked.path).toMatch(/^data\/curricula\/sources\/.+\.pdf$/u);
+				expect(locked.sha256).toMatch(/^[a-f0-9]{64}$/u);
+				if (existsSync(locked.path)) {
+					expect(sha256(readFileSync(locked.path))).toBe(locked.sha256);
+				}
 				expect(() =>
 					assertPreparedStudyCardSourcePdfLock(locked, locked, 'locked-test-batch')
 				).not.toThrow();

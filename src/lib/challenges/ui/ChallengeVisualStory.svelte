@@ -3,25 +3,26 @@
 	import ChainIllustration from '$lib/chains/ChainIllustration.svelte';
 	import type { ChainIllustration as ChainIllustrationData } from '$lib/chains/chainIllustration';
 	import type { ChallengeDefinition } from '../types';
-	import { challengeVisual } from '../visuals';
+	import type { ChallengeVisualDefinition } from '../visuals';
 	import ChallengeGapMap from './ChallengeGapMap.svelte';
 	import ThemeAwareChallengeArt from './ThemeAwareChallengeArt.svelte';
 
 	let {
 		challenge,
+		visual,
 		mode = 'teaser',
 		compact = false,
 		expandable = false,
 		illustrationOverride = null
 	}: {
 		challenge: Pick<ChallengeDefinition, 'id' | 'subject' | 'memoryHandle'>;
+		visual: ChallengeVisualDefinition;
 		mode?: 'teaser' | 'gap' | 'earned';
 		compact?: boolean;
 		expandable?: boolean;
 		illustrationOverride?: ChainIllustrationData | null;
 	} = $props();
 
-	const visual = $derived(challengeVisual(challenge));
 	const cardArt = $derived(visual?.cardArt ?? null);
 	const earnedIllustration = $derived(illustrationOverride ?? visual?.earnedIllustration ?? null);
 
@@ -34,7 +35,7 @@
 </script>
 
 {#if mode === 'gap'}
-	<ChallengeGapMap {challenge} {compact} />
+	<ChallengeGapMap {challenge} {visual} {compact} />
 {:else if mode === 'earned' && earnedIllustration}
 	<div class="earned-atlas-shell">
 		<ChainIllustration
@@ -48,7 +49,7 @@
 		/>
 	</div>
 {:else if mode === 'earned'}
-	<ChallengeGapMap {challenge} />
+	<ChallengeGapMap {challenge} {visual} />
 {:else if cardArt}
 	<div class:compact class="challenge-visual-teaser">
 		<ThemeAwareChallengeArt

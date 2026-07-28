@@ -30,73 +30,10 @@ import {
 	assertSubstantiveCurriculumEvidence,
 	trueCurriculumTopicLeaves
 } from './lib/science-challenge-planner-curriculum.mjs';
-
-const allocation = Object.freeze({
-	biology: Object.freeze({
-		4.1: 17,
-		4.2: 9,
-		4.3: 17,
-		4.4: 15,
-		4.5: 18,
-		4.6: 28,
-		4.7: 32
-	}),
-	chemistry: Object.freeze({
-		4.1: 18,
-		4.2: 18,
-		4.3: 12,
-		4.4: 16,
-		4.5: 6,
-		4.6: 11,
-		4.7: 19,
-		4.8: 14,
-		4.9: 13,
-		'4.10': 11
-	}),
-	physics: Object.freeze({
-		4.1: 10,
-		4.2: 16,
-		4.3: 13,
-		4.4: 22,
-		4.5: 26,
-		4.6: 21,
-		4.7: 15,
-		4.8: 11
-	})
-});
-
-const targetDistributions = Object.freeze({
-	biology: Object.freeze({
-		difficulty: Object.freeze({ starter: 38, standard: 68, stretch: 30 }),
-		taskShape: Object.freeze({
-			'recall-or-selection': 27,
-			explanation: 52,
-			quantitative: 8,
-			'practical-or-data': 33,
-			'visual-or-model': 16
-		})
-	}),
-	chemistry: Object.freeze({
-		difficulty: Object.freeze({ starter: 35, standard: 69, stretch: 34 }),
-		taskShape: Object.freeze({
-			'recall-or-selection': 21,
-			explanation: 38,
-			quantitative: 33,
-			'practical-or-data': 25,
-			'visual-or-model': 21
-		})
-	}),
-	physics: Object.freeze({
-		difficulty: Object.freeze({ starter: 37, standard: 67, stretch: 30 }),
-		taskShape: Object.freeze({
-			'recall-or-selection': 14,
-			explanation: 39,
-			quantitative: 48,
-			'practical-or-data': 14,
-			'visual-or-model': 19
-		})
-	})
-});
+import {
+	normalizeChallengeCatalogSource,
+	resolveChallengeCatalogSourcePath
+} from './lib/challenge-catalog-source.mjs';
 
 const specifications = Object.freeze({
 	biology: 'aqa-gcse-biology-8461-v1.0',
@@ -136,14 +73,34 @@ export function runScienceChallengePlanner({
 		label: 'curriculum catalog',
 		requireExistingFile: true
 	});
+	const challengeCatalogSourceTarget = resolvePlannerRepositoryFile({
+		rootDir,
+		value: args.catalogSource,
+		label: 'active challenge catalog source',
+		requireExistingFile: true
+	});
+	const briefTarget = resolvePlannerRepositoryFile({
+		rootDir,
+		value: args.brief,
+		label: 'plan brief',
+		requireExistingFile: true
+	});
 
 	const repositoryRoot = sourceTarget.repositoryRoot;
 	const sourcePath = sourceTarget.filePath;
 	const catalogPath = catalogTarget.filePath;
 	const sourceSnapshot = JSON.parse(readFileSync(sourcePath, 'utf8'));
 	const curriculumCatalog = JSON.parse(readFileSync(catalogPath, 'utf8'));
+	const brief = readPlanBrief(briefTarget.filePath);
+	const { allocation, targetDistributions } = brief;
 
-	const existingIds = readExistingChallengeIds(repositoryRoot);
+	const challengeCatalogSource = readChallengeCatalogSource(
+		repositoryRoot,
+		challengeCatalogSourceTarget.filePath
+	);
+	const existingIds = new Set(
+		challengeCatalogSource.definitions.map((definition) => definition.id)
+	);
 	const rows = [];
 	const curriculumEvidence = [];
 	const sourceQuestions = normalizedSourceQuestions(sourceSnapshot);
@@ -273,18 +230,15 @@ export function runScienceChallengePlanner({
 	const plan = {
 		schemaVersion: SCIENCE_CHALLENGE_PLAN_SCHEMA,
 		planId: args.planId,
-		createdOn: '2026-07-21',
-		targetFinalCatalogueRounds: 500,
-		existingRoundCount: 92,
-		generatedRoundCount: rows.length,
-		generatedQuestionContextCount: rows.length * 2,
-		targetFinalQuestionContextCount: 1_000,
-		uniqueIllustrationPairCount: 1_000,
-		uniqueFinalIllustrationAssetCount: 2_000,
+		createdOn: args.createdOn,
+		baseCatalogContentSha256: challengeCatalogSource.contentSha256,
+		baseCatalogRecordCount: challengeCatalogSource.records.length,
 		sourceSnapshotPath: sourceTarget.fileLabel,
 		sourceSnapshotSha256: canonicalHash(sourceSnapshot),
 		curriculumCatalogPath: catalogTarget.fileLabel,
 		curriculumCatalogSha256: canonicalHash(curriculumCatalog),
+		briefPath: briefTarget.fileLabel,
+		briefSha256: canonicalHash(brief),
 		allocation,
 		targetDistributions,
 		rows
@@ -329,7 +283,7 @@ export function runScienceChallengePlanner({
  */
 export function resolveScienceChallengePlanOutputs({
 	rootDir = process.cwd(),
-	output = 'tmp/science-challenges/science-500-v1/plan.json'
+	output = 'tmp/science-challenges/candidate-release/plan.json'
 } = {}) {
 	const plan = resolvePlannerRepositoryFile({
 		rootDir,
@@ -359,7 +313,7 @@ export function resolveScienceChallengePlanOutputs({
  */
 export function writeScienceChallengePlanOutputs({
 	rootDir = process.cwd(),
-	output = 'tmp/science-challenges/science-500-v1/plan.json',
+	output = 'tmp/science-challenges/candidate-release/plan.json',
 	planContents,
 	evidenceContents
 }) {
@@ -881,8 +835,6 @@ function findComponentLine(lines, component) {
 }
 
 function assertPlanCoverage(plan, catalog) {
-	if (plan.rows.length !== 408)
-		throw new Error(`Plan must contain 408 new rounds; found ${plan.rows.length}.`);
 	const covered = new Set(plan.rows.map((row) => row.curriculumComponentId));
 	for (const specificationId of Object.values(specifications)) {
 		const specification = catalog.specifications.find((entry) => entry.id === specificationId);
@@ -905,19 +857,76 @@ function assertPlanCoverage(plan, catalog) {
 	}
 }
 
-function readExistingChallengeIds(projectRoot) {
-	const files = [
-		'src/lib/challenges/catalogIdentity.ts',
-		'src/lib/challenges/expansions/biologyIdentity.ts',
-		'src/lib/challenges/expansions/chemistryIdentity.ts',
-		'src/lib/challenges/expansions/physicsIdentity.ts'
-	];
-	const ids = new Set();
-	for (const relativePath of files) {
-		const text = readFileSync(path.join(projectRoot, relativePath), 'utf8');
-		for (const match of text.matchAll(/\bid:\s*'([^']+)'/g)) ids.add(match[1]);
+function readChallengeCatalogSource(repositoryRoot, sourcePath) {
+	const absolutePath = resolveChallengeCatalogSourcePath({
+		rootDir: repositoryRoot,
+		sourcePath
+	});
+	return normalizeChallengeCatalogSource(JSON.parse(readFileSync(absolutePath, 'utf8')), {
+		source: absolutePath
+	});
+}
+
+function readPlanBrief(filePath) {
+	const brief = JSON.parse(readFileSync(filePath, 'utf8'));
+	if (
+		brief?.schemaVersion !== 'science-challenge-plan-brief/v1' ||
+		!brief.allocation ||
+		typeof brief.allocation !== 'object' ||
+		Array.isArray(brief.allocation) ||
+		!brief.targetDistributions ||
+		typeof brief.targetDistributions !== 'object' ||
+		Array.isArray(brief.targetDistributions)
+	) {
+		throw new Error('Plan brief must use science-challenge-plan-brief/v1.');
 	}
-	return ids;
+	for (const subject of Object.keys(specifications)) {
+		const subjectAllocation = brief.allocation[subject];
+		const distributions = brief.targetDistributions[subject];
+		if (
+			!subjectAllocation ||
+			typeof subjectAllocation !== 'object' ||
+			Array.isArray(subjectAllocation) ||
+			Object.keys(subjectAllocation).length === 0 ||
+			Object.values(subjectAllocation).some(
+				(count) => !Number.isInteger(count) || count < 1
+			)
+		) {
+			throw new Error(`Plan brief allocation for ${subject} is invalid.`);
+		}
+		const subjectTotal = Object.values(subjectAllocation).reduce(
+			(total, count) => total + count,
+			0
+		);
+		for (const [dimension, allowedValues] of [
+			['difficulty', CHALLENGE_DIFFICULTIES],
+			[
+				'taskShape',
+				[
+					'recall-or-selection',
+					'explanation',
+					'quantitative',
+					'practical-or-data',
+					'visual-or-model'
+				]
+			]
+		]) {
+			const counts = distributions?.[dimension];
+			if (
+				!counts ||
+				typeof counts !== 'object' ||
+				Array.isArray(counts) ||
+				Object.keys(counts).some((value) => !allowedValues.includes(value)) ||
+				allowedValues.some((value) => !Number.isInteger(counts[value]) || counts[value] < 0) ||
+				Object.values(counts).reduce((total, count) => total + count, 0) !== subjectTotal
+			) {
+				throw new Error(
+					`Plan brief ${dimension} distribution for ${subject} must sum to ${subjectTotal}.`
+				);
+			}
+		}
+	}
+	return brief;
 }
 
 function uniqueId(baseId, existingIds, plannedIds) {
@@ -954,12 +963,21 @@ function parseArgs(argv) {
 	if (!Number.isInteger(shardSize) || shardSize < 1 || shardSize > 20) {
 		throw new Error('--shard-size must be an integer from 1 to 20.');
 	}
+	const createdOn = String(values.get('created-on') ?? new Date().toISOString().slice(0, 10));
+	if (!/^\d{4}-\d{2}-\d{2}$/.test(createdOn)) {
+		throw new Error('--created-on must be YYYY-MM-DD.');
+	}
 	return {
 		help: Boolean(values.get('help')),
 		source: String(values.get('source') ?? 'tmp/science-challenge-sources-v1.json'),
 		catalog: String(values.get('catalog') ?? 'data/curricula/curriculum-catalog.json'),
-		output: String(values.get('output') ?? 'tmp/science-challenges/science-500-v1/plan.json'),
-		planId: String(values.get('plan-id') ?? 'science-500-v1'),
+		catalogSource: String(
+			values.get('catalog-source') ?? 'tmp/challenge-catalog/current-source.json'
+		),
+		brief: String(values.get('brief') ?? 'tmp/science-challenges/plan-brief.json'),
+		output: String(values.get('output') ?? 'tmp/science-challenges/candidate-release/plan.json'),
+		planId: String(values.get('plan-id') ?? 'candidate-release'),
+		createdOn,
 		shardSize
 	};
 }
@@ -970,8 +988,11 @@ function usage() {
 		'',
 		'--source=<snapshot.json>  Read-only D1 snapshot from export-science-challenge-sources',
 		'--catalog=<catalog.json>  Hash-bound curriculum catalog',
-		'--output=<plan.json>      Output plan (default tmp/science-challenges/science-500-v1/plan.json)',
+		'--catalog-source=<json>   Active D1 challenge source exported to ignored tmp/',
+		'--brief=<brief.json>      Explicit ignored-workspace allocation and distribution brief',
+		'--output=<plan.json>      Output plan (default tmp/science-challenges/candidate-release/plan.json)',
 		'--plan-id=<id>            Stable plan id',
+		'--created-on=<YYYY-MM-DD> Plan date (default today)',
 		'--shard-size=<1-20>       Generation rows per model shard (default 8)'
 	].join('\n');
 }

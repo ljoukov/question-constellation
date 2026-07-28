@@ -1,13 +1,10 @@
-import {
-	publicChallengePreviewDefinition,
-	type PublicChallengePreviewDefinition
-} from '$lib/challenges/authoredData';
-import { challengesForSubject } from '$lib/challenges/catalog';
+import type { PublicChallengePreviewDefinition } from '$lib/challenges/authoredData';
 import {
 	challengeProgressStorageKey,
 	emptyChallengeProgress,
 	type ChallengeProgressEntry
 } from '$lib/challenges/progress';
+import { publicChallengePreviewFixture } from '$lib/challenges/testFixtures';
 import { describe, expect, it } from 'vitest';
 import {
 	hydrateSignedInChallengeProgress,
@@ -15,9 +12,19 @@ import {
 	subjectChallengePromotion
 } from './subjectChallengePromotion';
 
-const challenges = challengesForSubject('biology')
-	.slice(0, 3)
-	.map(publicChallengePreviewDefinition);
+const challenges = [
+	publicChallengePreviewFixture(),
+	publicChallengePreviewFixture({
+		id: 'biology-fixture-b',
+		slug: 'fixture-b',
+		title: 'Second fixture challenge'
+	}),
+	publicChallengePreviewFixture({
+		id: 'biology-fixture-c',
+		slug: 'fixture-c',
+		title: 'Third fixture challenge'
+	})
+];
 const [firstChallenge, secondChallenge, thirdChallenge] = challenges as [
 	PublicChallengePreviewDefinition,
 	PublicChallengePreviewDefinition,

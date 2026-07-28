@@ -16,7 +16,7 @@ test('infrastructure-recovery CLI documents every parent-bound input and dry-run
 	assert.equal(result.status, 0, result.stderr);
 	for (const option of [
 		'--workspace-root',
-		'--catalog-root',
+		'--catalog-source',
 		'--review-rebase-manifest',
 		'--verification-summary',
 		'--failed-root',

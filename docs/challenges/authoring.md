@@ -23,21 +23,32 @@ conventional example. Prefer an answer-neutral physical starting scene over a no
 generated diagram; if exact notation is essential, use a deterministic code-native asset or require
 the image to show only that exact notation with the outcome unresolved.
 
-The deterministic gate in `src/lib/challenges/contentValidation.test.ts` rejects unseen visual
-references and unsupported drawing tasks.
+The release validators reject unseen visual references and unsupported drawing tasks. The synthetic
+regression cases in `src/lib/challenges/contentValidation.test.ts` pin those failure modes without
+copying any production challenge into source control.
 
 ## Rare visual-dependent transfers
 
 Use a visual only when reading the visual is itself the assessed skill and a text equivalent would
 change the task. In that case:
 
-1. Write a challenge-illustration spec following `docs/challenge-illustrations/README.md`. Treat the
-   transfer prompt as a teaser: list allowed evidence and forbid answer leakage.
-2. Run `pnpm generate:challenge-illustration -- generate --spec=<spec>`.
-3. Accept only a dark/light pair that passes the image, theme, mobile-crop, and usage judges.
-4. Publish both files under `static/product/challenges/` and wire the pair to the challenge's
-   `transferArt` definition with useful alt text and intrinsic dimensions.
-5. Inspect the actual transfer stage at desktop and phone widths. The prose and alt text must still
+1. Export the active D1 catalogue to ignored workspace data with
+   `pnpm run export:challenge-catalog-source`.
+2. Add the exact answer-neutral visual authority and generation guards to the challenge candidate
+   under `tmp/`. Treat a transfer teaser as unresolved: list allowed evidence and forbid answer
+   leakage.
+3. Run `pnpm run generate:science-question-art` against the complete candidate art manifest. The
+   generator makes the dark and light variants as two independent fresh generations and refuses
+   output outside ignored `tmp/`.
+4. Run `pnpm run review:science-question-art` and
+   `pnpm run audit:science-question-art-perceptual`. Accept only a pair that passes the image,
+   cross-theme meaning, mobile-crop, ownership, and perceptual checks.
+   Retain harmless imperfections as annotations. Regenerate only a major failure, always as a fresh
+   composition; never edit or provide the rejected image as a reference.
+5. Bind the accepted pair, its exact review, alt text, intrinsic dimensions, and generation guards
+   into the next complete catalogue bundle. The catalogue importer uploads and reads back the bytes
+   in R2 before it can activate the corresponding D1 rows.
+6. Inspect the actual transfer stage at desktop and phone widths. The prose and alt text must still
    identify the task without relying on colour alone.
 
 Adding decorative card art does not satisfy a visual-dependent transfer. The transfer stage renders
@@ -45,14 +56,67 @@ only `transferArt`.
 
 ## Curriculum grounding
 
-Every published challenge id must resolve to one exact reviewed entry in
-`src/lib/server/challengeCurriculum.ts`. Reuse an existing reference only when the new challenge tests
-the same specification statement. A new topic needs its own exact specification code, section,
-official deep link, expected heading, and source text. Never add a subject-wide fallback.
+Every published challenge record in D1 must contain one exact reviewed curriculum citation. Reuse an
+existing reference only when the new challenge tests the same specification statement. A new topic
+needs its own exact specification code, section, official deep link, expected heading, and source
+text. Never add a subject-wide fallback or a code-side curriculum registry.
 
 Keep internal paper ids optional. If a challenge cites imported question ids, both ids must already
 belong to the same reviewed answer-chain family. Hand-authored contexts without those ids still need
 the exact curriculum reference and all deterministic catalogue checks.
+
+## D1/R2 release workflow
+
+Production challenge content is not a source module, checked-in JSON file, or static asset. The
+active immutable release is stored in `QUESTION_DB`; challenge image bytes are stored in
+`QUESTION_R2`. Each challenge record contains its complete definition, public projections, answer
+chain, curriculum citation, short-recall prompt, accepted visual review, exact art-authority spec,
+and question-specific generation guards.
+
+Every public page is materialized ahead of activation in `challenge_route_payloads`. The hub,
+subject, detail, and internal index/sitemap consumers therefore load one active-release row rather
+than joining the canonical catalogue during a request.
+
+Use these operator steps:
+
+```sh
+# Export lightweight canonical records for planning and authoring.
+pnpm run export:challenge-catalog-source -- --output=tmp/challenge-catalog/current-source.json
+
+# Reconstruct the complete active bundle and exact R2 bytes before deriving a later release.
+pnpm run export:challenge-catalog-release -- \
+  --output-root=tmp/challenge-catalog/exports
+
+# Derive a later complete release directly from that portable bundle and one reviewed change set.
+pnpm run derive:challenge-catalog -- \
+  --bundle=tmp/challenge-catalog/exports/<active-release>/<active-release>.bundle.json \
+  --changes=tmp/challenge-catalog/<new-release>/changes.json \
+  --release-id=<new-release> \
+  --output=tmp/challenge-catalog/<new-release>/<new-release>.bundle.json
+
+# A genuinely new catalogue instead starts from one complete final-state draft.
+pnpm run create:challenge-catalog -- \
+  --draft=tmp/challenge-catalog/<new-release>/draft.json \
+  --output=tmp/challenge-catalog/<new-release>/<new-release>.bundle.json
+
+# Dry-run first; publish only with the exact hash printed by that dry-run.
+pnpm run import:challenge-catalog -- \
+  --bundle=tmp/challenge-catalog/<new-release>/<new-release>.bundle.json
+pnpm run import:challenge-catalog -- \
+  --bundle=tmp/challenge-catalog/<new-release>/<new-release>.bundle.json \
+  --publish \
+  --expected-sha256=<exact-content-sha256>
+```
+
+The draft, portable bundle, and change-set formats contain complete canonical records directly.
+Changed records are full replacements, not partial patches. Do not add an accepted-subset
+projection, static-art cohort, catalogue conversion, or source-module adapter. Rejected content is
+repaired and reviewed before it enters the complete candidate bundle.
+
+The importer accepts arbitrary validated catalogue counts. It uploads and exactly reads back every
+content-addressed R2 object, stages and exactly reads back the canonical and denormalized D1 rows,
+then changes the active pointer atomically. Never put a challenge record under `src/`, `data/`, or
+`docs/`, and never put challenge image bytes under `static/`.
 
 ## Authoring transport and evidence
 
@@ -65,9 +129,9 @@ pnpm run generate:science-challenges \
   --direct-response-mode=prompt-json \
   --thinking-level=high \
   --direct-part-size=4 \
-  --plan=tmp/science-challenges/science-500-v1/plan.json \
-  --source=tmp/science-challenges/science-500-v1/source-snapshot.json \
-  --evidence=tmp/science-challenges/science-500-v1/curriculum-evidence.json
+  --plan=tmp/science-challenges/<release-id>/plan.json \
+  --source=tmp/science-challenges/<release-id>/source-snapshot.json \
+  --evidence=tmp/science-challenges/<release-id>/curriculum-evidence.json
 ```
 
 `llm-direct` is explicit and subscription-backed. Its default
@@ -108,11 +172,12 @@ prompt, exact reconstructed part prompts, all raw part outputs and their determi
 Resume, materialization and archive replay reject missing, reordered, substituted or rehashed part
 evidence.
 
-Candidate materialization, provenance archiving and release replay accept both old Codex SDK evidence
-and this direct evidence. Direct evidence is fail-closed: missing files, changed bytes, a different
-provider/model/thinking level, a tool event or a stale prompt/candidate binding invalidates the run.
-The archived request, thought and event streams remain external hash dependencies; result metadata
-and sanitized lineage remain in the durable release archive.
+Candidate materialization, provenance archiving, and release replay require the exact evidence
+contract for the transport selected by the plan. There is no transport conversion or missing-field
+adapter. Missing files, changed bytes, a different provider/model/thinking level, a tool event, or a
+stale prompt/candidate binding invalidates the run. The archived request, thought, and event streams
+remain external hash dependencies; result metadata and sanitized lineage remain in the durable
+release archive.
 
 `--timeout-ms` supplies a cancellation signal, not an operating-system guarantee that an SDK child
 has exited. If an SDK process appears stuck, stop and account for that process before starting a new

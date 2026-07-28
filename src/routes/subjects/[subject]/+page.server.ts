@@ -1,11 +1,8 @@
-import { challengesForSubject } from '$lib/challenges/catalog';
-import { publicChallengePreviewDefinition } from '$lib/challenges/authoredData';
 import { emptyChallengeProgress } from '$lib/challenges/progress';
 import {
 	mostRecentlyCompletedChallenge,
 	recommendedUnfinishedChallenge
 } from '$lib/challenges/recommendations';
-import type { ChallengeDefinition } from '$lib/challenges/types';
 import { learnerSubjectFromSlug } from '$lib/learning/subjects';
 import { isScienceLearnerSubject } from '$lib/learning/subjects';
 import type { RecallRuntimeSubject } from '$lib/recall/aqaScienceRecall';
@@ -16,6 +13,7 @@ import {
 	getRecallCatalogScopeForLearner,
 	recallCardsWithinLearnerScope
 } from '$lib/server/subjectLearning';
+import { getChallengeSubject } from '$lib/server/challengeCatalog';
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -92,19 +90,21 @@ export const load: PageServerLoad = async ({ locals, params, url, parent }) => {
 			challengeTotalBestScore: 0
 		};
 	}
-	const recallDeck = await recallDeckForSubject(locals.user, subjectName);
-	const subjectChallenges: ChallengeDefinition[] = isScienceLearnerSubject(subject.subject)
-		? challengesForSubject(subject.subject.toLowerCase())
-		: [];
-	const challengeCatalog = subjectChallenges.map(publicChallengePreviewDefinition);
+	const [recallDeck, challengePayload] = await Promise.all([
+		recallDeckForSubject(locals.user, subjectName),
+		isScienceLearnerSubject(subject.subject)
+			? getChallengeSubject(subject.subject.toLowerCase())
+			: Promise.resolve(null)
+	]);
+	const challengeCatalog = challengePayload?.challenges ?? [];
 	const challengeProgress =
-		subjectChallenges.length > 0
+		challengeCatalog.length > 0
 			? (layoutData.homeSnapshot?.challengeProgress ?? emptyChallengeProgress())
 			: emptyChallengeProgress();
 	const challengeRecommendation =
-		recommendedUnfinishedChallenge(subjectChallenges, challengeProgress) ??
-		mostRecentlyCompletedChallenge(subjectChallenges, challengeProgress) ??
-		subjectChallenges[0] ??
+		recommendedUnfinishedChallenge(challengeCatalog, challengeProgress) ??
+		mostRecentlyCompletedChallenge(challengeCatalog, challengeProgress) ??
+		challengeCatalog[0] ??
 		null;
 	return {
 		subject,
@@ -113,16 +113,14 @@ export const load: PageServerLoad = async ({ locals, params, url, parent }) => {
 		recallDeck,
 		challengeCatalog,
 		challengeProgress,
-		challengeRecommendation: challengeRecommendation
-			? publicChallengePreviewDefinition(challengeRecommendation)
-			: null,
+		challengeRecommendation,
 		challengeRecommendationCompleted: challengeRecommendation
 			? Boolean(challengeProgress.challenges[challengeRecommendation.id]?.completedAt)
 			: false,
-		challengeCompletedCount: subjectChallenges.filter((challenge) =>
+		challengeCompletedCount: challengeCatalog.filter((challenge) =>
 			Boolean(challengeProgress.challenges[challenge.id]?.completedAt)
 		).length,
-		challengeTotalBestScore: subjectChallenges.reduce(
+		challengeTotalBestScore: challengeCatalog.reduce(
 			(total, challenge) => total + (challengeProgress.challenges[challenge.id]?.bestScore ?? 0),
 			0
 		)

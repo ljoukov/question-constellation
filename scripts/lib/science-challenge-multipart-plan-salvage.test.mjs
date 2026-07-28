@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import {
-	cpSync,
 	existsSync,
 	mkdirSync,
 	mkdtempSync,
@@ -19,7 +18,6 @@ import {
 } from './science-challenge-authoring-parts.mjs';
 import { runDirectScienceChallengeJsonTurn } from './science-challenge-direct-json-runner.mjs';
 import { runDirectScienceChallengeMultipartTurn } from './science-challenge-direct-multipart-runner.mjs';
-import { runDirectScienceChallengePromptJsonTurn } from './science-challenge-direct-prompt-json-runner.mjs';
 import {
 	inspectScienceChallengeMultipartPlanSalvage,
 	inspectScienceChallengeMultipartPlanSalvageSourceSelection,
@@ -29,23 +27,11 @@ import {
 	validateScienceChallengeMultipartPlanSalvageAcceptance
 } from './science-challenge-multipart-plan-salvage-evidence.mjs';
 import {
-	inspectScienceChallengeMultipartContinuation,
-	readScienceChallengeMultipartContinuation,
-	requireExclusiveScienceChallengeMultipartRecoveryLineage,
-	runScienceChallengeMultipartContinuation,
-	scienceChallengeMultipartContinuationDirectory,
-	validateScienceChallengeMultipartContinuationAcceptance
-} from './science-challenge-multipart-continuation.mjs';
-import {
 	SCIENCE_CHALLENGE_MERGED_DIFFICULTY_SALVAGE_PATHWAY,
-	SCIENCE_CHALLENGE_QUESTION_PRESENTATION_DEFAULT_SALVAGE_PATHWAY,
 	salvageScienceChallengeMergedCandidatePlanDifficultyDrift,
-	salvageScienceChallengeMultipartPlanDrift,
-	salvageScienceChallengeQuestionPresentationNullDefaultPart,
-	salvageScienceChallengeQuestionPresentationNullDefaults
+	salvageScienceChallengeMultipartPlanDrift
 } from './science-challenge-multipart-plan-salvage.mjs';
 import {
-	SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON,
 	SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON
 } from './science-challenge-authoring-transport.mjs';
 import {
@@ -96,38 +82,6 @@ test('dry-run salvage inspection reports the exact action without writing recove
 const EXPECTED_ID = 'biology-producing-monoclonal-antibodies-01';
 const REAL_TYPO = 'biology-producing-monlonal-antibodies-01';
 const DIFFICULTY_ID = 'biology-plant-defence-responses-01';
-const PRESENTATION_IDS = [
-	'biology-question-presentation-alpha-01',
-	'biology-question-presentation-beta-01',
-	'biology-question-presentation-gamma-01',
-	'biology-question-presentation-delta-01'
-];
-
-test('multipart recovery lineage rejects simultaneous salvage and continuation directories', () => {
-	assert.doesNotThrow(() =>
-		requireExclusiveScienceChallengeMultipartRecoveryLineage({
-			shardId: 'science-016',
-			salvageDirectories: ['/tmp/salvage'],
-			continuationDirectories: []
-		})
-	);
-	assert.doesNotThrow(() =>
-		requireExclusiveScienceChallengeMultipartRecoveryLineage({
-			shardId: 'science-016',
-			salvageDirectories: [],
-			continuationDirectories: ['/tmp/continuation']
-		})
-	);
-	assert.throws(
-		() =>
-			requireExclusiveScienceChallengeMultipartRecoveryLineage({
-				shardId: 'science-016',
-				salvageDirectories: ['/tmp/salvage'],
-				continuationDirectories: ['/tmp/continuation']
-			}),
-		/both multipart salvage and continuation lineage; recovery is ambiguous/
-	);
-});
 const SOURCE_HASH = '1'.repeat(64);
 const SPECIFICATION_HASH = '2'.repeat(64);
 
@@ -400,91 +354,6 @@ test('merged-candidate difficulty salvage rejects any non-difficulty issue or un
 	}
 });
 
-test('defaults only omitted nullable questionPresentation fields in complete final-part evidence', async () => {
-	const fixture = await questionPresentationDefaultFixture();
-	try {
-		const canonicalParts = buildScienceChallengeAuthoringParts({
-			rows: fixture.policyInput.expectedInputs.map((entry) => ({ id: entry.plan.id })),
-			inputs: fixture.policyInput.expectedInputs,
-			partSize: fixture.policyInput.summary.partSize
-		});
-		const singlePart = salvageScienceChallengeQuestionPresentationNullDefaultPart({
-			part: canonicalParts.at(-1),
-			evidence: fixture.policyInput.multipartEvidence.parts.at(-1),
-			expectedPrompt: fixture.policyInput.expectedPartPrompts.at(-1)
-		});
-		assert.equal(singlePart.status, 'passed', singlePart.issues.join('\n'));
-		assert.equal(singlePart.partId, 'part-02');
-		assert.equal(singlePart.corrections.length, 2);
-		assert.equal(singlePart.batchSha256, canonicalHash(singlePart.batch));
-
-		const result = salvageScienceChallengeQuestionPresentationNullDefaults(fixture.policyInput);
-		assert.equal(result.status, 'passed', result.issues.join('\n'));
-		assert.equal(result.pathway, SCIENCE_CHALLENGE_QUESTION_PRESENTATION_DEFAULT_SALVAGE_PATHWAY);
-		assert.equal(result.corrections.length, 2);
-		assert.deepEqual(
-			result.corrections.map(({ kind, partId, rowIndex, from, to }) => ({
-				kind,
-				partId,
-				rowIndex,
-				from,
-				to
-			})),
-			[
-				{
-					kind: 'definition.questionPresentation',
-					partId: 'part-02',
-					rowIndex: 1,
-					from: 'omitted',
-					to: null
-				},
-				{
-					kind: 'definition.questionPresentation',
-					partId: 'part-02',
-					rowIndex: 2,
-					from: 'omitted',
-					to: null
-				}
-			]
-		);
-		assert.equal(
-			Object.hasOwn(result.candidate.challenges[2].definition, 'questionPresentation'),
-			false
-		);
-		assert.equal(
-			Object.hasOwn(result.candidate.challenges[3].definition, 'questionPresentation'),
-			false
-		);
-	} finally {
-		rmSync(fixture.root, { recursive: true, force: true });
-	}
-});
-
-test('questionPresentation default salvage rejects any other omitted field or incomplete evidence', async () => {
-	const fixture = await questionPresentationDefaultFixture();
-	try {
-		const wrongField = clonePolicyInput(fixture.policyInput);
-		const failedPart = wrongField.multipartEvidence.parts.at(-1);
-		failedPart.summary.error = failedPart.summary.error.replace(
-			'questionPresentation',
-			'previewQuestion'
-		);
-		assertFailed(
-			salvageScienceChallengeQuestionPresentationNullDefaults(wrongField),
-			/non-questionPresentation omission/
-		);
-
-		const incomplete = clonePolicyInput(fixture.policyInput);
-		incomplete.multipartEvidence.parts.pop();
-		assertFailed(
-			salvageScienceChallengeQuestionPresentationNullDefaults(incomplete),
-			/every exact ordered multipart output/
-		);
-	} finally {
-		rmSync(fixture.root, { recursive: true, force: true });
-	}
-});
-
 test('stages an exhausted plan-drift salvage without mutating or relabelling its failed attempt', async () => {
 	const fixture = await exhaustedSalvageFixture();
 	try {
@@ -625,7 +494,7 @@ test('composes only terminal failed-merge salvage with the verifier-reviewed dif
 	}
 });
 
-test('terminal difficulty composition allows only exact legacy nullable omissions', async () => {
+test('terminal difficulty composition requires explicit transport metadata', async () => {
 	const fixture = await exhaustedSalvageFixture({
 		sourceKind: 'failed-merge-difficulty-composition'
 	});
@@ -639,23 +508,6 @@ test('terminal difficulty composition allows only exact legacy nullable omission
 		delete sourceValidation.responseMode;
 		delete sourceValidation.providerSchemaApplied;
 		writeFileSync(fixture.sourceValidationPath, `${stableStringify(sourceValidation)}\n`);
-		const omitted = replayScienceChallengeMultipartDifficultyAttempt({
-			...fixture.options,
-			precondition: { shardDir: fixture.shardDir },
-			record: terminal
-		});
-		assert.equal(omitted.status, 'passed', omitted.issues.join('\n'));
-		assert.deepEqual(omitted.attempt.helperSalvage.manifest.legacyNullableOmissions, [
-			'providerSchemaApplied',
-			'responseMode'
-		]);
-		assertFailed(
-			stageScienceChallengeMultipartPlanSalvage(fixture.options),
-			/not bound to the exact repair invocation and run/
-		);
-
-		sourceValidation.responseMode = SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_STRUCTURED_JSON;
-		writeFileSync(fixture.sourceValidationPath, `${stableStringify(sourceValidation)}\n`);
 		assertFailed(
 			replayScienceChallengeMultipartDifficultyAttempt({
 				...fixture.options,
@@ -664,25 +516,19 @@ test('terminal difficulty composition allows only exact legacy nullable omission
 			}),
 			/not bound to the exact repair invocation and run/
 		);
-	} finally {
-		rmSync(fixture.root, { recursive: true, force: true });
-	}
-});
 
-test('stages the distinct nullable question-presentation pathway after the same exhausted gate', async () => {
-	const fixture = await exhaustedSalvageFixture({
-		sourceKind: 'question-presentation-default'
-	});
-	try {
-		const result = stageScienceChallengeMultipartPlanSalvage(fixture.options);
-		assert.equal(result.status, 'passed', result.issues.join('\n'));
-		assert.equal(
-			result.validation.salvagePathway,
-			SCIENCE_CHALLENGE_QUESTION_PRESENTATION_DEFAULT_SALVAGE_PATHWAY
+		const sourceSummary = JSON.parse(
+			readFileSync(path.join(terminal.path, 'run-summary.json'), 'utf8')
 		);
-		assert.equal(result.manifest.salvage.corrections.length, 2);
-		assert.equal(result.lineage.sourceAttempt.status, 'failed');
-		assert.equal(result.lineage.sourceAttempt.candidatePath, null);
+		sourceValidation.responseMode = sourceSummary.responseMode;
+		sourceValidation.providerSchemaApplied = sourceSummary.providerSchemaApplied;
+		writeFileSync(fixture.sourceValidationPath, `${stableStringify(sourceValidation)}\n`);
+		const replayed = replayScienceChallengeMultipartDifficultyAttempt({
+			...fixture.options,
+			precondition: { shardDir: fixture.shardDir },
+			record: terminal
+		});
+		assert.equal(replayed.status, 'passed', replayed.issues.join('\n'));
 	} finally {
 		rmSync(fixture.root, { recursive: true, force: true });
 	}
@@ -1078,638 +924,6 @@ test('accepted salvage cannot omit, alter or relabel its provenance', async () =
 	}
 });
 
-test('continues only never-invoked attempt-4 suffix parts and replays the full candidate', async () => {
-	const fixture = await exhaustedMultipartContinuationFixture();
-	try {
-		const sourceBefore = fixture.sourceFiles.map((filePath) => readFileSync(filePath));
-		const planned = await runScienceChallengeMultipartContinuation({
-			...fixture.options,
-			dryRun: true,
-			resume: true,
-			timeoutMs: 10_000,
-			runPartImpl: () => {
-				throw new Error('dry-run must not invoke a model part');
-			}
-		});
-		assert.equal(planned.status, 'passed', planned.issues?.join('\n'));
-		assert.equal(planned.action, 'dry-run-planned');
-		assert.deepEqual(planned.missingPartIds, ['part-03', 'part-04']);
-		assert.deepEqual(planned.completedPartIds, []);
-		assert.equal(existsSync(fixture.continuationDir), false);
-
-		let calls = 0;
-		const completed = await runScienceChallengeMultipartContinuation({
-			...fixture.options,
-			resume: true,
-			timeoutMs: 10_000,
-			runPartImpl: (options) => {
-				const batch = fixture.continuationBatches[calls];
-				const streamTextImpl = () => successfulPromptJsonCall(batch, calls + 2);
-				calls += 1;
-				return runDirectScienceChallengePromptJsonTurn({ ...options, streamTextImpl });
-			}
-		});
-		assert.equal(completed.status, 'passed', completed.issues?.join('\n'));
-		assert.equal(calls, 2);
-		assert.equal(completed.candidate.challenges.length, 8);
-		assert.equal(completed.validation.sourceAttempt, 4);
-		assert.equal(completed.validation.sourceAttemptStatus, 'failed');
-		assert.equal(
-			completed.validation.authoringDisposition,
-			'exhausted-multipart-part-continuation'
-		);
-		assert.deepEqual(completed.validation.continuedPartIds, ['part-03', 'part-04']);
-		assert.equal(
-			validateScienceChallengeMultipartContinuationAcceptance({
-				acceptedCandidate: completed.candidate,
-				acceptedValidation: completed.validation,
-				replayOptions: fixture.options
-			}).status,
-			'passed'
-		);
-		assert.equal(
-			inspectVerificationRepairAttempts({
-				shardDir: fixture.options.shardDir,
-				repairSha256: fixture.options.repairSha256,
-				maxAttempts: 4
-			}).attempts.length,
-			4
-		);
-		fixture.sourceFiles.forEach((filePath, index) => {
-			assert.deepEqual(readFileSync(filePath), sourceBefore[index]);
-		});
-
-		const resumed = await runScienceChallengeMultipartContinuation({
-			...fixture.options,
-			resume: true,
-			timeoutMs: 10_000,
-			runPartImpl: () => {
-				throw new Error('completed continuation must replay, not call');
-			}
-		});
-		assert.equal(resumed.status, 'passed', resumed.issues?.join('\n'));
-		assert.equal(calls, 2);
-
-		rmSync(completed.artifactPaths.validation);
-		rmSync(completed.artifactPaths.manifest);
-		const recoveredAfterCandidateWrite = await runScienceChallengeMultipartContinuation({
-			...fixture.options,
-			resume: true,
-			timeoutMs: 10_000,
-			runPartImpl: () => {
-				throw new Error('partial final recovery must not call a model part');
-			}
-		});
-		assert.equal(
-			recoveredAfterCandidateWrite.status,
-			'passed',
-			recoveredAfterCandidateWrite.issues?.join('\n')
-		);
-		assert.equal(calls, 2);
-		assert.equal(
-			canonicalHash(recoveredAfterCandidateWrite.candidate),
-			canonicalHash(completed.candidate)
-		);
-		assert.equal(
-			canonicalHash(recoveredAfterCandidateWrite.validation),
-			canonicalHash(completed.validation)
-		);
-
-		rmSync(completed.artifactPaths.manifest);
-		const recoveredAfterValidationWrite = await runScienceChallengeMultipartContinuation({
-			...fixture.options,
-			resume: true,
-			timeoutMs: 10_000,
-			runPartImpl: () => {
-				throw new Error('manifest-only final recovery must not call a model part');
-			}
-		});
-		assert.equal(
-			recoveredAfterValidationWrite.status,
-			'passed',
-			recoveredAfterValidationWrite.issues?.join('\n')
-		);
-		assert.equal(calls, 2);
-	} finally {
-		rmSync(fixture.root, { recursive: true, force: true });
-	}
-});
-
-test('multipart continuation defers unrelated full-cohort collection failures to effective-cohort validation', async () => {
-	const fixture = await exhaustedMultipartContinuationFixture();
-	try {
-		let calls = 0;
-		const collectionIssue = 'science-099 contains an unrelated first-review duplicate.';
-		const options = {
-			...fixture.options,
-			validateCollectionCandidate: () => ({
-				status: 'failed',
-				issues: [collectionIssue],
-				repairTargets: [
-					{
-						challengeId: 'biology-peer-collection-issue-01',
-						shardId: 'science-099',
-						issues: [collectionIssue]
-					}
-				]
-			})
-		};
-		const completed = await runScienceChallengeMultipartContinuation({
-			...options,
-			resume: true,
-			timeoutMs: 10_000,
-			runPartImpl: (runOptions) => {
-				const batch = fixture.continuationBatches[calls];
-				const streamTextImpl = () => successfulPromptJsonCall(batch, calls + 2);
-				calls += 1;
-				return runDirectScienceChallengePromptJsonTurn({ ...runOptions, streamTextImpl });
-			}
-		});
-		assert.equal(completed.status, 'passed', completed.issues?.join('\n'));
-		assert.equal(calls, 2);
-		assert.deepEqual(completed.validation.verificationRepairCohortIssues, [collectionIssue]);
-		assert.equal(completed.manifest.collectionValidation.status, 'failed');
-		assert.equal(
-			existsSync(path.join(fixture.continuationDir, 'failure.json')),
-			false,
-			'an unrelated peer failure must not close a valid suffix continuation'
-		);
-		assert.equal(
-			existsSync(path.join(fixture.continuationDir, 'collection-validation.json')),
-			true
-		);
-
-		const replayed = await runScienceChallengeMultipartContinuation({
-			...options,
-			validateCollectionCandidate: (candidate) =>
-				validateFixtureRecoveredCandidate(candidate, options.inputs),
-			resume: true,
-			timeoutMs: 10_000,
-			runPartImpl: () => {
-				throw new Error('replay must not duplicate a completed suffix call');
-			}
-		});
-		assert.equal(replayed.status, 'passed', replayed.issues?.join('\n'));
-		assert.equal(calls, 2);
-	} finally {
-		rmSync(fixture.root, { recursive: true, force: true });
-	}
-});
-
-test('multipart continuation recovers a legacy immutable collection failure without another model call', async () => {
-	const fixture = await exhaustedMultipartContinuationFixture();
-	try {
-		let calls = 0;
-		const collectionIssue = 'science-099 contains an unrelated first-review duplicate.';
-		const options = {
-			...fixture.options,
-			validateCollectionCandidate: () => ({
-				status: 'failed',
-				issues: [collectionIssue],
-				repairTargets: [
-					{
-						challengeId: 'biology-peer-collection-issue-01',
-						shardId: 'science-099',
-						issues: [collectionIssue]
-					}
-				]
-			})
-		};
-		await assert.rejects(
-			() =>
-				runScienceChallengeMultipartContinuation({
-					...options,
-					resume: true,
-					timeoutMs: 10_000,
-					onJournalPhase: ({ phase, partId }) => {
-						if (phase === 'evidence-validated' && partId === 'part-04') {
-							throw new Error('simulated legacy crash before collection finalization');
-						}
-					},
-					runPartImpl: (runOptions) => {
-						const batch = fixture.continuationBatches[calls];
-						const streamTextImpl = () => successfulPromptJsonCall(batch, calls + 2);
-						calls += 1;
-						return runDirectScienceChallengePromptJsonTurn({ ...runOptions, streamTextImpl });
-					}
-				}),
-			/simulated legacy crash/
-		);
-		assert.equal(calls, 2);
-		const complete = inspectScienceChallengeMultipartContinuation(options);
-		assert.equal(complete.status, 'passed', complete.issues?.join('\n'));
-		assert.equal(complete.action, 'complete');
-		const legacyFailure = {
-			schemaVersion: 'science-challenge-exhausted-multipart-continuation-failure/v1',
-			shardId: options.shardId,
-			attempt: 4,
-			partId: null,
-			claimSha256: canonicalHash(
-				complete.context.completedParts.map((record) => canonicalHash(record.claim))
-			),
-			error: `Multipart continuation failed full collection validation.\n${collectionIssue}`
-		};
-		writeFileSync(
-			path.join(fixture.continuationDir, 'failure.json'),
-			`${stableStringify(legacyFailure)}\n`
-		);
-
-		const recovered = await runScienceChallengeMultipartContinuation({
-			...options,
-			resume: true,
-			timeoutMs: 10_000,
-			runPartImpl: () => {
-				throw new Error('legacy collection recovery must not call the model');
-			}
-		});
-		assert.equal(recovered.status, 'passed', recovered.issues?.join('\n'));
-		assert.equal(calls, 2);
-		assert.deepEqual(recovered.manifest.priorCollectionFailure, legacyFailure);
-		assert.equal(recovered.validation.priorCollectionFailureSha256, canonicalHash(legacyFailure));
-		const replayed = readScienceChallengeMultipartContinuation({
-			...options,
-			validateCollectionCandidate: (candidate) =>
-				validateFixtureRecoveredCandidate(candidate, options.inputs)
-		});
-		assert.equal(replayed.status, 'passed', replayed.issues?.join('\n'));
-		assert.deepEqual(replayed.validation.verificationRepairCohortIssues, [collectionIssue]);
-	} finally {
-		rmSync(fixture.root, { recursive: true, force: true });
-	}
-});
-
-test('multipart continuation refuses local or unattributed collection failures', async () => {
-	for (const validateCollectionCandidate of [
-		() => ({
-			status: 'failed',
-			issues: ['the continued candidate conflicts with its own shard'],
-			repairTargets: [
-				{
-					challengeId: 'biology-continuation-case-01',
-					shardId: 'science-016',
-					issues: ['the continued candidate conflicts with its own shard']
-				}
-			]
-		}),
-		() => ({
-			status: 'failed',
-			issues: ['the continued candidate has an unattributed collection problem']
-		}),
-		() => ({
-			status: 'failed',
-			issues: ['a local challenge was relabelled as a peer-shard problem'],
-			repairTargets: [
-				{
-					challengeId: 'biology-continuation-case-01',
-					shardId: 'science-099',
-					issues: ['a local challenge was relabelled as a peer-shard problem']
-				}
-			]
-		})
-	]) {
-		const fixture = await exhaustedMultipartContinuationFixture();
-		try {
-			let calls = 0;
-			const result = await runScienceChallengeMultipartContinuation({
-				...fixture.options,
-				validateCollectionCandidate,
-				resume: true,
-				timeoutMs: 10_000,
-				runPartImpl: (runOptions) => {
-					const batch = fixture.continuationBatches[calls];
-					const streamTextImpl = () => successfulPromptJsonCall(batch, calls + 2);
-					calls += 1;
-					return runDirectScienceChallengePromptJsonTurn({ ...runOptions, streamTextImpl });
-				}
-			});
-			assert.equal(result.status, 'failed');
-			assert.equal(calls, 2);
-			assert.match(
-				result.issues.join('\n'),
-				/cannot defer a collection failure assigned to its own shard|cannot defer an unattributed/i
-			);
-			assert.equal(existsSync(path.join(fixture.continuationDir, 'candidate.json')), false);
-		} finally {
-			rmSync(fixture.root, { recursive: true, force: true });
-		}
-	}
-});
-
-test('multipart continuation rejects a collection snapshot before suffix claims complete', async () => {
-	const fixture = await exhaustedMultipartContinuationFixture();
-	try {
-		mkdirSync(fixture.continuationDir, { recursive: true });
-		writeFileSync(
-			path.join(fixture.continuationDir, 'collection-validation.json'),
-			`${stableStringify({ preseeded: true })}\n`
-		);
-		const inspected = inspectScienceChallengeMultipartContinuation(fixture.options);
-		assert.equal(inspected.status, 'failed');
-		assert.match(
-			inspected.issues.join('\n'),
-			/collection snapshot exists before every suffix part is complete/i
-		);
-	} finally {
-		rmSync(fixture.root, { recursive: true, force: true });
-	}
-});
-
-for (const crashPhase of ['prepared', 'claimed']) {
-	test(`multipart continuation safely resumes after a ${crashPhase} pre-invocation crash`, async () => {
-		const fixture = await exhaustedMultipartContinuationFixture();
-		try {
-			let calls = 0;
-			await assert.rejects(
-				() =>
-					runScienceChallengeMultipartContinuation({
-						...fixture.options,
-						resume: true,
-						timeoutMs: 10_000,
-						onJournalPhase: ({ phase, partId }) => {
-							if (phase === crashPhase && partId === 'part-03') {
-								throw new Error(`simulated ${crashPhase} crash`);
-							}
-						},
-						runPartImpl: () => {
-							calls += 1;
-							throw new Error('pre-invocation crash must happen before the model runner');
-						}
-					}),
-				new RegExp(`simulated ${crashPhase} crash`)
-			);
-			assert.equal(calls, 0);
-			const recoverable = inspectScienceChallengeMultipartContinuation(fixture.options);
-			assert.equal(recoverable.status, 'passed', recoverable.issues?.join('\n'));
-			assert.equal(recoverable.action, 'eligible');
-			assert.equal(recoverable.nextPartId, 'part-03');
-
-			const resumed = await runScienceChallengeMultipartContinuation({
-				...fixture.options,
-				resume: true,
-				timeoutMs: 10_000,
-				runPartImpl: (options) => {
-					const batch = fixture.continuationBatches[calls];
-					const streamTextImpl = () => successfulPromptJsonCall(batch, calls + 2);
-					calls += 1;
-					return runDirectScienceChallengePromptJsonTurn({ ...options, streamTextImpl });
-				}
-			});
-			assert.equal(resumed.status, 'passed', resumed.issues?.join('\n'));
-			assert.equal(calls, 2);
-		} finally {
-			rmSync(fixture.root, { recursive: true, force: true });
-		}
-	});
-}
-
-test('multipart continuation closes an invocation-started crash without a duplicate call', async () => {
-	const fixture = await exhaustedMultipartContinuationFixture();
-	try {
-		let calls = 0;
-		await assert.rejects(
-			() =>
-				runScienceChallengeMultipartContinuation({
-					...fixture.options,
-					resume: true,
-					timeoutMs: 10_000,
-					onJournalPhase: ({ phase, partId }) => {
-						if (phase === 'invocation-started' && partId === 'part-03') {
-							throw new Error('simulated invocation-started crash');
-						}
-					},
-					runPartImpl: () => {
-						calls += 1;
-						throw new Error('unknown invocation state must not call the runner');
-					}
-				}),
-			/simulated invocation-started crash/
-		);
-		assert.equal(calls, 0);
-		const closed = inspectScienceChallengeMultipartContinuation(fixture.options);
-		assert.equal(closed.status, 'failed');
-		assert.match(closed.issues.join('\n'), /invocation may have started.*slot is closed/i);
-
-		const refused = await runScienceChallengeMultipartContinuation({
-			...fixture.options,
-			resume: true,
-			timeoutMs: 10_000,
-			runPartImpl: () => {
-				calls += 1;
-			}
-		});
-		assert.equal(refused.status, 'failed');
-		assert.equal(calls, 0);
-		assert.match(refused.issues.join('\n'), /invocation may have started.*slot is closed/i);
-	} finally {
-		rmSync(fixture.root, { recursive: true, force: true });
-	}
-});
-
-test('multipart continuation replays complete evidence after an invocation-returned crash', async () => {
-	const fixture = await exhaustedMultipartContinuationFixture();
-	try {
-		let calls = 0;
-		await assert.rejects(
-			() =>
-				runScienceChallengeMultipartContinuation({
-					...fixture.options,
-					resume: true,
-					timeoutMs: 10_000,
-					onJournalPhase: ({ phase, partId }) => {
-						if (phase === 'invocation-returned' && partId === 'part-03') {
-							throw new Error('simulated invocation-returned crash');
-						}
-					},
-					runPartImpl: (options) => {
-						const batch = fixture.continuationBatches[calls];
-						const streamTextImpl = () => successfulPromptJsonCall(batch, calls + 2);
-						calls += 1;
-						return runDirectScienceChallengePromptJsonTurn({ ...options, streamTextImpl });
-					}
-				}),
-			/simulated invocation-returned crash/
-		);
-		assert.equal(calls, 1);
-		const replayable = inspectScienceChallengeMultipartContinuation(fixture.options);
-		assert.equal(replayable.status, 'passed', replayable.issues?.join('\n'));
-		assert.deepEqual(replayable.completedPartIds, ['part-03']);
-		assert.equal(replayable.nextPartId, 'part-04');
-
-		const resumed = await runScienceChallengeMultipartContinuation({
-			...fixture.options,
-			resume: true,
-			timeoutMs: 10_000,
-			runPartImpl: (options) => {
-				const batch = fixture.continuationBatches[calls];
-				const streamTextImpl = () => successfulPromptJsonCall(batch, calls + 2);
-				calls += 1;
-				return runDirectScienceChallengePromptJsonTurn({ ...options, streamTextImpl });
-			}
-		});
-		assert.equal(resumed.status, 'passed', resumed.issues?.join('\n'));
-		assert.equal(calls, 2);
-	} finally {
-		rmSync(fixture.root, { recursive: true, force: true });
-	}
-});
-
-test('partial multipart continuation finals fail closed on mismatched bytes', async () => {
-	const fixture = await exhaustedMultipartContinuationFixture();
-	try {
-		let calls = 0;
-		const completed = await runScienceChallengeMultipartContinuation({
-			...fixture.options,
-			resume: true,
-			timeoutMs: 10_000,
-			runPartImpl: (options) => {
-				const batch = fixture.continuationBatches[calls];
-				const streamTextImpl = () => successfulPromptJsonCall(batch, calls + 2);
-				calls += 1;
-				return runDirectScienceChallengePromptJsonTurn({ ...options, streamTextImpl });
-			}
-		});
-		assert.equal(completed.status, 'passed', completed.issues?.join('\n'));
-		rmSync(completed.artifactPaths.validation);
-		rmSync(completed.artifactPaths.manifest);
-		writeFileSync(
-			completed.artifactPaths.candidate,
-			`${readFileSync(completed.artifactPaths.candidate, 'utf8')} `
-		);
-
-		const dryRun = await runScienceChallengeMultipartContinuation({
-			...fixture.options,
-			dryRun: true,
-			resume: true,
-			timeoutMs: 10_000,
-			runPartImpl: () => {
-				throw new Error('mismatched partial dry-run must not call a model part');
-			}
-		});
-		assert.equal(dryRun.status, 'failed');
-		assert.equal(calls, 2);
-		assert.match(dryRun.issues.join('\n'), /partial candidate differs from deterministic replay/);
-		assert.equal(existsSync(completed.artifactPaths.validation), false);
-		assert.equal(existsSync(completed.artifactPaths.manifest), false);
-
-		const replay = await runScienceChallengeMultipartContinuation({
-			...fixture.options,
-			resume: true,
-			timeoutMs: 10_000,
-			runPartImpl: () => {
-				throw new Error('mismatched partial final recovery must not call a model part');
-			}
-		});
-		assert.equal(replay.status, 'failed');
-		assert.equal(calls, 2);
-		assert.match(replay.issues.join('\n'), /partial candidate differs from deterministic replay/);
-		assert.equal(existsSync(completed.artifactPaths.validation), false);
-		assert.equal(existsSync(completed.artifactPaths.manifest), false);
-	} finally {
-		rmSync(fixture.root, { recursive: true, force: true });
-	}
-});
-
-test('rejects a structurally valid continuation claim cross-bound to another input', async () => {
-	const fixture = await exhaustedMultipartContinuationFixture();
-	try {
-		let calls = 0;
-		const result = await runScienceChallengeMultipartContinuation({
-			...fixture.options,
-			resume: true,
-			timeoutMs: 10_000,
-			runPartImpl: (options) => {
-				const claimPath = path.join(
-					verificationRepairExecutionLedgerRoot(
-						fixture.root,
-						fixture.options.expectedExecutionIdentity.objectiveId
-					),
-					'shards',
-					fixture.options.shardId,
-					'attempt-04',
-					'multipart-continuation-parts',
-					'part-03',
-					'claim.json'
-				);
-				const claim = JSON.parse(readFileSync(claimPath, 'utf8'));
-				claim.inputSha256 = 'f'.repeat(64);
-				writeFileSync(claimPath, `${stableStringify(claim)}\n`);
-				const batch = fixture.continuationBatches[calls];
-				const streamTextImpl = () => successfulPromptJsonCall(batch, calls + 2);
-				calls += 1;
-				return runDirectScienceChallengePromptJsonTurn({ ...options, streamTextImpl });
-			}
-		});
-		assert.equal(result.status, 'failed');
-		assert.equal(calls, 1);
-		assert.match(
-			result.issues.join('\n'),
-			/exact source, input, plan or predecessor|invocation-start journal is invalid/
-		);
-		assert.equal(existsSync(path.join(fixture.continuationDir, 'parts/part-04')), false);
-	} finally {
-		rmSync(fixture.root, { recursive: true, force: true });
-	}
-});
-
-test('multipart continuation fails closed after a claimed part failure and on byte tampering', async () => {
-	const failedFixture = await exhaustedMultipartContinuationFixture();
-	try {
-		let calls = 0;
-		const failedRun = await runScienceChallengeMultipartContinuation({
-			...failedFixture.options,
-			resume: true,
-			timeoutMs: 10_000,
-			runPartImpl: async () => {
-				calls += 1;
-				throw new Error('simulated continuation transport failure');
-			}
-		});
-		assert.equal(failedRun.status, 'failed');
-		assert.equal(calls, 1);
-		assert.match(failedRun.issues.join('\n'), /canonical slot is now closed/);
-		const refused = await runScienceChallengeMultipartContinuation({
-			...failedFixture.options,
-			resume: true,
-			timeoutMs: 10_000,
-			runPartImpl: async () => {
-				calls += 1;
-			}
-		});
-		assert.equal(refused.status, 'failed');
-		assert.equal(calls, 1);
-		assert.match(
-			refused.issues.join('\n'),
-			/immutable multipart continuation failure|slot is closed/i
-		);
-	} finally {
-		rmSync(failedFixture.root, { recursive: true, force: true });
-	}
-
-	const tamperedFixture = await exhaustedMultipartContinuationFixture();
-	try {
-		let calls = 0;
-		const completed = await runScienceChallengeMultipartContinuation({
-			...tamperedFixture.options,
-			resume: true,
-			timeoutMs: 10_000,
-			runPartImpl: (options) => {
-				const batch = tamperedFixture.continuationBatches[calls];
-				const streamTextImpl = () => successfulPromptJsonCall(batch, calls + 2);
-				calls += 1;
-				return runDirectScienceChallengePromptJsonTurn({ ...options, streamTextImpl });
-			}
-		});
-		assert.equal(completed.status, 'passed', completed.issues?.join('\n'));
-		const partFour = path.join(tamperedFixture.continuationDir, 'parts/part-04/last-message.json');
-		writeFileSync(partFour, `${readFileSync(partFour)} `);
-		const replay = readScienceChallengeMultipartContinuation(tamperedFixture.options);
-		assert.equal(replay.status, 'failed');
-		assert.match(replay.issues.join('\n'), /raw policy failed|bind|differs/i);
-	} finally {
-		rmSync(tamperedFixture.root, { recursive: true, force: true });
-	}
-});
-
 async function failedIdentityFixture({
 	firstObservedId = REAL_TYPO,
 	secondObservedId = DIFFICULTY_ID,
@@ -1928,103 +1142,6 @@ async function mergedDifficultyFixture({ inputSha256Factory = null, titleVariant
 	}
 }
 
-async function questionPresentationDefaultFixture({ inputSha256Factory = null } = {}) {
-	const root = mkdtempSync(path.join(tmpdir(), 'science-question-presentation-salvage-'));
-	const attemptDir = path.join(root, 'attempt-01');
-	const rows = PRESENTATION_IDS.map((id, index) =>
-		makePlanRow(
-			id,
-			`biology-topic-presentation-${index + 1}`,
-			`paper-question-00${index + 1}`,
-			index
-		)
-	);
-	const inputs = rows.map((plan, index) => ({
-		plan,
-		curriculum: {
-			componentId: plan.curriculumComponentId,
-			specificationId: plan.specificationId,
-			specificationSha256: plan.specificationSha256
-		},
-		calibrationEvidence: {
-			id: plan.calibrationQuestionId,
-			contentSha256: plan.calibrationQuestionSha256
-		},
-		shardIndex: index
-	}));
-	const entries = rows.map((row, index) => {
-		const entry = makeEntry({
-			id: row.id,
-			artChallengeId: row.id,
-			curriculumComponentId: row.curriculumComponentId,
-			calibrationQuestionId: row.calibrationQuestionId,
-			index
-		});
-		entry.definition.slug = `question-presentation-${index + 1}`;
-		entry.definition.title = `How is nullable presentation case ${index + 1} checked?`;
-		entry.definition.questionPresentation = null;
-		return entry;
-	});
-	delete entries[2].definition.questionPresentation;
-	delete entries[3].definition.questionPresentation;
-	const parts = buildScienceChallengeAuthoringParts({ rows, inputs, partSize: 2 });
-	const prompts = parts.map((part) => `Canonical prompt for ${part.partId}.`);
-	const orchestrationPrompt = 'Canonical question-presentation orchestration prompt.';
-	const inputSha256 =
-		typeof inputSha256Factory === 'function'
-			? inputSha256Factory(inputs)
-			: canonicalHash({ mode: 'question-presentation-default-test', inputs });
-	let callIndex = 0;
-	try {
-		await assert.rejects(
-			() =>
-				runDirectScienceChallengeMultipartTurn({
-					parts: parts.map((part, index) => ({ ...part, prompt: prompts[index] })),
-					partSize: 2,
-					attemptDir,
-					orchestrationPrompt,
-					inputSha256,
-					responseMode: SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON,
-					runPartImpl: (options) => {
-						const batch = {
-							schemaVersion: 'science-challenge-batch/v1',
-							challenges: entries.slice(callIndex * 2, callIndex * 2 + 2)
-						};
-						const partIndex = callIndex;
-						callIndex += 1;
-						return runLegacyQuestionPresentationPromptJsonTurn({
-							options,
-							batch,
-							partIndex
-						});
-					}
-				}),
-			/Prompt-JSON local response validation failed/
-		);
-		const summary = JSON.parse(readFileSync(path.join(attemptDir, 'run-summary.json'), 'utf8'));
-		return {
-			root,
-			policyInput: {
-				summary,
-				eventLogBytes: readFileSync(path.join(attemptDir, 'events.jsonl')),
-				lastMessageBytes: readFileSync(path.join(attemptDir, 'last-message.json')),
-				promptBytes: Buffer.from(`${orchestrationPrompt}\n`),
-				multipartEvidence: readScienceChallengeDirectMultipartEvidence({
-					attemptDir,
-					summary
-				}),
-				expectedResponseJsonSchema: challengeBatchOutputSchema(inputs.length),
-				expectedInputs: inputs,
-				expectedInputSha256: inputSha256,
-				expectedPartPrompts: prompts
-			}
-		};
-	} catch (error) {
-		rmSync(root, { recursive: true, force: true });
-		throw error;
-	}
-}
-
 async function exhaustedSalvageFixture({
 	attemptCount = 4,
 	localAttemptCount = attemptCount,
@@ -2035,57 +1152,36 @@ async function exhaustedSalvageFixture({
 	sourceKind = 'failed-merge',
 	additionalMergedDifficultyAttempt = null
 } = {}) {
-	const presentationDefault = sourceKind === 'question-presentation-default';
 	const difficultyComposition = sourceKind === 'failed-merge-difficulty-composition';
-	const rejectedPrior = presentationDefault
-		? null
-		: makeEntry({
-				id: EXPECTED_ID,
-				artChallengeId: EXPECTED_ID,
-				curriculumComponentId: 'biology-topic-monoclonal-production',
-				calibrationQuestionId: 'paper-question-001',
-				index: 0
-			});
+	const rejectedPrior = makeEntry({
+		id: EXPECTED_ID,
+		artChallengeId: EXPECTED_ID,
+		curriculumComponentId: 'biology-topic-monoclonal-production',
+		calibrationQuestionId: 'paper-question-001',
+		index: 0
+	});
 	if (rejectedPrior && !difficultyComposition) {
 		rejectedPrior.definition.title = 'How was the earlier rejected antibody sequence described?';
 	}
-	const acceptedPrior = presentationDefault
-		? null
-		: makeEntry({
-				id: DIFFICULTY_ID,
-				artChallengeId: DIFFICULTY_ID,
-				curriculumComponentId: 'biology-topic-plant-defence',
-				calibrationQuestionId: 'paper-question-002',
-				index: 1,
-				difficulty: difficultyComposition ? 'stretch' : 'standard'
-			});
+	const acceptedPrior = makeEntry({
+		id: DIFFICULTY_ID,
+		artChallengeId: DIFFICULTY_ID,
+		curriculumComponentId: 'biology-topic-plant-defence',
+		calibrationQuestionId: 'paper-question-002',
+		index: 1,
+		difficulty: difficultyComposition ? 'stretch' : 'standard'
+	});
 	if (mutateAcceptedPrior && acceptedPrior) {
 		acceptedPrior.definition.hook = 'This accepted row was changed outside the permitted salvage.';
 	}
-	const presentationPrior = presentationDefault
-		? PRESENTATION_IDS.map((id, index) => {
-				const entry = makeEntry({
-					id,
-					artChallengeId: id,
-					curriculumComponentId: `biology-topic-presentation-${index + 1}`,
-					calibrationQuestionId: `paper-question-00${index + 1}`,
-					index
-				});
-				entry.definition.slug = `prior-question-presentation-${index + 1}`;
-				entry.definition.title = `How was prior presentation case ${index + 1} described?`;
-				return entry;
-			})
-		: null;
 	const priorCandidate = normalizeGeneratedChallengeBatch({
 		schemaVersion: 'science-challenge-batch/v1',
-		challenges: presentationDefault ? presentationPrior : [rejectedPrior, acceptedPrior]
+		challenges: [rejectedPrior, acceptedPrior]
 	});
 	const verificationSummary = {
 		schemaVersion: 'science-challenge-plan-salvage-review/v1',
 		candidateSetSha256: canonicalHash(priorCandidate),
-		reviews: presentationDefault
-			? PRESENTATION_IDS.map((id) => ({ id, accepted: false }))
-			: difficultyComposition
+		reviews: difficultyComposition
 				? [
 						{
 							id: EXPECTED_ID,
@@ -2130,17 +1226,15 @@ async function exhaustedSalvageFixture({
 	const sourceFixture =
 		sourceKind === 'merged-difficulty'
 			? await mergedDifficultyFixture({ inputSha256Factory })
-			: presentationDefault
-				? await questionPresentationDefaultFixture({ inputSha256Factory })
-				: await failedIdentityFixture({
-						inputSha256Factory,
-						...(difficultyComposition
-							? {
-									secondObservedDifficulty: 'standard',
-									secondPlanDifficulty: 'stretch'
-								}
-							: {})
-					});
+			: await failedIdentityFixture({
+					inputSha256Factory,
+					...(difficultyComposition
+						? {
+								secondObservedDifficulty: 'standard',
+								secondPlanDifficulty: 'stretch'
+							}
+						: {})
+				});
 	const additionalSourceFixture =
 		sourceKind === 'merged-difficulty' && Number.isInteger(additionalMergedDifficultyAttempt)
 			? await mergedDifficultyFixture({
@@ -2208,15 +1302,14 @@ async function exhaustedSalvageFixture({
 			promptSha256: sha256(sourceFixture.policyInput.promptBytes),
 			runSummarySha256: canonicalHash(sourceSummary),
 			transport: sourceSummary.transport,
-			transportVersion: sourceKind === 'merged-difficulty' ? sourceSummary.transportVersion : null,
-			responseMode: sourceKind === 'merged-difficulty' ? sourceSummary.responseMode : null,
-			providerSchemaApplied:
-				sourceKind === 'merged-difficulty' ? sourceSummary.providerSchemaApplied : null,
+			transportVersion: sourceSummary.transportVersion,
+			responseMode: sourceSummary.responseMode,
+			providerSchemaApplied: sourceSummary.providerSchemaApplied,
 			provider: sourceSummary.provider,
 			model: sourceSummary.model,
 			modelVersion: null,
-			modelVersions: sourceKind === 'merged-difficulty' ? sourceSummary.modelVersions : null,
-			directPartSize: sourceKind === 'merged-difficulty' ? sourceSummary.partSize : null,
+			modelVersions: sourceSummary.modelVersions,
+			directPartSize: sourceSummary.partSize,
 			thinkingLevel: sourceSummary.thinkingLevel,
 			transportError: sourceKind === 'merged-difficulty' ? null : transportError
 		};
@@ -2413,268 +1506,6 @@ async function exhaustedSalvageFixture({
 	}
 }
 
-async function exhaustedMultipartContinuationFixture() {
-	const root = mkdtempSync(path.join(tmpdir(), 'science-multipart-continuation-'));
-	const sourceAttemptScratch = path.join(root, 'source-attempt');
-	const ids = Array.from(
-		{ length: 8 },
-		(_, index) => `biology-continuation-case-${String(index + 1).padStart(2, '0')}`
-	);
-	const rows = ids.map((id, index) =>
-		makePlanRow(
-			id,
-			`biology-topic-continuation-${index + 1}`,
-			`paper-continuation-${index + 1}`,
-			index
-		)
-	);
-	const inputs = rows.map((plan, index) => ({
-		plan,
-		curriculum: {
-			componentId: plan.curriculumComponentId,
-			specificationId: plan.specificationId,
-			specificationSha256: plan.specificationSha256
-		},
-		calibrationEvidence: {
-			id: plan.calibrationQuestionId,
-			contentSha256: plan.calibrationQuestionSha256
-		},
-		shardIndex: index
-	}));
-	const entries = rows.map((row, index) => {
-		const entry = makeEntry({
-			id: row.id,
-			artChallengeId: row.id,
-			curriculumComponentId: row.curriculumComponentId,
-			calibrationQuestionId: row.calibrationQuestionId,
-			index
-		});
-		entry.definition.slug = `continuation-case-${index + 1}`;
-		entry.definition.title = `How is continuation case ${index + 1} checked?`;
-		entry.definition.questionPresentation = null;
-		return entry;
-	});
-	const sourceEntries = entries.slice(0, 4).map((entry) => structuredClone(entry));
-	delete sourceEntries[2].definition.questionPresentation;
-	delete sourceEntries[3].definition.questionPresentation;
-	const priorEntries = entries.map((entry, index) => {
-		const prior = structuredClone(entry);
-		prior.definition.title = `How was rejected continuation case ${index + 1} described?`;
-		return prior;
-	});
-	const priorCandidate = normalizeGeneratedChallengeBatch({
-		schemaVersion: 'science-challenge-batch/v1',
-		challenges: priorEntries
-	});
-	const verificationSummary = {
-		schemaVersion: 'science-challenge-continuation-review/v1',
-		candidateSetSha256: canonicalHash(priorCandidate),
-		reviews: ids.map((id) => ({ id, accepted: false }))
-	};
-	const repairSha256 = canonicalHash(verificationSummary);
-	const inputSha256 = canonicalHash({
-		promptVersion: SCIENCE_CHALLENGE_PROMPT_VERSION,
-		inputs,
-		priorCandidateSha256: canonicalHash(priorCandidate),
-		verificationSummarySha256: repairSha256
-	});
-	const canonicalParts = buildScienceChallengeAuthoringParts({ rows, inputs, partSize: 2 });
-	const prompts = canonicalParts.map((part) => `Canonical continuation prompt for ${part.partId}.`);
-	const orchestrationPrompt = 'Canonical exhausted multipart continuation orchestration prompt.';
-	let sourceCall = 0;
-	try {
-		await assert.rejects(
-			() =>
-				runDirectScienceChallengeMultipartTurn({
-					parts: canonicalParts.map((part, index) => ({ ...part, prompt: prompts[index] })),
-					partSize: 2,
-					attemptDir: sourceAttemptScratch,
-					orchestrationPrompt,
-					inputSha256,
-					responseMode: SCIENCE_CHALLENGE_DIRECT_RESPONSE_MODE_PROMPT_JSON,
-					thinkingLevel: 'high',
-					runPartImpl: (options) => {
-						const batch = {
-							schemaVersion: 'science-challenge-batch/v1',
-							challenges: sourceEntries.slice(sourceCall * 2, sourceCall * 2 + 2)
-						};
-						const partIndex = sourceCall;
-						sourceCall += 1;
-						return runLegacyQuestionPresentationPromptJsonTurn({
-							options,
-							batch,
-							partIndex
-						});
-					}
-				}),
-			/Prompt-JSON local response validation failed/
-		);
-		assert.equal(sourceCall, 2);
-		const sourceSummary = JSON.parse(
-			readFileSync(path.join(sourceAttemptScratch, 'run-summary.json'), 'utf8')
-		);
-		assert.equal(sourceSummary.expectedPartCount, 4);
-		assert.equal(sourceSummary.attemptedPartCount, 2);
-		const shardId = 'science-016';
-		const outputRoot = path.join(root, 'generation');
-		const shardDir = path.join(outputRoot, 'shards', shardId);
-		mkdirSync(shardDir, { recursive: true });
-		const repairPrefix = repairSha256.slice(0, 12);
-		for (let attempt = 1; attempt <= 3; attempt += 1) {
-			mkdirSync(
-				path.join(
-					shardDir,
-					`verification-repair-${repairPrefix}-attempt-${String(attempt).padStart(2, '0')}`
-				)
-			);
-		}
-		const sourceAttemptDir = path.join(shardDir, `verification-repair-${repairPrefix}-attempt-04`);
-		renameSync(sourceAttemptScratch, sourceAttemptDir);
-		const promptPath = path.join(
-			shardDir,
-			`verification-repair-${repairPrefix}-prompt-attempt-4.txt`
-		);
-		writeFileSync(promptPath, `${orchestrationPrompt}\n`);
-		const transportError = `Authoring transport failed: ${sourceSummary.error}`;
-		const sourceValidation = {
-			status: 'failed',
-			issues: [
-				transportError,
-				'schemaVersion must be science-challenge-batch/v1.',
-				'Batch must contain exactly 8 challenges.'
-			],
-			inputSha256,
-			verificationRepairSha256: repairSha256,
-			verificationRepairCohortIssues: [],
-			priorCandidateSha256: canonicalHash(priorCandidate),
-			rawCandidateSha256: null,
-			candidateSha256: null,
-			normalizationVersion: SCIENCE_CHALLENGE_NORMALIZATION_VERSION,
-			promptVersion: SCIENCE_CHALLENGE_PROMPT_VERSION,
-			promptSha256: sha256(`${orchestrationPrompt}\n`),
-			runSummarySha256: canonicalHash(sourceSummary),
-			transport: sourceSummary.transport,
-			transportVersion: null,
-			responseMode: null,
-			providerSchemaApplied: null,
-			provider: sourceSummary.provider,
-			model: sourceSummary.model,
-			modelVersion: null,
-			modelVersions: null,
-			directPartSize: null,
-			thinkingLevel: sourceSummary.thinkingLevel,
-			transportError
-		};
-		const sourceValidationPath = path.join(sourceAttemptDir, 'validation.json');
-		writeFileSync(sourceValidationPath, `${stableStringify(sourceValidation)}\n`);
-		const priorValidation = {
-			status: 'passed',
-			issues: [],
-			candidateSha256: canonicalHash(priorCandidate)
-		};
-		const repairDir = path.join(shardDir, `verification-repair-${repairPrefix}`);
-		mkdirSync(repairDir);
-		writeFileSync(
-			path.join(repairDir, 'verification-summary.json'),
-			`${stableStringify(verificationSummary)}\n`
-		);
-		writeFileSync(
-			path.join(repairDir, 'prior-candidate.json'),
-			`${stableStringify(priorCandidate)}\n`
-		);
-		writeFileSync(
-			path.join(repairDir, 'prior-validation.json'),
-			`${stableStringify(priorValidation)}\n`
-		);
-		const expectedPlanSha256 = '9'.repeat(64);
-		const identity = scienceChallengeVerificationRepairExecutionIdentity({
-			planSha256: expectedPlanSha256,
-			verificationSha256: repairSha256,
-			priorCandidateSetSha256: verificationSummary.candidateSetSha256,
-			model: sourceSummary.model,
-			transport: sourceSummary.transport,
-			responseMode: sourceSummary.responseMode,
-			thinkingLevel: sourceSummary.thinkingLevel,
-			directPartSize: sourceSummary.partSize
-		});
-		const ledgerRoot = verificationRepairExecutionLedgerRoot(root, identity.objectiveId);
-		initializeVerificationRepairExecutionLedger({ ledgerRoot, identity });
-		for (let attempt = 1; attempt <= 4; attempt += 1) {
-			claimVerificationRepairExecutionAttempt({
-				ledgerRoot,
-				identity,
-				shardId,
-				attempt,
-				outputRoot
-			});
-		}
-		const options = {
-			shardId,
-			shardDir,
-			outputRoot,
-			workspaceRoot: root,
-			repairSha256,
-			expectedPlanSha256,
-			expectedExecutionIdentity: identity,
-			inputSha256,
-			inputs,
-			rows,
-			priorCandidate,
-			priorValidation,
-			reviews: verificationSummary.reviews,
-			expectedReviewIds: verificationSummary.reviews.map((review) => review.id),
-			authMode: 'configured-proxy',
-			validateBatchCandidate: (candidate) => validateFixtureRecoveredCandidate(candidate, inputs),
-			validateCollectionCandidate: (candidate) =>
-				validateFixtureRecoveredCandidate(candidate, inputs),
-			reconstructSourceEvidence: () => ({
-				expectedPromptBytes: Buffer.from(`${orchestrationPrompt}\n`),
-				expectedPartPrompts: prompts
-			})
-		};
-		const continuationDir = scienceChallengeMultipartContinuationDirectory({
-			shardDir,
-			repairSha256
-		});
-		const sourceFiles = [
-			promptPath,
-			path.join(sourceAttemptDir, 'run-summary.json'),
-			path.join(sourceAttemptDir, 'events.jsonl'),
-			path.join(sourceAttemptDir, 'last-message.json'),
-			sourceValidationPath,
-			...sourceSummary.parts.flatMap((record) => {
-				const partRoot = path.join(sourceAttemptDir, 'parts', record.partId);
-				return REQUIRED_TEST_PART_FILES.map((name) => path.join(partRoot, name));
-			})
-		];
-		const initial = inspectScienceChallengeMultipartContinuation(options);
-		assert.equal(initial.status, 'passed', initial.issues.join('\n'));
-		return {
-			root,
-			options,
-			continuationDir,
-			sourceFiles,
-			continuationBatches: [
-				{ schemaVersion: 'science-challenge-batch/v1', challenges: entries.slice(4, 6) },
-				{ schemaVersion: 'science-challenge-batch/v1', challenges: entries.slice(6, 8) }
-			]
-		};
-	} catch (error) {
-		rmSync(root, { recursive: true, force: true });
-		throw error;
-	}
-}
-
-const REQUIRED_TEST_PART_FILES = [
-	'prompt.txt',
-	'request.json',
-	'events.jsonl',
-	'last-message.json',
-	'thoughts.txt',
-	'result-metadata.json',
-	'run-summary.json'
-];
-
 function validateFixtureRecoveredCandidate(candidate, inputs) {
 	const issues = [];
 	if (!Array.isArray(candidate?.challenges) || candidate.challenges.length !== inputs.length) {
@@ -2867,97 +1698,6 @@ function successfulDirectStream(batch, partIndex) {
 		}),
 		abort() {}
 	});
-}
-
-function successfulPromptJsonCall(batch, partIndex) {
-	const rawText = JSON.stringify(batch);
-	const thoughts = `Checked nullable presentation evidence for part ${partIndex + 1}.`;
-	const modelVersion = `chatgpt-gpt-5.6-sol-prompt-json-part-${partIndex + 1}`;
-	const usage = {
-		promptTokens: 30 + partIndex,
-		responseTokens: 12,
-		thinkingTokens: 6,
-		totalTokens: 48 + partIndex
-	};
-	return {
-		events: {
-			async *[Symbol.asyncIterator]() {
-				yield { type: 'delta', channel: 'thought', text: thoughts };
-				yield { type: 'delta', channel: 'response', text: rawText };
-				yield { type: 'model', modelVersion };
-				yield { type: 'usage', usage, costUsd: 0.002, modelVersion };
-			}
-		},
-		result: Promise.resolve({
-			provider: 'chatgpt',
-			model: 'chatgpt-gpt-5.6-sol',
-			modelVersion,
-			text: rawText,
-			thoughts,
-			blocked: false,
-			usage,
-			costUsd: 0.002
-		}),
-		abort() {}
-	};
-}
-
-/**
- * Reconstruct immutable prompt-JSON evidence emitted before the provider-value normalizer started
- * accepting an omitted nullable questionPresentation key. Current authoring must keep accepting
- * that omission; the salvage compatibility tests still need an exact historical failed part.
- */
-async function runLegacyQuestionPresentationPromptJsonTurn({ options, batch, partIndex }) {
-	const streamTextImpl = () => successfulPromptJsonCall(batch, partIndex);
-	const run = await runDirectScienceChallengePromptJsonTurn({
-		...options,
-		streamTextImpl
-	});
-	const omittedIndices = batch.challenges
-		.map((challenge, index) =>
-			Object.hasOwn(challenge.definition, 'questionPresentation') ? null : index
-		)
-		.filter((index) => index !== null);
-	if (omittedIndices.length === 0) return run;
-
-	const localValidationError = stableStringify(
-		omittedIndices.map((index) => ({
-			code: 'invalid_union',
-			errors: [
-				[
-					{
-						code: 'invalid_type',
-						expected: 'null',
-						message: 'Invalid input: expected null, received undefined',
-						path: []
-					}
-				],
-				[
-					{
-						code: 'invalid_type',
-						expected: 'object',
-						message: 'Invalid input: expected object, received undefined',
-						path: []
-					}
-				]
-			],
-			message: 'Invalid input',
-			path: ['challenges', index, 'definition', 'questionPresentation']
-		}))
-	);
-	const error = `Prompt-JSON local response validation failed: ${localValidationError}`;
-	const resultMetadata = JSON.parse(readFileSync(options.resultMetadataPath, 'utf8'));
-	resultMetadata.localValidationStatus = 'failed';
-	resultMetadata.localValidationError = localValidationError;
-	resultMetadata.valueCanonicalSha256 = null;
-	writeFileSync(options.resultMetadataPath, `${stableStringify(resultMetadata)}\n`);
-
-	const summary = JSON.parse(readFileSync(options.summaryPath, 'utf8'));
-	summary.status = 'failed';
-	summary.error = error;
-	summary.resultMetadataSha256 = sha256(readFileSync(options.resultMetadataPath));
-	writeFileSync(options.summaryPath, `${stableStringify(summary)}\n`);
-	throw new Error(error);
 }
 
 function clonePolicyInput(input) {

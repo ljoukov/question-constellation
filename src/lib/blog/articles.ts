@@ -31,12 +31,6 @@ export const blogArticles = Object.entries(rawArticleModules)
 
 export const articlesBySlug = new Map(blogArticles.map((article) => [article.slug, article]));
 
-export const comparisonArticles = blogArticles.filter(
-	(article) => article.category === 'Comparison'
-);
-
-export const learningArticles = blogArticles.filter((article) => article.category !== 'Comparison');
-
 export function getArticle(slug: string) {
 	return articlesBySlug.get(slug) ?? null;
 }

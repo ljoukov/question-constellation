@@ -3007,83 +3007,13 @@ chained import. Apply reviewed one-off content through `scripts/reimport-scoped-
 with exact question/chain ids. Any future ownership handoff must use a tracked row manifest with
 canonical content hashes and declared allowed differences; never blanket-tag legacy rows.
 
-### Automatic Post-Publication Chain Illustrations
+### No Post-Import Answer-Chain Image Phase
 
-Illustration generation is a separate, D1-backed phase after question and chain publication. Keep
-the extraction candidate, answer-chain reconciliation schemas, and `run-codex-answer-chains.mjs`
-text-only. An illustration is derived from the final public chain plus the evidence for every public
-member; it is not part of the source-paper extraction.
-
-Use `pnpm run generate:chain-illustrations` directly when repairing or calibrating a known chain.
-Every real Codex production `--import` runs the illustration phase automatically after its D1 write;
-`--generate-chain-illustrations` remains accepted as a compatibility flag. Use
-`--skip-chain-illustrations` only for an intentional opt-out. The batch importer suppresses each
-single-paper child pass and runs one deduplicated phase after its paper cohort completes so shared
-chains are generated once. Illustration failure is non-blocking by default;
-`--require-chain-illustrations` makes it fail the import.
-
-The automatic phase must fail closed at each gate:
-
-1. Prefilter to clean published Biology, Chemistry, or Physics chains with two to five ordered
-   steps, at least two clean questions from two source papers, chain and membership confidence of
-   at least `0.85`, and complete clean mark/model/checklist artifacts.
-2. Have an evidence reviewer map every stored source step for every public member to either an exact
-   prompt-given excerpt or an existing mark-scheme row. Reject missing steps, different endpoints,
-   branches, question-specific links, dangling evidence references, recall-only groups, and
-   level-of-response questions. Multiple papers alone never prove semantic reuse.
-3. Reduce the accepted chain to two to four visual panels without padding. Chains of at most four
-   steps map one-to-one. A five-step chain may merge one adjacent pair only when both scoring ideas
-   remain explicit and every source step still appears exactly once in order. The semantic plan must
-   define one coherent system or subject, one unique mechanism-specific visual anchor per stage, and
-   the meaning a learner should recover from each stage with all text hidden. Reject unexplained
-   abbreviations, repeated dominant hero views, generic gauges standing in for mechanisms, and
-   conclusions without a concrete visible outcome.
-4. Generate one dark-mode `2048x1152` WebP from scratch with no reference image. Use the
-   subject/subdomain version of the luminous scientific-atlas style, a deep navy grid, minimal
-   verbatim labels, one unambiguous path, and iPad-safe margins. Then pass that exact generated image
-   back to the image model with `action: edit` to produce its light-mode sibling. The edit may change
-   surfaces, text contrast, shadows, highlights, and glow only; it must preserve composition, objects,
-   states, arrows, equations, wording, panel geometry, sequence, and scientific meaning.
-5. Reject either file if it does not decode, is below `1536x864`, falls outside a 1.5% tolerance
-   around `16:9`, or has different dimensions from its sibling. A fresh-context visual judge then
-   checks both variants for scientific accuracy, evidence fidelity, exact labels and numbers,
-   sequence clarity, 1024x576 legibility, distinct causal visuals, text-hidden comprehension, clear
-   terminology, absence of dominant repetition, and the absence of extra claims, loops, panels,
-   logos, or watermarks. Before scoring, the judge must reconstruct what a learner infers with text
-   hidden and after reading, record visible cue → concept → relationship associations, list plausible
-   unintended takeaways, and compare the connected lesson with the planner's intended goal. It also
-   runs a strict cross-theme consistency audit. Publish the pair only
-   when both variants score at least `18/20` with full correctness, evidence, and text scores, every
-   hard visual-learning flag passes, and cross-theme preservation scores `4/4`.
-   The judge owns the persistent structured glitch catalogue: ambiguous symbol placement, wrong
-   conductor association, bypass topology, invalid equations, repeated-object identity/size drift,
-   force-removal direction, conventional-current/electron-direction confusion, question-specific
-   numbers, lost ground/track contact, unexplained encodings, broken spatial stories, missing
-   derived-quantity or governing-law bridges, ambiguous quantity encodings, creation-like cues for
-   conserved quantities, and scientifically inexact relationship terminology. Symbols require an
-   unambiguous leader or immediate physical target; equations must be visually separate from
-   conductor/object labels. A failed deterministic or
-   visual attempt is discarded as a pair. Retry with a brand-new dark generation and no reference
-   image; append only the exact observed defects and the catalogue rules actually triggered. Never
-   patch or edit a failed dark image, and do not create a light variant until a dark original passes
-   its independent single-image judge. Lock that accepted dark as the source for all light attempts.
-   If a light edit fails, discard it and make a fresh edit from the accepted dark, never from the
-   failed light.
-6. Hash the chain, ordered steps, public memberships, prompts, mark rows, models, and checklists.
-   Recheck that fingerprint after generation. Upload both variants to immutable theme-specific R2
-   keys, verify both uploaded byte streams, and only then promote their shared
-   `answer_chain_illustrations` record. A changed source fingerprint must be regenerated rather than
-   silently reusing stale art. Generation metadata must retain prompt hashes, both asset hashes, the
-   dark-to-light derivation-record hash, deterministic hard-check snapshots, the model visual-audit
-   identity/output hash, and an explicit human-audit record. `not_performed` or `not_recorded` is a
-   valid honest human-audit state; never describe model QA as human review. Content-addressed IDs may
-   change when assets change. Existing D1 replacement triggers must leave the new row as the sole
-   published primary and demote the former primary to a non-primary draft.
-
-The stable reusable prompt and validation logic live in
-`scripts/lib/chain-illustration-pipeline.mjs`. Generation uses the subscription-backed
-`chatgpt-gpt-image-2` path in the outer Node process; Codex is used for evidence planning and
-independent visual QA. No image-generation secret belongs in the Worker runtime.
+Paper extraction and D1 import are text-and-source-asset workflows only. They do not generate
+answer-chain illustrations, accept illustration-generation flags, or write generation prompts and
+image candidates into the repository. Existing D1 `answer_chain_illustrations` rows and R2 objects
+remain readable as stored data, but new challenge artwork is produced only by the challenge release
+workflow, kept under ignored `tmp/`, and published through immutable D1/R2 catalogue releases.
 
 ### Corpus-Level Curriculum Notices
 
