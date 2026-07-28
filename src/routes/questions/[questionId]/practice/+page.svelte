@@ -933,6 +933,10 @@
 			? 'Write and check a GCSE English answer against the mark focus.'
 			: 'Write and check a GCSE answer against clear marking points.'}
 	/>
+	<link
+		rel="canonical"
+		href={`https://constellation.eviworld.com/questions/${encodeURIComponent(data.question.id)}`}
+	/>
 </svelte:head>
 
 <main

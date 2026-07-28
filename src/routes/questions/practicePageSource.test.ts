@@ -12,6 +12,13 @@ describe('whole-answer practice page', () => {
 		expect(practicePageSource).not.toContain('Show marking points');
 	});
 
+	it('canonicalizes the interactive practice route to the public question page', () => {
+		expect(practicePageSource).toContain('rel="canonical"');
+		expect(practicePageSource).toContain(
+			'https://constellation.eviworld.com/questions/${encodeURIComponent(data.question.id)}'
+		);
+	});
+
 	it('shows marking-point diagnostics only as checked-result content', () => {
 		expect(practicePageSource).toContain('aria-label={rewriteCheckPending');
 		expect(practicePageSource).toContain("'Checked marking points'");

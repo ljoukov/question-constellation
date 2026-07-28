@@ -69,6 +69,16 @@ function extractCanonical(html) {
 	return link.match(/\bhref=["']([^"']+)["']/i)?.[1] ?? null;
 }
 
+function extractRobotsDirectives(html) {
+	return Array.from(html.matchAll(/<meta\b[^>]*>/gi), ([tag]) => tag)
+		.filter((tag) => /\bname=["']robots["']/i.test(tag))
+		.map((tag) => tag.match(/\bcontent=["']([^"']*)["']/i)?.[1] ?? '');
+}
+
+function includesNoindex(value) {
+	return /\bnoindex\b/i.test(value);
+}
+
 function canonicalToAbsolute(canonical, pageUrl) {
 	return new URL(canonical, pageUrl).toString().replace(/\/$/, '/');
 }
@@ -105,6 +115,13 @@ async function validatePage(baseUrl, loc) {
 
 	const contentType = response.headers.get('content-type') ?? '';
 	if (!contentType.includes('text/html')) return;
+
+	const xRobotsTag = response.headers.get('x-robots-tag') ?? '';
+	assert(!includesNoindex(xRobotsTag), `Sitemap URL has an X-Robots-Tag noindex: ${loc}`);
+	assert(
+		!extractRobotsDirectives(text).some(includesNoindex),
+		`Sitemap URL has a robots noindex meta tag: ${loc}`
+	);
 
 	const canonical = extractCanonical(text);
 	assert(canonical, `Missing canonical link on ${loc}`);
