@@ -104,6 +104,8 @@ describe('SubjectHub challenge promotion', () => {
 		expect(body).toContain('Play now');
 		expect(body).toContain('Customise deck');
 		expect(body).toContain('Start recall');
+		expect(body).toContain('Create a practice paper');
+		expect(body).toContain('/subjects/biology/paper');
 		expect(body).not.toContain('of 2 complete');
 	});
 });

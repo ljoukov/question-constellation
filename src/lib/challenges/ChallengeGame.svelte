@@ -13,6 +13,8 @@
 		CheckCircle2,
 		ChevronDown,
 		Copy,
+		Lightbulb,
+		LoaderCircle,
 		RotateCcw,
 		Share2,
 		Sparkles,
@@ -36,6 +38,11 @@
 		writeChallengeSession,
 		type ChallengeSessionState
 	} from './challengeSession';
+	import {
+		challengeExplanationParagraphs,
+		parseChallengeExplanation,
+		type ChallengeExplanation
+	} from './explanations';
 	import {
 		emptyChallengeLeaderboard,
 		projectChallengeLeaderboard,
@@ -126,7 +133,12 @@
 	let transferWrongChoices = $state<string[]>([]);
 	let transferAttempts = $state(0);
 	let transferPassed = $state(false);
-	let transferHintOpen = $state(false);
+	let transferSupportUsed = $state(false);
+	let explanationStage = $state<Exclude<Stage, 'complete'> | null>(null);
+	let explanationStagesUsed = $state<Array<Exclude<Stage, 'complete'>>>([]);
+	let explanationPanel = $state<HTMLElement | null>(null);
+	let generatedShowdownExplanation = $state<ChallengeExplanation | null>(null);
+	let generatedExplanationStatus = $state<'idle' | 'loading' | 'ready' | 'error'>('idle');
 	let shareMessage = $state('');
 	let announcement = $state('');
 	let reduceMotion = $state(false);
@@ -155,8 +167,16 @@
 
 	const selectedShowdownCorrect = $derived(selectedAnswer === challenge.strongerAnswer);
 	const visibleStage = $derived(reviewStage ?? stage);
-	const correctRepairChoice = $derived(
-		challenge.repairChoices.find((choice) => choice.correct) ?? challenge.repairChoices[0]
+	const activeExplanationStage = $derived(
+		visibleStage === 'complete' ? null : (visibleStage as Exclude<Stage, 'complete'>)
+	);
+	const explanationOpen = $derived(
+		Boolean(activeExplanationStage && explanationStage === activeExplanationStage)
+	);
+	const generatedExplanationParagraphs = $derived(
+		generatedShowdownExplanation
+			? challengeExplanationParagraphs(generatedShowdownExplanation.explanation)
+			: []
 	);
 	const repairedAnswer = $derived(challenge.staticAnswers[challenge.strongerAnswer]);
 	const stagePosition = $derived(
@@ -208,7 +228,8 @@
 			repairAttempts === 1 &&
 			transferAttempts === 1 &&
 			!repairSupportUsed &&
-			!transferHintOpen
+			!transferSupportUsed &&
+			explanationStagesUsed.length === 0
 	);
 	const completionTitle = $derived(
 		challenge.completionTitle ?? 'You improved the answer and used the idea in a new question.'
@@ -235,7 +256,7 @@
 		})
 	);
 	const automaticInterlude = $derived<ChallengeInterludeMechanic>(
-		repairSupportUsed || transferHintOpen
+		repairSupportUsed || transferSupportUsed || explanationStagesUsed.length > 0
 			? 'faded-examiner'
 			: chooseAutomaticInterludeMechanic(roundScore ?? 400, challengeSession)
 	);
@@ -433,6 +454,7 @@
 		completedStageElapsedMs += completedStageDurationMs;
 		haptics.selection();
 		reviewStage = null;
+		explanationStage = null;
 		stage = nextStage;
 		resetStageTimer();
 		recordProgress(nextStage);
@@ -441,6 +463,7 @@
 
 	function chooseShowdown(answer: 'a' | 'b') {
 		if (selectedAnswer) return;
+		explanationStage = null;
 		if (!roundPlayRecorded) {
 			const startsAnotherPlay = Boolean(progressSnapshot.challenges[challenge.id]);
 			roundPlayRecorded = true;
@@ -551,6 +574,90 @@
 		scrollIntoViewIfNeeded(supportButton, 'center');
 	}
 
+	function toggleExplanation() {
+		const targetStage = activeExplanationStage;
+		if (!targetStage) return;
+		if (explanationStage === targetStage) {
+			explanationStage = null;
+			analyticsEvent(
+				'challenge_explanation_closed',
+				eventContext({ explanationStage: targetStage })
+			);
+			announcement = 'The quick explanation is hidden.';
+			return;
+		}
+		void openExplanation(targetStage, 'learner');
+	}
+
+	async function openExplanation(
+		targetStage: Exclude<Stage, 'complete'>,
+		source: 'learner' | 'repair-support' | 'transfer-support'
+	) {
+		const firstUse = !explanationStagesUsed.includes(targetStage);
+		explanationStage = targetStage;
+		if (firstUse) explanationStagesUsed = [...explanationStagesUsed, targetStage];
+		haptics.selection();
+		void playChallengeSound('reveal');
+		analyticsEvent(
+			'challenge_explanation_opened',
+			eventContext({ explanationStage: targetStage, source, firstUse })
+		);
+		if (targetStage === 'showdown' && generatedExplanationStatus === 'idle') {
+			void loadShowdownExplanation();
+		}
+		announcement =
+			targetStage === 'showdown'
+				? 'A question-specific explanation is loading. No answer has been selected.'
+				: 'A quick explanation is visible. Use it to make your own choice.';
+		await tick();
+		await waitForLayout();
+		explanationPanel?.focus({ preventScroll: true });
+		scrollIntoViewIfNeeded(explanationPanel, 'center');
+	}
+
+	async function loadShowdownExplanation() {
+		if (generatedExplanationStatus === 'loading') return;
+		generatedExplanationStatus = 'loading';
+		const startedAt = performance.now();
+		try {
+			const endpoint = new URL(
+				resolve('/api/challenges/[subject]/[slug]/explain', {
+					subject: challenge.subject,
+					slug: challenge.slug
+				}),
+				window.location.origin
+			);
+			endpoint.searchParams.set('v', String(challenge.version));
+			const response = await fetch(`${endpoint.pathname}${endpoint.search}`, {
+				headers: { accept: 'application/json' }
+			});
+			const payload = parseChallengeExplanation(await response.json().catch(() => null));
+			if (!response.ok || !payload) throw new Error('Explanation response was unavailable.');
+			generatedShowdownExplanation = payload;
+			generatedExplanationStatus = 'ready';
+			analyticsEvent(
+				'challenge_explanation_loaded',
+				eventContext({
+					explanationStage: 'showdown',
+					durationMs: Math.round(performance.now() - startedAt),
+					model: payload.model,
+					modelVersion: payload.modelVersion
+				})
+			);
+			announcement = 'The question-specific explanation is ready.';
+		} catch {
+			generatedExplanationStatus = 'error';
+			analyticsEvent(
+				'challenge_explanation_failed',
+				eventContext({
+					explanationStage: 'showdown',
+					durationMs: Math.round(performance.now() - startedAt)
+				})
+			);
+			announcement = 'The explanation could not load. You can retry or continue the challenge.';
+		}
+	}
+
 	function waitForLayout() {
 		return new Promise<void>((resolve) => window.setTimeout(resolve, 0));
 	}
@@ -569,11 +676,11 @@
 		});
 	}
 
-	function revealReviewedRepair() {
+	function explainRepairSupport() {
 		if (repairPassed) return;
 		repairSupportUsed = true;
 		analyticsEvent('challenge_repair_support_used', eventContext({ attempt: repairAttempts }));
-		chooseRepair(correctRepairChoice, false);
+		void openExplanation('repair', 'repair-support');
 	}
 
 	function chooseTransfer(choice: ChallengeChoice) {
@@ -605,12 +712,10 @@
 		);
 	}
 
-	function showTransferHint() {
-		transferHintOpen = true;
-		haptics.selection();
-		void playChallengeSound('reveal');
+	function showTransferSupport() {
+		transferSupportUsed = true;
 		analyticsEvent('challenge_transfer_hint_used', eventContext({ attempt: transferAttempts }));
-		announcement = 'A step reminder is visible. Use it to choose, then try again.';
+		void openExplanation('transfer', 'transfer-support');
 	}
 
 	function recordRoundCompletion() {
@@ -686,7 +791,10 @@
 			eventContext({
 				interludeMechanic: automaticInterlude,
 				assignmentReason:
-					repairSupportUsed || transferHintOpen || score <= 425
+					repairSupportUsed ||
+					transferSupportUsed ||
+					explanationStagesUsed.length > 0 ||
+					score <= 425
 						? 'recovery'
 						: completedSessionTotals.currentOrbitPosition === 1
 							? 'orbit-calm'
@@ -708,7 +816,8 @@
 				repairAttempts,
 				transferAttempts,
 				repairSupportUsed,
-				transferHintUsed: transferHintOpen,
+				transferHintUsed: transferSupportUsed,
+				explanationStagesUsed,
 				completedWithoutFeedback,
 				assignedInterlude: automaticInterlude,
 				interludeSelectionMode: 'automatic',
@@ -756,7 +865,9 @@
 		transferWrongChoices = [];
 		transferAttempts = 0;
 		transferPassed = false;
-		transferHintOpen = false;
+		transferSupportUsed = false;
+		explanationStage = null;
+		explanationStagesUsed = [];
 		shareMessage = '';
 		completedStageElapsedMs = 0;
 		roundScore = null;
@@ -907,6 +1018,81 @@
 		return Boolean(id && choices.find((choice) => choice.id === id)?.correct);
 	}
 </script>
+
+{#snippet explanationSupport()}
+	<div class:open={explanationOpen} class="explanation-support">
+		<div class="explanation-invitation">
+			<span>{explanationOpen ? 'Take your time with the idea.' : 'Not sure where to start?'}</span>
+			<ChallengeButton
+				variant="secondary"
+				onclick={toggleExplanation}
+				ariaExpanded={explanationOpen}
+				ariaControls={`challenge-explanation-${visibleStage}`}
+				analyticsLabel={`Challenge ${challenge.id}: ${explanationOpen ? 'hide' : 'open'} ${visibleStage} explanation`}
+			>
+				<Lightbulb size={17} strokeWidth={2.2} aria-hidden="true" />
+				{explanationOpen ? 'Hide explanation' : 'Explain this'}
+			</ChallengeButton>
+		</div>
+
+		{#if explanationOpen && activeExplanationStage}
+			<aside
+				id={`challenge-explanation-${visibleStage}`}
+				class="explanation-panel"
+				aria-busy={activeExplanationStage === 'showdown' &&
+					generatedExplanationStatus === 'loading'}
+				tabindex="-1"
+				bind:this={explanationPanel}
+			>
+				<header>
+					{#if activeExplanationStage === 'showdown' && generatedExplanationStatus === 'loading'}
+						<LoaderCircle
+							class="explanation-spinner"
+							size={18}
+							strokeWidth={2.2}
+							aria-hidden="true"
+						/>
+					{:else}
+						<Lightbulb size={18} strokeWidth={2.2} aria-hidden="true" />
+					{/if}
+					<span
+						>{activeExplanationStage === 'showdown' ? 'Teach me this' : 'Quick explanation'}</span
+					>
+				</header>
+				{#if activeExplanationStage === 'showdown'}
+					{#if generatedExplanationStatus === 'ready' && generatedShowdownExplanation}
+						<h3>Understand what is happening first.</h3>
+						{#each generatedExplanationParagraphs as paragraph}
+							<p><MathText text={paragraph} /></p>
+						{/each}
+						<small>Use the explanation, then compare the answers yourself.</small>
+					{:else if generatedExplanationStatus === 'error'}
+						<h3>The explanation could not load.</h3>
+						<p>You can retry without losing your place, or continue with the challenge.</p>
+						<ChallengeButton variant="secondary" onclick={loadShowdownExplanation}>
+							Try again
+						</ChallengeButton>
+					{:else}
+						<h3>Building the idea around this question…</h3>
+						<p>A short GCSE explanation is being prepared from the question itself.</p>
+					{/if}
+				{:else if activeExplanationStage === 'diagnose'}
+					<h3>Look for the idea that changes the mark.</h3>
+					<p><MathText text={challenge.showdownExplanation} /></p>
+					<p>Now identify the specific problem in the lower-scoring answer.</p>
+				{:else if activeExplanationStage === 'repair'}
+					<h3>Work out why the change matters.</h3>
+					<p><MathText text={challenge.repairSuccess} /></p>
+					<p>Choose the smallest edit that makes that reasoning clear.</p>
+				{:else}
+					<h3>Carry the reasoning into the new context.</h3>
+					<p><MathText text={challenge.transferExplanation} /></p>
+					<p>Use that explanation to compare the choices; you still make the choice.</p>
+				{/if}
+			</aside>
+		{/if}
+	</div>
+{/snippet}
 
 <div class="challenge-game" bind:this={challengeGame}>
 	<p class="challenge-announcement" aria-live="polite" aria-atomic="true">{announcement}</p>
@@ -1281,6 +1467,7 @@
 								<div class="challenge-stage-heading" tabindex="-1" bind:this={stageHeading}>
 									<h2>Which answer would score higher?</h2>
 								</div>
+								{@render explanationSupport()}
 
 								<div
 									class="answer-showdown"
@@ -1326,6 +1513,7 @@
 											<p class="reveal-label">
 												Answer {challenge.strongerAnswer.toUpperCase()} would score higher
 											</p>
+											<p><MathText text={challenge.showdownExplanation} /></p>
 											<h3>
 												Next, find the problem in Answer {challenge.weakAnswer.toUpperCase()}.
 											</h3>
@@ -1336,6 +1524,7 @@
 								<div class="challenge-stage-heading" tabindex="-1" bind:this={stageHeading}>
 									<h2>{challenge.diagnosisPrompt}</h2>
 								</div>
+								{@render explanationSupport()}
 
 								<article class="weak-answer-focus">
 									<span>Answer {challenge.weakAnswer.toUpperCase()}</span>
@@ -1367,6 +1556,7 @@
 								<div class="challenge-stage-heading" tabindex="-1" bind:this={stageHeading}>
 									<h2>{challenge.repairPrompt}</h2>
 								</div>
+								{@render explanationSupport()}
 
 								<article class="weak-answer-focus">
 									<span>Answer {challenge.weakAnswer.toUpperCase()}</span>
@@ -1397,10 +1587,18 @@
 									</div>
 									{#if !repairPassed && repairAttempts >= 2}
 										<div class="support-callout">
-											<p>Need help choosing the sentence that completes the answer?</p>
-											<ChallengeButton variant="secondary" onclick={revealReviewedRepair}>
-												Show the correct fix
-											</ChallengeButton>
+											{#if explanationStagesUsed.includes('repair')}
+												<p>
+													{explanationStage === 'repair'
+														? 'The explanation is open above. Use it to choose the fix yourself.'
+														: 'Use Explain this above to revisit the reasoning, then choose the fix yourself.'}
+												</p>
+											{:else}
+												<p>Want to understand the fix before trying again?</p>
+												<ChallengeButton variant="secondary" onclick={explainRepairSupport}>
+													Explain the fix
+												</ChallengeButton>
+											{/if}
 										</div>
 									{/if}
 									{#if repairPassed}
@@ -1450,8 +1648,7 @@
 												<p><mark><MathText text={repairedAnswer} /></mark></p>
 											</div>
 											<p class="repair-why">
-												<strong>{repairSupportUsed ? 'Correct fix shown' : 'Why this works'}</strong
-												>
+												<strong>Why this works</strong>
 												{challenge.repairSuccess}
 											</p>
 										</details>
@@ -1461,6 +1658,7 @@
 								<div class="challenge-stage-heading" tabindex="-1" bind:this={stageHeading}>
 									<h2>Use what you learned on this question.</h2>
 								</div>
+								{@render explanationSupport()}
 
 								<div class="transfer-options" role="group" aria-label="New-question choices">
 									{#each challenge.transferChoices as choice, index (choice.id)}
@@ -1486,12 +1684,17 @@
 
 								{#if !transferPassed && transferAttempts >= 2}
 									<div class="support-callout">
-										<p>Need a reminder without revealing the answer?</p>
-										<ChallengeButton variant="secondary" onclick={showTransferHint}>
-											Show one step
-										</ChallengeButton>
-										{#if transferHintOpen}
-											<strong><MathText text={challenge.memoryHandle} /></strong>
+										{#if explanationStagesUsed.includes('transfer')}
+											<p>
+												{explanationStage === 'transfer'
+													? 'The explanation is open above. Use it to make your own choice.'
+													: 'Use Explain this above to revisit the reasoning, then make your own choice.'}
+											</p>
+										{:else}
+											<p>Want to understand how the idea applies here?</p>
+											<ChallengeButton variant="secondary" onclick={showTransferSupport}>
+												Explain the idea
+											</ChallengeButton>
 										{/if}
 									</div>
 								{/if}
@@ -1650,7 +1853,7 @@
 	}
 
 	.showdown-reveal h3 {
-		margin-top: 0.08rem;
+		margin-top: 0.5rem;
 		font-size: 1rem;
 		font-weight: 650;
 		line-height: 1.35;
@@ -1744,6 +1947,108 @@
 		gap: 0.8rem;
 	}
 
+	.explanation-support {
+		display: grid;
+		gap: 0.55rem;
+		min-width: 0;
+	}
+
+	.explanation-invitation {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.55rem;
+		align-items: center;
+		justify-content: space-between;
+		min-width: 0;
+		padding: 0.48rem 0.58rem;
+		border: 1px solid var(--qc-ui-border-subtle);
+		border-left: 3px solid var(--qc-ui-accent-text);
+		background: var(--qc-ui-surface-subtle);
+	}
+
+	.explanation-invitation > span {
+		color: var(--qc-ui-text-secondary);
+		font-size: 0.82rem;
+		font-weight: 620;
+		line-height: 1.35;
+	}
+
+	.explanation-invitation :global(.challenge-button) {
+		min-height: 2.75rem;
+		padding: 0.42rem 0.62rem;
+		font-size: 0.82rem;
+		white-space: nowrap;
+	}
+
+	.explanation-support.open .explanation-invitation {
+		border-color: var(--qc-ui-accent-border);
+		background: var(--qc-ui-accent-muted);
+	}
+
+	.explanation-panel {
+		display: grid;
+		gap: 0.5rem;
+		min-width: 0;
+		padding: 0.78rem 0.88rem 0.82rem;
+		border: 1px solid var(--qc-ui-accent-border);
+		border-left: 3px solid var(--qc-ui-accent-text);
+		background: color-mix(in srgb, var(--qc-ui-accent-muted) 58%, var(--qc-ui-surface));
+		outline: none;
+		animation: reveal-rise var(--challenge-motion-duration, 320ms) cubic-bezier(0.2, 0.8, 0.2, 1)
+			both;
+	}
+
+	.explanation-panel:focus-visible {
+		outline: 3px solid var(--qc-ui-focus-ring);
+		outline-offset: 2px;
+	}
+
+	.explanation-panel header {
+		display: flex;
+		gap: 0.42rem;
+		align-items: center;
+		color: var(--qc-ui-accent-text);
+		font-size: 0.72rem;
+		font-weight: 780;
+		letter-spacing: 0.055em;
+		text-transform: uppercase;
+	}
+
+	.explanation-panel h3,
+	.explanation-panel p,
+	.explanation-panel small {
+		margin: 0;
+	}
+
+	.explanation-panel h3 {
+		color: var(--qc-ui-text);
+		font-size: 1rem;
+		font-weight: 690;
+		line-height: 1.3;
+	}
+
+	.explanation-panel p {
+		color: var(--qc-ui-text-secondary);
+		font-size: 0.9rem;
+		line-height: 1.5;
+	}
+
+	.explanation-panel small {
+		padding-top: 0.08rem;
+		border-top: 1px solid var(--qc-ui-accent-border);
+		color: var(--qc-ui-text-muted);
+		font-size: 0.75rem;
+		line-height: 1.4;
+	}
+
+	.explanation-panel :global(.challenge-button) {
+		justify-self: start;
+	}
+
+	:global(.explanation-spinner) {
+		animation: explanation-spin 900ms linear infinite;
+	}
+
 	.support-callout {
 		display: flex;
 		flex-wrap: wrap;
@@ -1762,11 +2067,6 @@
 		margin: 0;
 		font-size: 0.84rem;
 		line-height: 1.45;
-	}
-
-	.support-callout > strong {
-		flex-basis: 100%;
-		color: var(--qc-ui-accent-text);
 	}
 
 	.repair-after {
@@ -2003,6 +2303,12 @@
 		}
 	}
 
+	@keyframes explanation-spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
 	@keyframes chain-step-in {
 		from {
 			opacity: 0;
@@ -2023,14 +2329,16 @@
 	@media (prefers-reduced-motion: reduce) {
 		.showdown-reveal,
 		.transfer-result,
-		.method-steps li {
+		.method-steps li,
+		:global(.explanation-spinner) {
 			animation: none;
 		}
 	}
 
 	:global(html[data-visual-effects='off']) .showdown-reveal,
 	:global(html[data-visual-effects='off']) .transfer-result,
-	:global(html[data-visual-effects='off']) .method-steps li {
+	:global(html[data-visual-effects='off']) .method-steps li,
+	:global(html[data-visual-effects='off']) :global(.explanation-spinner) {
 		animation: none;
 	}
 
@@ -2884,6 +3192,23 @@
 			grid-template-columns: minmax(0, 1fr);
 		}
 
+		.explanation-invitation {
+			align-items: stretch;
+		}
+
+		.explanation-invitation > span {
+			flex: 1 1 100%;
+		}
+
+		.explanation-invitation :global(.challenge-button) {
+			width: 100%;
+			justify-content: center;
+		}
+
+		.explanation-invitation :global(.haptic-surface) {
+			width: 100%;
+		}
+
 		.challenge-question-context .question-illustration {
 			grid-column: auto;
 			grid-row: auto;
@@ -2934,6 +3259,15 @@
 
 		.active-task {
 			gap: 0.5rem;
+		}
+
+		.explanation-invitation {
+			padding-block: 0.36rem;
+		}
+
+		.explanation-panel {
+			gap: 0.35rem;
+			padding: 0.6rem 0.7rem;
 		}
 
 		.active-task .answer-showdown :global(button.prominent),

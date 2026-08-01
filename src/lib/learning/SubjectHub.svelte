@@ -19,6 +19,7 @@
 		Brain,
 		ChevronDown,
 		ChevronRight,
+		ClipboardList,
 		Clock3,
 		Compass,
 		Gamepad2,
@@ -123,6 +124,7 @@
 		challengeRecommendation ? `/challenges/${challengeRecommendation.subject}` : '/challenges'
 	);
 	const challengeArt = $derived(challengeRecommendation?.cardArt ?? null);
+	const practicePaperHref = $derived(resolveInternalPath(`${subject.href}/paper`));
 
 	onMount(() => {
 		liveChallengeProgress = hydrateSignedInChallengeProgress(
@@ -247,6 +249,39 @@
 					<a class="qc-action-button compact" href={resolveInternalPath(challengeCollectionHref)}>
 						All {subject.subject} challenges
 					</a>
+				</div>
+			</section>
+		{/if}
+
+		{#if scopeReady}
+			<section
+				class="qc-dashboard-panel qc-subject-paper-card"
+				aria-labelledby="subject-paper-heading"
+			>
+				<header class="qc-dashboard-panel-head">
+					<div>
+						<p class="qc-panel-label">Longer practice</p>
+						<h2 id="subject-paper-heading">Create a practice paper</h2>
+					</div>
+					<ClipboardList size={22} aria-hidden="true" strokeWidth={2.2} />
+				</header>
+				<p>
+					Build one longer paper from your course. Mix everything, or choose the topics you want to
+					work on.
+				</p>
+				<div class="qc-subject-actions">
+					<a
+						class="qc-dashboard-action"
+						href={practicePaperHref}
+						data-analytics-label={`Create ${subject.subject} practice paper`}
+					>
+						Create paper
+						<ArrowRight size={17} aria-hidden="true" />
+					</a>
+					<span class="qc-activity-meta">
+						<Clock3 size={14} aria-hidden="true" />
+						30–60 min
+					</span>
 				</div>
 			</section>
 		{/if}
@@ -403,6 +438,25 @@
 	.qc-subject-challenge-card {
 		display: grid;
 		gap: 0.75rem;
+	}
+
+	.qc-subject-paper-card {
+		display: grid;
+		gap: 0.75rem;
+		border-color: color-mix(in srgb, var(--qc-ui-accent) 44%, var(--qc-ui-border-subtle));
+		background:
+			repeating-linear-gradient(
+				0deg,
+				transparent 0,
+				transparent 1.65rem,
+				color-mix(in srgb, var(--qc-ui-accent) 5%, transparent) 1.65rem,
+				color-mix(in srgb, var(--qc-ui-accent) 5%, transparent) calc(1.65rem + 1px)
+			),
+			var(--qc-ui-surface-raised);
+	}
+
+	.qc-subject-paper-card > p {
+		margin: 0;
 	}
 
 	.qc-subject-challenge-card > p {

@@ -1,5 +1,5 @@
 import type { PracticeDraftKind, SavedPracticeDraft } from '$lib/practiceDrafts';
-import { queryPersonalFirst } from './db';
+import { queryPersonalFirst, queryPersonalRows } from './db';
 
 type UserQuestionDraftRow = {
 	question_id: string;
@@ -42,4 +42,21 @@ export async function getQuestionDraft(
 		[userId, questionId]
 	);
 	return row ? savedDraftFromRow(row) : null;
+}
+
+export async function getQuestionDrafts(
+	userId: string,
+	questionIds: readonly string[]
+): Promise<SavedPracticeDraft[]> {
+	const ids = [...new Set(questionIds.map((id) => id.trim()).filter(Boolean))].slice(0, 50);
+	if (ids.length === 0) return [];
+	const placeholders = ids.map(() => '?').join(', ');
+	const rows = await queryPersonalRows<UserQuestionDraftRow>(
+		`SELECT question_id, draft_kind, answer_text, draft_json, client_updated_at, updated_at
+		 FROM user_question_drafts
+		 WHERE user_id = ?
+		   AND question_id IN (${placeholders})`,
+		[userId, ...ids]
+	);
+	return rows.map(savedDraftFromRow);
 }
